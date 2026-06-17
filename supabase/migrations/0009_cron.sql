@@ -39,3 +39,7 @@ select cron.schedule('resolve-markets', '*/5 * * * *', $job$
     body    := '{}'::jsonb
   );
 $job$);
+
+-- リーダーボード集計: 10分ごと（純SQL関数を直接実行。Edge Function不要）
+select cron.unschedule('refresh-stats') where exists (select 1 from cron.job where jobname='refresh-stats');
+select cron.schedule('refresh-stats', '*/10 * * * *', $job$ select refresh_user_stats(); $job$);

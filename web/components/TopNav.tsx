@@ -60,6 +60,7 @@ export function TopNav() {
         </Link>
         <nav className="flex items-center gap-4 text-sm text-dim">
           <Link href="/" className="hover:text-text">マーケット</Link>
+          <Link href="/leaderboard" className="hover:text-text">ランキング</Link>
           <Link href="/portfolio" className="hover:text-text">ポートフォリオ</Link>
         </nav>
 
