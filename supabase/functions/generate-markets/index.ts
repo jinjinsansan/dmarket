@@ -33,9 +33,9 @@ Deno.serve(async (_req) => {
     let candidates: GammaMarket[] = [];
     try {
       candidates = await fetchPolyCandidates({
-        tagIds: settings.poly_tag_ids?.length ? settings.poly_tag_ids : [0],
+        tagIds: settings.poly_tag_ids ?? [], // 空なら一般の人気市場を取得
         sort: settings.poly_sort,
-        limit: n * 3, // 多めに引いて選別
+        limit: n,
       });
     } catch (_e) { summary[`${c.slug}:gamma_err`] = 1; continue; }
 

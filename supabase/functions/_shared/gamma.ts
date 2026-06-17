@@ -40,23 +40,22 @@ async function gammaFetch(path: string, params: Record<string, string | number |
   throw new Error(`Gamma ${path} rate-limited`);
 }
 
-// アクティブな候補市場を取得（カテゴリ相当の tag_id で絞る）
+// アクティブな候補市場を取得。tag_id 指定があれば絞り、無ければ一般の人気市場を取得。
+// ソートは API パラメータに依存せずクライアント側で出来高/流動性降順に並べ替える（堅牢）。
 export async function fetchPolyCandidates(opts: {
   tagIds: number[];
   sort: string;        // 'volume_24hr' | 'liquidity' | 'competitive'
   limit: number;
 }): Promise<GammaMarket[]> {
+  const hasTag = opts.tagIds.length > 0 && opts.tagIds[0] > 0;
   const raw = await gammaFetch("/markets", {
     closed: "false",
     active: "true",
-    limit: opts.limit,
-    order: opts.sort,
-    ascending: "false",
-    // 複数 tag_id は Gamma が tag_id 反復クエリを受けるため代表1つ＋クライアント側で確認
-    tag_id: opts.tagIds[0],
+    limit: Math.max(opts.limit * 4, 40), // 多めに引いてクライアントで選別
+    tag_id: hasTag ? opts.tagIds[0] : undefined,
   });
   const list = (Array.isArray(raw) ? raw : raw?.data ?? []) as Record<string, unknown>[];
-  return list.map((m) => ({
+  const mapped = list.map((m) => ({
     id: String(m.id),
     question: String(m.question ?? ""),
     closed: Boolean(m.closed),
@@ -66,6 +65,9 @@ export async function fetchPolyCandidates(opts: {
     volume24hr: m.volume24hr ? Number(m.volume24hr) : undefined,
     liquidity: m.liquidity ? Number(m.liquidity) : undefined,
   }));
+  const key = opts.sort === "liquidity" ? "liquidity" : "volume24hr";
+  // 多めに返し、呼び出し側で二択/期限などの選別＋上限適用をさせる
+  return mapped.sort((a, b) => (b[key] ?? 0) - (a[key] ?? 0)).slice(0, opts.limit * 3);
 }
 
 // poly_id の確定状態を確認。未確定は null を返す（推測で確定しない）。
