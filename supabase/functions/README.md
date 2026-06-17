@@ -6,6 +6,7 @@ Deno ランタイム。Supabase 上で動き、pg_cron（`migrations/0009_cron.s
 |------|------|------|----------|
 | `generate-markets` | 15分 | カテゴリ別 gap を計算し、不足分だけ Polyミラー生成（走行中は消さない・冪等） | SPEC-04 §4 |
 | `resolve-markets`  | 5分  | auto市場を機械判定 → resolve_market / pending再試行 / error→解決キュー | SPEC-03 §4 |
+| `stripe-webhook`   | 都度 | 決済完了→entitlements のみ付与。wallets には一切触れない（賭博非該当） | SPEC-08 §1 |
 
 共通モジュール `_shared/`:
 - `client.ts` — service_role クライアント＋`seedQBinary`（DB の `lmsr_seed_q_binary` と同一式）

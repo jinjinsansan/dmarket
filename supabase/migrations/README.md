@@ -18,7 +18,7 @@
 | 0010 | profiles（表示名・本人性メタ・is_flagged）※認証/管理/ランキングが依存 | 01 | Phase 6 | ✅ |
 | 0011 | リーダーボード（user_stats/seasons/season_scores/badges/user_badges）＋refresh_user_stats | 06 | Phase 6 | ✅ |
 | 0012 | 管理（admin_users/admin_audit）＋管理RPC（create_admin_market/admin_resolve/admin_void/correct_resolution/flag_user/upsert_feed_settings） | 07 | Phase 7 | ✅ |
-| 0013 | マネタイズ・不正（entitlements/account_signals/fraud_flags） | 08 | Phase 8 | 予定 |
+| 0013 | マネタイズ・不正（entitlements/account_signals/fraud_flags）＋grant_entitlement/detect_fraud_signals | 08 | Phase 8 | ✅ |
 
 解決の実体（外部API呼び出し）は Edge Functions（`../functions/`）。0009 はローカル素PGに pg_cron が無いため `run_local.sh` では適用せずリモートのみ。
 
