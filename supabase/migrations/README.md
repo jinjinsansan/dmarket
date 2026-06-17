@@ -17,7 +17,7 @@
 | 0009 | pg_cron スケジュール（供給15分/解決5分/集計10分）※リモート専用 | 03/04/06 | Phase 3-4/6 | ✅(remote) |
 | 0010 | profiles（表示名・本人性メタ・is_flagged）※認証/管理/ランキングが依存 | 01 | Phase 6 | ✅ |
 | 0011 | リーダーボード（user_stats/seasons/season_scores/badges/user_badges）＋refresh_user_stats | 06 | Phase 6 | ✅ |
-| 0012 | 管理（admin_users/admin_audit）＋管理RPC | 07 | Phase 7 | 予定 |
+| 0012 | 管理（admin_users/admin_audit）＋管理RPC（create_admin_market/admin_resolve/admin_void/correct_resolution/flag_user/upsert_feed_settings） | 07 | Phase 7 | ✅ |
 | 0013 | マネタイズ・不正（entitlements/account_signals/fraud_flags） | 08 | Phase 8 | 予定 |
 
 解決の実体（外部API呼び出し）は Edge Functions（`../functions/`）。0009 はローカル素PGに pg_cron が無いため `run_local.sh` では適用せずリモートのみ。
