@@ -30,7 +30,7 @@ echo "→ stub"; psqlc -f supabase/tests/_local_stub.sql
 for f in 0001_core_tables 0002_lmsr_functions 0003_grant_rpcs \
          0004_trade_rpcs 0005_resolve_rpcs 0006_realtime 0007_supply_resolution \
          0008_market_creation 0010_profiles 0011_leaderboard 0012_admin \
-         0013_monetization_antifraud 0014_admin_dashboard; do
+         0013_monetization_antifraud 0014_admin_dashboard 0015_market_creation_fix; do
   echo "→ migration $f"; psqlc -f "supabase/migrations/$f.sql"
 done
 
