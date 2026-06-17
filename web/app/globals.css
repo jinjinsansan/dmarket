@@ -1,26 +1,46 @@
 @import "tailwindcss";
 
+/* ── デザイントークン（SPEC-05 §2）。--brand-* を差し替えるだけでブランド変更可 ── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ブランド（中立プレースホルダ・後で差替え） */
+  --brand-primary: #2d6cdf; /* CTA・リンク・アクティブ */
+  --brand-bg: #0e1117; /* ダーク基調 */
+  --brand-surface: #161b22; /* カード面 */
+  --brand-surface-2: #1c232d;
+  --brand-border: #232a34;
+  --brand-text: #e6eaf0;
+  --brand-text-dim: #8a93a2;
+
+  /* 機能色（予測市場の定石。YES=緑 / NO=赤） */
+  --pos: #1fa971;
+  --neg: #e5484d;
+
+  --radius: 10px;
+  --radius-sm: 6px;
 }
 
+/* Tailwind v4 のユーティリティへトークンを供給 */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-bg: var(--brand-bg);
+  --color-surface: var(--brand-surface);
+  --color-surface-2: var(--brand-surface-2);
+  --color-border: var(--brand-border);
+  --color-text: var(--brand-text);
+  --color-dim: var(--brand-text-dim);
+  --color-primary: var(--brand-primary);
+  --color-pos: var(--pos);
+  --color-neg: var(--neg);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background: var(--brand-bg);
+  color: var(--brand-text);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* 数値・確率・残高は等幅で（桁が揺れない＝取引UIの定石・SPEC-05 §2） */
+.num {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
 }
