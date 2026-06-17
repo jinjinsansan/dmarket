@@ -1,0 +1,40 @@
+# Supabase ローカル設定（npx supabase で使用）
+project_id = "dmarket"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[db.pooler]
+enabled = false
+
+[realtime]
+enabled = true
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+# サイトURL（LINEログイン実装まではローカル開発用）
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000"]
+jwt_expiry = 3600
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+enable_confirmations = false   # ローカル開発用スタブ認証。LINE実装時に見直し
+
+# pg_cron / pg_net は供給・解決・集計ジョブで使用（リモートで有効化）
+[edge_runtime]
+enabled = true
