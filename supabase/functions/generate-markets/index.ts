@@ -3,6 +3,7 @@
 // 走行中の市場は絶対に消さない（新規生成の量だけ調整）。冪等: poly_mirror_cache で重複防止。
 import { serviceClient, seedQBinary } from "../_shared/client.ts";
 import { fetchPolyCandidates, type GammaMarket } from "../_shared/gamma.ts";
+import { toJapanese } from "../_shared/translate.ts";
 
 const B_DEFAULT = 200;
 const MIN_HOURS_TO_CLOSE = 2; // これより締切が近い poly はミラーしない（SPEC-04 §9-3）
@@ -60,11 +61,12 @@ Deno.serve(async (_req) => {
     for (const m of picked) {
       const yesPrice = m.outcomePrices[0] ?? 0.5;
       const close = m.endDate!;
+      const question = await toJapanese(m.question); // 英語→日本語（失敗時は原文）
       const { data: marketId, error: cErr } = await sb.rpc("create_market_internal", {
         p_category_id: c.id,
-        p_question: m.question,
+        p_question: question,
         p_description: null,
-        p_image_url: null,
+        p_image_url: m.image ?? null,
         p_market_kind: "binary",
         p_b: B_DEFAULT,
         p_source: "mirror",

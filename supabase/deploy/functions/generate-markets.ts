@@ -20,6 +20,28 @@ function seedQBinary(b: number, price: number): number {
   const p = Math.min(Math.max(price, 1e-6), 1 - 1e-6);
   return b * Math.log(p / (1 - p));
 }
+// 英語→日本語。ANTHROPIC_API_KEY があれば Claude(haiku)、無ければ無料 MyMemory、失敗時は原文。
+async function toJapanese(text: string): Promise<string> {
+  if (!text) return text;
+  const key = Deno.env.get("ANTHROPIC_API_KEY");
+  try {
+    if (key) {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
+        body: JSON.stringify({
+          model: "claude-haiku-4-5-20251001", max_tokens: 300,
+          system: "予測市場の質問文を、自然で簡潔な日本語に翻訳する。出力は訳文のみ。引用符・注釈・前置きは付けない。",
+          messages: [{ role: "user", content: text }],
+        }),
+      });
+      if (res.ok) { const j = await res.json(); const out = j?.content?.[0]?.text?.trim(); if (out) return out; }
+    }
+    const r = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|ja`);
+    if (r.ok) { const j = await r.json(); const out = j?.responseData?.translatedText; if (out && typeof out === "string" && !/^PLEASE/i.test(out)) return out; }
+  } catch (_e) { /* 原文 */ }
+  return text;
+}
 function asArray<T>(v: unknown): T[] {
   if (Array.isArray(v)) return v as T[];
   if (typeof v === "string") { try { return JSON.parse(v); } catch { return []; } }
@@ -40,7 +62,7 @@ async function gammaFetch(path: string, params: Record<string, string | number |
 interface GammaMarket {
   id: string; question: string; closed: boolean;
   outcomes: string[]; outcomePrices: number[]; endDate?: string;
-  volume24hr?: number; liquidity?: number;
+  image?: string; volume24hr?: number; liquidity?: number;
 }
 
 async function fetchPolyCandidates(opts: { tagIds: number[]; sort: string; limit: number }): Promise<GammaMarket[]> {
@@ -55,6 +77,7 @@ async function fetchPolyCandidates(opts: { tagIds: number[]; sort: string; limit
     id: String(m.id), question: String(m.question ?? ""), closed: Boolean(m.closed),
     outcomes: asArray<string>(m.outcomes), outcomePrices: asArray<string>(m.outcomePrices).map(Number),
     endDate: m.endDate as string | undefined,
+    image: (m.image ?? m.icon) as string | undefined,
     volume24hr: m.volume24hr ? Number(m.volume24hr) : undefined,
     liquidity: m.liquidity ? Number(m.liquidity) : undefined,
   }));
@@ -96,8 +119,9 @@ Deno.serve(async () => {
     for (const m of picked) {
       const yesPrice = m.outcomePrices[0] ?? 0.5;
       const close = m.endDate!;
+      const question = await toJapanese(m.question); // 英語→日本語（失敗時は原文）
       const { data: marketId, error: cErr } = await sb.rpc("create_market_internal", {
-        p_category_id: c.id, p_question: m.question, p_description: null, p_image_url: null,
+        p_category_id: c.id, p_question: question, p_description: null, p_image_url: m.image ?? null,
         p_market_kind: "binary", p_b: B_DEFAULT, p_source: "mirror", p_resolution_kind: "auto",
         p_resolution_binding: { kind: "poly", poly_id: m.id, outcome_map: { Yes: "YES", No: "NO" } },
         p_external_ref: m.id, p_close_time: close, p_resolve_time: close,
