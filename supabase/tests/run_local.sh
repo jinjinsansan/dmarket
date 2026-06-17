@@ -26,12 +26,13 @@ rm -rf "$PGDATA"; mkdir -p "$PGDATA"
 "$PG_BIN/createdb.exe" -p "$PORT" -U postgres "$DB"
 
 echo "→ stub"; psqlc -f supabase/tests/_local_stub.sql
-for f in supabase/migrations/0001_core_tables 0002_lmsr_functions 0003_grant_rpcs \
-         0004_trade_rpcs 0005_resolve_rpcs 0006_realtime; do
-  base="supabase/migrations/$(basename "$f").sql"
-  echo "→ migration $(basename "$f")"; psqlc -f "$base"
+for f in 0001_core_tables 0002_lmsr_functions 0003_grant_rpcs \
+         0004_trade_rpcs 0005_resolve_rpcs 0006_realtime 0007_supply_resolution \
+         0008_market_creation; do
+  echo "→ migration $f"; psqlc -f "supabase/migrations/$f.sql"
 done
 
 echo "→ core acceptance"; psqlc -f supabase/tests/0001_core_acceptance.sql
 echo "→ rls";             psqlc -f supabase/tests/0002_rls.sql
+echo "→ supply";          psqlc -f supabase/tests/0003_supply.sql
 echo "ALL TESTS PASSED"
