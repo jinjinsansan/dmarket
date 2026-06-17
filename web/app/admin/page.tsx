@@ -40,9 +40,9 @@ export default function AdminPage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div className="max-w-[1180px] mx-auto px-[22px] py-6 pb-20 dm-in space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">管理コンソール</h1>
+        <h1 className="text-[23px] font-extrabold">管理コンソール / Admin</h1>
         {toast && <span className="text-sm text-primary">{toast}</span>}
       </div>
 

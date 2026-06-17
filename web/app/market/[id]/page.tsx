@@ -5,10 +5,23 @@ import { MarketDetailClient } from "@/components/MarketDetailClient";
 
 export const dynamic = "force-dynamic";
 
-export default async function MarketPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function MarketPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ pick?: string }>;
+}) {
   const { id } = await params;
+  const { pick } = await searchParams;
   const { market, resolution, history } = await getMarket(id);
   if (!market) notFound();
-
-  return <MarketDetailClient market={market} resolution={resolution} history={history} />;
+  return (
+    <MarketDetailClient
+      market={market}
+      resolution={resolution}
+      history={history}
+      initialPick={pick ? Number(pick) : 0}
+    />
+  );
 }

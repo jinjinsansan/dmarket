@@ -98,7 +98,7 @@ export function FeedSettings({ notify }: { notify: (m: string) => void }) {
                 自前テンプレ有効
               </label>
               <select value={s.poly_sort} onChange={(e) => set(c.id, { poly_sort: e.target.value })}
-                className="rounded-sm bg-surface-2 border border-border px-2 py-1">
+                className="rounded-sm bg-surface2 border border-border px-2 py-1">
                 <option value="volume_24hr">出来高</option>
                 <option value="liquidity">流動性</option>
                 <option value="competitive">接戦</option>
@@ -112,9 +112,9 @@ export function FeedSettings({ notify }: { notify: (m: string) => void }) {
       <div className="rounded-[var(--radius)] border border-dashed border-border p-3 flex flex-wrap gap-2 items-center">
         <span className="text-sm text-dim">カテゴリ追加:</span>
         <input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="表示名"
-          className="rounded-sm bg-surface-2 border border-border px-2 py-1 text-sm" />
+          className="rounded-sm bg-surface2 border border-border px-2 py-1 text-sm" />
         <input value={newSlug} onChange={(e) => setNewSlug(e.target.value)} placeholder="slug"
-          className="rounded-sm bg-surface-2 border border-border px-2 py-1 text-sm" />
+          className="rounded-sm bg-surface2 border border-border px-2 py-1 text-sm" />
         <button onClick={addCategory} className="rounded-sm border border-border px-3 py-1 text-sm">追加</button>
       </div>
     </div>
@@ -126,7 +126,7 @@ function Num({ label, v, on }: { label: string; v: number; on: (v: number) => vo
     <label className="text-dim flex flex-col gap-1">
       {label}
       <input type="number" value={v} onChange={(e) => on(Math.max(0, Math.floor(Number(e.target.value))))}
-        className="num rounded-sm bg-surface-2 border border-border px-2 py-1 text-text" />
+        className="num rounded-sm bg-surface2 border border-border px-2 py-1 text-text" />
     </label>
   );
 }

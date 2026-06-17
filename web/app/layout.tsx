@@ -1,22 +1,31 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Roboto, Noto_Sans_JP, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { TopNav } from "@/components/TopNav";
+import { Footer } from "@/components/Footer";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const roboto = Roboto({ variable: "--font-roboto", subsets: ["latin"], weight: ["400", "500", "700"] });
+const noto = Noto_Sans_JP({ variable: "--font-noto", subsets: ["latin"], weight: ["400", "500", "700"] });
+const robotoMono = Roboto_Mono({ variable: "--font-roboto-mono", subsets: ["latin"], weight: ["500", "600", "700"] });
 
 export const metadata: Metadata = {
-  title: "dmarket — 予測市場",
-  description: "換金不可ポイントで楽しむ予測市場。当てる楽しさを、賞品ゼロで。",
+  title: "D-market — ポイントで読む、世界の確率。",
+  description: "換金不可ポイントで楽しむ予測市場。換金なし、勝つのは称号とランキングだけ。",
 };
+
+// ダーク初期化（描画前に適用してフラッシュ防止）
+const themeScript = `(function(){try{var t=localStorage.getItem('dm-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})();`;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="ja" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-bg text-text">
+    <html lang="ja" className={`${roboto.variable} ${noto.variable} ${robotoMono.variable}`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body className="min-h-screen flex flex-col bg-bg text-text">
         <TopNav />
-        <main className="flex-1 w-full max-w-6xl mx-auto px-4 py-6">{children}</main>
+        <main className="flex-1 w-full">{children}</main>
+        <Footer />
       </body>
     </html>
   );

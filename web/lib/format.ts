@@ -26,7 +26,7 @@ export function timeRemaining(closeIso: string): string {
 // 損益の符号付き表記＋色クラス（--pos / --neg）
 export function pnlText(n: number): { text: string; cls: string } {
   const sign = n > 0 ? "+" : "";
-  const cls = n > 0 ? "text-[var(--pos)]" : n < 0 ? "text-[var(--neg)]" : "text-[var(--brand-text-dim)]";
+  const cls = n > 0 ? "text-pos" : n < 0 ? "text-neg" : "text-dim";
   return { text: `${sign}${n.toLocaleString("ja-JP")}`, cls };
 }
 

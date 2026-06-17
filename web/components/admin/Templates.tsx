@@ -76,18 +76,18 @@ export function Templates({ notify }: { notify: (m: string) => void }) {
         <p className="text-sm font-medium">テンプレ追加</p>
         <div className="flex flex-wrap gap-2">
           <select value={form.category_id} onChange={(e) => setForm({ ...form, category_id: e.target.value })}
-            className="rounded-sm bg-surface-2 border border-border px-2 py-1 text-sm">
+            className="rounded-sm bg-surface2 border border-border px-2 py-1 text-sm">
             <option value="">カテゴリ</option>
             {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
           <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="名前"
-            className="rounded-sm bg-surface-2 border border-border px-2 py-1 text-sm" />
+            className="rounded-sm bg-surface2 border border-border px-2 py-1 text-sm" />
           <input value={form.schedule_cron} onChange={(e) => setForm({ ...form, schedule_cron: e.target.value })} placeholder="cron"
-            className="num rounded-sm bg-surface-2 border border-border px-2 py-1 text-sm w-32" />
+            className="num rounded-sm bg-surface2 border border-border px-2 py-1 text-sm w-32" />
         </div>
         <input value={form.question_pattern} onChange={(e) => setForm({ ...form, question_pattern: e.target.value })}
           placeholder="質問パターン（例: BTCは{date}に{threshold}を超えるか）"
-          className="w-full rounded-sm bg-surface-2 border border-border px-2 py-1 text-sm" />
+          className="w-full rounded-sm bg-surface2 border border-border px-2 py-1 text-sm" />
         <div className="grid sm:grid-cols-3 gap-2">
           <JsonField label="resolution_binding" v={form.resolution_binding} on={(v) => setForm({ ...form, resolution_binding: v })} />
           <JsonField label="params_source" v={form.params_source} on={(v) => setForm({ ...form, params_source: v })} />
@@ -104,7 +104,7 @@ function JsonField({ label, v, on }: { label: string; v: string; on: (v: string)
     <label className="text-xs text-dim flex flex-col gap-1">
       {label}
       <textarea value={v} onChange={(e) => on(e.target.value)} rows={2}
-        className="num rounded-sm bg-surface-2 border border-border px-2 py-1 text-text text-xs" />
+        className="num rounded-sm bg-surface2 border border-border px-2 py-1 text-text text-xs" />
     </label>
   );
 }

@@ -1,46 +1,121 @@
 @import "tailwindcss";
 
-/* ── デザイントークン（SPEC-05 §2）。--brand-* を差し替えるだけでブランド変更可 ── */
+/* ============================================================
+   D-market デザイントークン（D-swipe ファミリー共有）
+   ライト基調＋ダーク切替（html.dark）。hifi handoff の hex を踏襲。
+   ============================================================ */
 :root {
-  /* ブランド（中立プレースホルダ・後で差替え） */
-  --brand-primary: #2d6cdf; /* CTA・リンク・アクティブ */
-  --brand-bg: #0e1117; /* ダーク基調 */
-  --brand-surface: #161b22; /* カード面 */
-  --brand-surface-2: #1c232d;
-  --brand-border: #232a34;
-  --brand-text: #e6eaf0;
-  --brand-text-dim: #8a93a2;
+  --bg: #f4f8fd;
+  --surface: #ffffff;
+  --surface2: #eef3fb;
+  --border: #e2ebf6;
+  --text: #0b1f3a;
+  --dim: #5a6e88;
+  --faint: #9fb4d0;
+  --primary: #0284c7;
+  --primary-weak: #e9f6fe;
+  --accent2: #06b6d4;
+  --pos: #0d9f6e;
+  --pos-weak: #e6f7f0;
+  --neg: #ef4444;
+  --neg-weak: #fdecec;
 
-  /* 機能色（予測市場の定石。YES=緑 / NO=赤） */
-  --pos: #1fa971;
-  --neg: #e5484d;
-
-  --radius: 10px;
-  --radius-sm: 6px;
+  --radius: 20px;
+  --radius-sm: 12px;
+  --grad: linear-gradient(135deg, #0ea5e9, #06b6d4);
+  --hero-grad: linear-gradient(135deg, #0b1f3a, #143a63);
+  --shadow: 0 1px 2px rgba(11, 31, 58, 0.04), 0 14px 40px -18px rgba(11, 31, 58, 0.16);
+  --cta-glow: 0 8px 20px -8px rgba(6, 182, 212, 0.7);
 }
 
-/* Tailwind v4 のユーティリティへトークンを供給 */
+html.dark {
+  --bg: #081424;
+  --surface: #0f243d;
+  --surface2: #152e4c;
+  --border: #21405f;
+  --text: #eaf2fb;
+  --dim: #9fb4d0;
+  --faint: #6b86a8;
+  --primary: #38bdf8;
+  --primary-weak: #11324e;
+  --accent2: #22d3ee;
+  --pos: #2dd4a7;
+  --pos-weak: #0e3328;
+  --neg: #f87171;
+  --neg-weak: #3a1d1d;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 14px 40px -18px rgba(0, 0, 0, 0.5);
+}
+
+/* Tailwind v4 ユーティリティへトークンを供給 */
 @theme inline {
-  --color-bg: var(--brand-bg);
-  --color-surface: var(--brand-surface);
-  --color-surface-2: var(--brand-surface-2);
-  --color-border: var(--brand-border);
-  --color-text: var(--brand-text);
-  --color-dim: var(--brand-text-dim);
-  --color-primary: var(--brand-primary);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface2: var(--surface2);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-dim: var(--dim);
+  --color-faint: var(--faint);
+  --color-primary: var(--primary);
+  --color-primary-weak: var(--primary-weak);
+  --color-accent2: var(--accent2);
   --color-pos: var(--pos);
+  --color-pos-weak: var(--pos-weak);
   --color-neg: var(--neg);
-  --font-mono: var(--font-geist-mono);
+  --color-neg-weak: var(--neg-weak);
+  --font-sans: var(--font-roboto), var(--font-noto), system-ui, sans-serif;
+  --font-mono: var(--font-roboto-mono), ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--brand-bg);
-  color: var(--brand-text);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-roboto), var(--font-noto), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* 数値・確率・残高は等幅で（桁が揺れない＝取引UIの定石・SPEC-05 §2） */
+/* 数値（価格・確率・残高・時刻）は等幅＋tabular-nums で桁ブレ防止 */
+.mono,
 .num {
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-family: var(--font-roboto-mono), ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
+}
+
+.scrollx {
+  scrollbar-width: thin;
+}
+.scrollx::-webkit-scrollbar {
+  height: 6px;
+}
+.scrollx::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 6px;
+}
+
+@keyframes dmIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.dm-in {
+  animation: dmIn 0.3s ease;
+}
+
+@keyframes dmToast {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }

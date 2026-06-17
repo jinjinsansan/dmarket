@@ -46,11 +46,11 @@ function Row({ market, done }: { market: MarketWithOutcomes; done: (m: string) =
     <div className="rounded-[var(--radius)] border border-border bg-surface p-3 space-y-2">
       <p className="text-sm">{market.question}</p>
       <div className="flex flex-wrap gap-2 items-center">
-        <select value={winner} onChange={(e) => setWinner(e.target.value)} className="rounded-sm bg-surface-2 border border-border px-2 py-1 text-sm">
+        <select value={winner} onChange={(e) => setWinner(e.target.value)} className="rounded-sm bg-surface2 border border-border px-2 py-1 text-sm">
           {outcomes.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
         </select>
         <input value={src} onChange={(e) => setSrc(e.target.value)} placeholder="根拠ソースURL"
-          className="flex-1 min-w-40 rounded-sm bg-surface-2 border border-border px-2 py-1 text-sm" />
+          className="flex-1 min-w-40 rounded-sm bg-surface2 border border-border px-2 py-1 text-sm" />
         <button onClick={() => run("admin_resolve")} disabled={busy} className="rounded-sm bg-primary text-white px-3 py-1 text-sm disabled:opacity-50">確定</button>
         <button onClick={() => run("admin_void")} disabled={busy} className="rounded-sm border border-border text-dim px-3 py-1 text-sm">中止</button>
       </div>

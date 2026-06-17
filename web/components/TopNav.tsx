@@ -1,91 +1,109 @@
 "use client";
-// 上部固定ナビ（SPEC-05 §3）。残高常時表示・デイリーボーナス受領。
-// 認証は LINEログイン後回しのため、未ログイン時は「ログイン」を表示し残高は出さない。
+// 固定ヘッダー（D-market handoff §0）。ロゴ・検索・ナビ・テーマ・残高ピル・Claim。
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatPoints } from "@/lib/format";
+import { Logo, Wordmark } from "./Logo";
+import { ThemeToggle } from "./ThemeToggle";
+
+const NAV = [
+  { href: "/", label: "マーケット" },
+  { href: "/leaderboard", label: "ランキング" },
+  { href: "/mypage", label: "マイページ" },
+  { href: "/admin", label: "管理" },
+];
 
 export function TopNav() {
+  const pathname = usePathname();
   const [balance, setBalance] = useState<number | null>(null);
   const [loggedIn, setLoggedIn] = useState(false);
-  const [claiming, setClaiming] = useState(false);
-  const [claimedToday, setClaimedToday] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
-  const refreshBalance = useCallback(async () => {
+  const refresh = useCallback(async () => {
     const sb = createClient();
     const { data: { user } } = await sb.auth.getUser();
-    if (!user) {
-      setLoggedIn(false);
-      setBalance(null);
-      return;
-    }
+    if (!user) { setLoggedIn(false); setBalance(null); return; }
     setLoggedIn(true);
     const { data } = await sb.from("wallets").select("balance").eq("user_id", user.id).maybeSingle();
     setBalance(data?.balance ?? 0);
   }, []);
 
   useEffect(() => {
-    refreshBalance();
-    const handler = () => refreshBalance();
-    window.addEventListener("wallet:refresh", handler);
-    return () => window.removeEventListener("wallet:refresh", handler);
-  }, [refreshBalance]);
+    refresh();
+    const h = () => refresh();
+    window.addEventListener("wallet:refresh", h);
+    return () => window.removeEventListener("wallet:refresh", h);
+  }, [refresh]);
 
-  async function claimDaily() {
-    setClaiming(true);
-    setMsg(null);
+  async function claim() {
     const sb = createClient();
     const { data, error } = await sb.rpc("claim_daily_grant");
-    setClaiming(false);
-    if (error) {
-      setMsg("受け取りに失敗しました");
-      return;
-    }
-    if (data?.ok) {
-      setBalance(data.balance);
-      setMsg(`デイリーボーナス +${data.granted}`);
-    } else {
-      setClaimedToday(true);
-      setMsg("本日は受け取り済み");
-    }
+    if (error) return showToast("ログインが必要です（準備中）");
+    if (data?.ok) { setBalance(data.balance); showToast(`デイリーボーナス +${data.granted}`); }
+    else showToast("本日は受け取り済みです");
   }
+  function showToast(m: string) { setToast(m); setTimeout(() => setToast(null), 2600); }
+
+  const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   return (
-    <header className="sticky top-0 z-20 border-b border-border bg-surface/95 backdrop-blur">
-      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center gap-6">
-        <Link href="/" className="font-semibold text-lg tracking-tight">
-          dmarket
-        </Link>
-        <nav className="flex items-center gap-4 text-sm text-dim">
-          <Link href="/" className="hover:text-text">マーケット</Link>
-          <Link href="/leaderboard" className="hover:text-text">ランキング</Link>
-          <Link href="/portfolio" className="hover:text-text">ポートフォリオ</Link>
-        </nav>
+    <>
+      <header className="sticky top-0 z-40 bg-surface border-b border-border">
+        <div className="max-w-[1240px] mx-auto px-[22px] h-[66px] flex items-center gap-[22px]">
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+            <Logo />
+            <Wordmark />
+          </Link>
 
-        <div className="ml-auto flex items-center gap-3">
-          {loggedIn ? (
-            <>
-              {msg && <span className="text-xs text-dim">{msg}</span>}
-              <button
-                onClick={claimDaily}
-                disabled={claiming || claimedToday}
-                className="text-xs rounded-sm px-2 py-1 border border-border text-dim hover:text-text disabled:opacity-50"
-              >
-                {claimedToday ? "受取済み" : "デイリー受取"}
-              </button>
-              <span className="num text-sm rounded-sm bg-surface-2 px-3 py-1.5">
-                {balance === null ? "—" : formatPoints(balance)} pt
-              </span>
-            </>
-          ) : (
-            <span className="text-sm text-dim" title="LINEログインは後日実装">
-              ログイン（準備中）
-            </span>
-          )}
+          <div className="flex-1 max-w-[420px] relative hidden sm:block">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--faint)" strokeWidth="2"
+              className="absolute left-[13px] top-1/2 -translate-y-1/2">
+              <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
+            </svg>
+            <Link href="/" className="block w-full h-10 pl-9 pr-3.5 border border-border bg-surface2 rounded-[11px] text-sm text-faint leading-10">
+              市場を検索 / Search markets
+            </Link>
+          </div>
+
+          <nav className="flex items-center gap-1.5 shrink-0">
+            {NAV.map((n) => (
+              <Link key={n.href} href={n.href}
+                className={`text-sm font-semibold px-2.5 py-2 rounded-[9px] ${isActive(n.href) ? "text-text" : "text-dim hover:text-text"}`}>
+                {n.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-2.5 shrink-0 ml-auto">
+            <ThemeToggle />
+            {loggedIn ? (
+              <>
+                <div className="flex items-center gap-[7px] h-[38px] px-3 bg-surface2 border border-border rounded-[10px]">
+                  <svg width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#0891b2" /><circle cx="12" cy="12" r="4.4" fill="#e6faff" /></svg>
+                  <span className="mono text-sm font-bold">{balance === null ? "—" : formatPoints(balance)}</span>
+                  <span className="text-xs text-dim font-semibold">pt</span>
+                </div>
+                <button onClick={claim}
+                  className="h-[38px] px-4 text-white border-none rounded-[11px] font-bold text-[13.5px]"
+                  style={{ background: "var(--grad)", boxShadow: "var(--cta-glow)" }}>
+                  受取 / Claim
+                </button>
+              </>
+            ) : (
+              <span className="text-sm text-dim" title="LINEログインは準備中">ログイン（準備中）</span>
+            )}
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {toast && (
+        <div className="fixed left-1/2 bottom-7 z-50 bg-text text-bg text-sm font-semibold px-4 py-2.5 rounded-[12px] shadow-lg"
+          style={{ animation: "dmToast .25s ease" }}>
+          {toast}
+        </div>
+      )}
+    </>
   );
 }
