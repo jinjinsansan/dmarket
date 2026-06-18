@@ -98,8 +98,8 @@ function Hero({ openCount, catCount }: { openCount: number; catCount: number }) 
       <div className="relative">
         <div className="text-[11px] font-bold tracking-[.28em] text-[#38bdf8] uppercase mb-3">D-MARKET · 予測市場</div>
         <h1 className="text-[30px] font-extrabold leading-tight mb-2">ポイントで読む、世界の確率。</h1>
-        <p className="text-[14.5px] opacity-85 max-w-[420px] leading-relaxed mb-6">
-          Trade the world&apos;s probabilities — in points. 換金なし、勝つのは称号とランキングだけ。
+        <p className="text-[14.5px] opacity-85 max-w-[440px] leading-relaxed mb-6">
+          競馬からニュースまで、世界の「結果」をポイントで予想・売買。換金ゼロ、得るのは的中の快感と称号。
         </p>
         <div className="flex gap-8">
           <Stat label="開催中" value={formatPoints(openCount)} />
