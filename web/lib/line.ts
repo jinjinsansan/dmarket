@@ -7,8 +7,10 @@ export const LINE_TOKEN = "https://api.line.me/oauth2/v2.1/token";
 export const LINE_PROFILE = "https://api.line.me/v2/profile";
 
 // サイトのオリジン（リダイレクトURI生成に使用）。本番は NEXT_PUBLIC_SITE_URL を推奨。
+// 環境変数に混入しがちな前後空白・末尾スラッシュを除去（LINEのredirect_uri厳密一致対策）。
 export function siteOrigin(req: NextRequest): string {
-  return process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin;
+  const env = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "");
+  return env || new URL(req.url).origin;
 }
 export function lineRedirectUri(req: NextRequest): string {
   return `${siteOrigin(req)}/api/auth/line/callback`;
