@@ -15,6 +15,20 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
   const [search, setSearch] = useState("");
   const [layout, setLayout] = useState<"cards" | "compact">("cards");
   const [sort, setSort] = useState<SortKey>("ending");
+  const [sparks, setSparks] = useState<Record<string, number[]>>({});
+
+  // カードの価格推移を一括取得（1RPC・軽量）
+  useEffect(() => {
+    const ids = initialMarkets.map((m) => m.id);
+    if (ids.length === 0) return;
+    createClient().rpc("market_sparklines", { p_market_ids: ids }).then(({ data }) => {
+      const map: Record<string, number[]> = {};
+      for (const r of (data ?? []) as { market_id: string; prices: number[] }[]) {
+        map[r.market_id] = (r.prices ?? []).map(Number);
+      }
+      setSparks(map);
+    });
+  }, [initialMarkets]);
 
   useEffect(() => {
     const sb = createClient();
@@ -112,11 +126,11 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
         </div>
       ) : layout === "cards" ? (
         <div className="grid gap-3 sm:gap-4" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(min(100%,260px),1fr))" }}>
-          {filtered.map((m) => <MarketCard key={m.id} market={m} variant="card" />)}
+          {filtered.map((m) => <MarketCard key={m.id} market={m} variant="card" spark={sparks[m.id]} />)}
         </div>
       ) : (
         <div className="flex flex-col gap-2.5">
-          {filtered.map((m) => <MarketCard key={m.id} market={m} variant="compact" />)}
+          {filtered.map((m) => <MarketCard key={m.id} market={m} variant="compact" spark={sparks[m.id]} />)}
         </div>
       )}
     </div>

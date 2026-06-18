@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import { lmsrPrices } from "@/lib/lmsr";
 import { toCents, toPct, timeRemaining } from "@/lib/format";
 import { marketVisual } from "@/lib/market-visual";
+import { Sparkline } from "./Sparkline";
 import type { MarketWithOutcomes } from "@/lib/types";
 
-export const MarketCard = memo(function MarketCard({ market, variant = "card" }: { market: MarketWithOutcomes; variant?: "card" | "compact" }) {
+export const MarketCard = memo(function MarketCard({ market, variant = "card", spark }: { market: MarketWithOutcomes; variant?: "card" | "compact"; spark?: number[] }) {
   const router = useRouter();
   const outcomes = useMemo(() => [...market.outcomes].sort((a, b) => a.display_order - b.display_order), [market.outcomes]);
   const prices = useMemo(() => lmsrPrices(outcomes.map((o) => o.q), market.b_param), [outcomes, market.b_param]);
@@ -103,7 +104,7 @@ export const MarketCard = memo(function MarketCard({ market, variant = "card" }:
           </div>
         )}
         <div className="flex items-center justify-between text-[11px] text-dim pt-2 border-t border-border">
-          <span className="mono">{outcomes.length}択</span>
+          {spark && spark.length >= 2 ? <Sparkline data={spark} color={vis.tint} /> : <span className="mono">{outcomes.length}択</span>}
           <span>{timeRemaining(market.close_time)}</span>
         </div>
       </div>
