@@ -14,8 +14,8 @@ export const metadata: Metadata = {
   description: "換金不可ポイントで楽しむ予測市場。換金なし、勝つのは称号とランキングだけ。",
 };
 
-// ダーク初期化（描画前に適用してフラッシュ防止）
-const themeScript = `(function(){try{var t=localStorage.getItem('dm-theme');if(t==='dark'||(!t&&matchMedia('(prefers-color-scheme: dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})();`;
+// テーマ初期化（描画前に適用してフラッシュ防止）。既定はダーク。明示的に light を選んだ時のみライト。
+const themeScript = `(function(){try{var t=localStorage.getItem('dm-theme');if(t!=='light'){document.documentElement.classList.add('dark')}}catch(e){document.documentElement.classList.add('dark')}})();`;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
