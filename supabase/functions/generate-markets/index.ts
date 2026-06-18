@@ -61,7 +61,11 @@ Deno.serve(async (_req) => {
     for (const m of picked) {
       const yesPrice = m.outcomePrices[0] ?? 0.5;
       const close = m.endDate!;
-      const question = await toJapanese(m.question); // 英語→日本語（失敗時は原文）
+      // グループ市場は識別子(国名等)を主語として補い、曖昧な同一タイトルを防ぐ
+      const src = m.groupItemTitle && !m.question.includes(m.groupItemTitle)
+        ? `${m.groupItemTitle}: ${m.question}`
+        : m.question;
+      const question = await toJapanese(src); // 英語→日本語（失敗時は原文）
       const { data: marketId, error: cErr } = await sb.rpc("create_market_internal", {
         p_category_id: c.id,
         p_question: question,

@@ -62,7 +62,7 @@ async function gammaFetch(path: string, params: Record<string, string | number |
 interface GammaMarket {
   id: string; question: string; closed: boolean;
   outcomes: string[]; outcomePrices: number[]; endDate?: string;
-  image?: string; volume24hr?: number; liquidity?: number;
+  image?: string; groupItemTitle?: string; volume24hr?: number; liquidity?: number;
 }
 
 async function fetchPolyCandidates(opts: { tagIds: number[]; sort: string; limit: number }): Promise<GammaMarket[]> {
@@ -78,6 +78,7 @@ async function fetchPolyCandidates(opts: { tagIds: number[]; sort: string; limit
     outcomes: asArray<string>(m.outcomes), outcomePrices: asArray<string>(m.outcomePrices).map(Number),
     endDate: m.endDate as string | undefined,
     image: (m.image ?? m.icon) as string | undefined,
+    groupItemTitle: (m.groupItemTitle as string | undefined) || undefined,
     volume24hr: m.volume24hr ? Number(m.volume24hr) : undefined,
     liquidity: m.liquidity ? Number(m.liquidity) : undefined,
   }));
@@ -119,7 +120,10 @@ Deno.serve(async () => {
     for (const m of picked) {
       const yesPrice = m.outcomePrices[0] ?? 0.5;
       const close = m.endDate!;
-      const question = await toJapanese(m.question); // 英語→日本語（失敗時は原文）
+      const src = m.groupItemTitle && !m.question.includes(m.groupItemTitle)
+        ? `${m.groupItemTitle}: ${m.question}`
+        : m.question;
+      const question = await toJapanese(src); // 英語→日本語（失敗時は原文）
       const { data: marketId, error: cErr } = await sb.rpc("create_market_internal", {
         p_category_id: c.id, p_question: question, p_description: null, p_image_url: m.image ?? null,
         p_market_kind: "binary", p_b: B_DEFAULT, p_source: "mirror", p_resolution_kind: "auto",

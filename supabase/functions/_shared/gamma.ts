@@ -10,6 +10,7 @@ export interface GammaMarket {
   outcomePrices: number[];     // 例 [0.64, 0.36]
   endDate?: string;            // ISO close time
   image?: string;              // 市場アイコン画像URL（Polymarket提供）
+  groupItemTitle?: string;     // グループ市場の項目名（例: 国名）。question に無い識別子
   volume24hr?: number;
   liquidity?: number;
   umaResolutionStatus?: string;
@@ -64,6 +65,7 @@ export async function fetchPolyCandidates(opts: {
     outcomePrices: asArray<string>(m.outcomePrices).map(Number),
     endDate: m.endDate as string | undefined,
     image: (m.image ?? m.icon) as string | undefined,
+    groupItemTitle: (m.groupItemTitle as string | undefined) || undefined,
     volume24hr: m.volume24hr ? Number(m.volume24hr) : undefined,
     liquidity: m.liquidity ? Number(m.liquidity) : undefined,
   }));
