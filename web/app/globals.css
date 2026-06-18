@@ -95,16 +95,12 @@ body {
   border-radius: 6px;
 }
 
-/* GPU アクセラレーション（モバイルのガクつき防止） */
-.card-hover,
-.fixed,
-.sticky,
-.dm-in,
+/* GPU アクセラレーション（モバイルのガクつき防止）。
+   ※ will-change は本当にアニメするオーバーレイ要素のみに限定。
+   全カード(.card-hover)に付けると多数のGPUレイヤーが生成され逆効果になるため除外。 */
 .dm-sheet,
-.dm-fade,
-button:active {
+.dm-fade {
   will-change: transform;
-  transform: translateZ(0);
 }
 
 /* カードリフトホバー（§3.7A） */
