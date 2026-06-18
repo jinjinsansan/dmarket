@@ -1,70 +1,35 @@
 "use client";
-// 管理コンソール（SPEC-07）。is_admin で保護し、タブで各機能へ。
-import { useCallback, useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+// 管理ダッシュボード: KPI＋カテゴリ現況（Dashboard）＋各機能へのメニューカード。
+import Link from "next/link";
 import { Dashboard } from "@/components/admin/Dashboard";
-import { ResolveQueue } from "@/components/admin/ResolveQueue";
-import { CreateMarket } from "@/components/admin/CreateMarket";
-import { FeedSettings } from "@/components/admin/FeedSettings";
-import { Templates } from "@/components/admin/Templates";
 
-const TABS = ["ダッシュボード", "解決キュー", "市場作成", "カテゴリ設定", "テンプレ"] as const;
-type Tab = (typeof TABS)[number];
+const MENU = [
+  { href: "/admin/create", title: "市場作成", desc: "二択市場を手動で作成（初期YES確率でシード）", icon: "＋" },
+  { href: "/admin/queue", title: "解決キュー", desc: "締切後の手動市場を確定／中止", icon: "✓" },
+  { href: "/admin/settings", title: "カテゴリ設定", desc: "目標数・Poly上限・プリセット・カテゴリ追加", icon: "⚙" },
+  { href: "/admin/templates", title: "テンプレート", desc: "自動生成テンプレの作成・削除", icon: "▤" },
+];
 
-export default function AdminPage() {
-  const [checked, setChecked] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [tab, setTab] = useState<Tab>("ダッシュボード");
-  const [toast, setToast] = useState<string | null>(null);
-
-  const check = useCallback(async () => {
-    const { data } = await createClient().rpc("is_admin");
-    setIsAdmin(Boolean(data));
-    setChecked(true);
-  }, []);
-  useEffect(() => { check(); }, [check]);
-
-  function notify(m: string) {
-    setToast(m);
-    setTimeout(() => setToast(null), 4000);
-  }
-
-  if (!checked) return <p className="text-dim text-sm py-16 text-center">確認中…</p>;
-  if (!isAdmin) {
-    return (
-      <div className="py-16 text-center text-dim">
-        <p>管理者専用ページです。</p>
-        <p className="text-xs mt-2">管理者ログイン（LINEログイン実装後）が必要です。</p>
-      </div>
-    );
-  }
-
+export default function AdminDashboardPage() {
   return (
-    <div className="max-w-[1180px] mx-auto px-4 md:px-[22px] py-6 pb-20 dm-in space-y-5">
-      <div className="flex items-center justify-between">
-        <h1 className="text-[23px] font-extrabold">管理コンソール / Admin</h1>
-        {toast && <span className="text-sm text-primary">{toast}</span>}
-      </div>
-
-      <div className="flex gap-1 border-b border-border overflow-x-auto">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`whitespace-nowrap px-3 py-2 text-sm -mb-px border-b-2 ${
-              tab === t ? "border-primary text-text" : "border-transparent text-dim hover:text-text"
-            }`}
-          >
-            {t}
-          </button>
+    <div className="space-y-8">
+      {/* メニュー */}
+      <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))" }}>
+        {MENU.map((m) => (
+          <Link key={m.href} href={m.href}
+            className="group border border-border bg-surface rounded-[var(--radius)] p-4 hover:border-primary/60 transition-colors flex items-start gap-3"
+            style={{ boxShadow: "var(--shadow)" }}>
+            <div className="w-10 h-10 rounded-[11px] grid place-items-center text-white text-lg font-bold shrink-0" style={{ background: "var(--grad)" }}>{m.icon}</div>
+            <div className="min-w-0">
+              <div className="font-bold text-sm group-hover:text-primary">{m.title}</div>
+              <div className="text-xs text-dim mt-0.5 leading-relaxed">{m.desc}</div>
+            </div>
+          </Link>
         ))}
       </div>
 
-      {tab === "ダッシュボード" && <Dashboard />}
-      {tab === "解決キュー" && <ResolveQueue notify={notify} />}
-      {tab === "市場作成" && <CreateMarket notify={notify} />}
-      {tab === "カテゴリ設定" && <FeedSettings notify={notify} />}
-      {tab === "テンプレ" && <Templates notify={notify} />}
+      {/* KPI＋カテゴリ別フィード現況 */}
+      <Dashboard />
     </div>
   );
 }
