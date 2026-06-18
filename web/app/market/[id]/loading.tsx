@@ -1,11 +1,7 @@
 export default function Loading() {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6">
-      <div className="space-y-4">
-        <div className="h-6 w-2/3 rounded bg-surface animate-pulse" />
-        <div className="h-56 rounded-[var(--radius)] border border-border bg-surface animate-pulse" />
-      </div>
-      <div className="h-64 rounded-[var(--radius)] border border-border bg-surface animate-pulse" />
+    <div className="max-w-[1240px] mx-auto px-4 md:px-[22px] py-20 flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-primary/40 border-t-primary rounded-full animate-spin" />
     </div>
   );
 }

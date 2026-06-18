@@ -49,7 +49,7 @@ function OrderBook({ outcomes, bParam, prices }: { outcomes: Outcome[]; bParam: 
   const qY = outcomes[0].q, qN = outcomes[1].q;
   const p = prices[0];
   const C0 = lmsrCost([qY, qN], bParam);
-  const levels = [0.03, 0.02, 0.01];
+  const levels = [0.05, 0.03, 0.02, 0.01, 0.005];
 
   const asks = levels.map((d) => {
     const t = Math.min(0.99, p + d);
@@ -57,7 +57,7 @@ function OrderBook({ outcomes, bParam, prices }: { outcomes: Outcome[]; bParam: 
     const size = Math.max(1, Math.ceil((lmsrCost([qY2, qN], bParam) - C0) * 100));
     return { px: t, size };
   });
-  const bids = [0.01, 0.02, 0.03].map((d) => {
+  const bids = [0.005, 0.01, 0.02, 0.03, 0.05].map((d) => {
     const t = Math.max(0.01, p - d);
     const qY2 = qN + bParam * Math.log(t / (1 - t));
     const size = Math.max(1, Math.floor((C0 - lmsrCost([qY2, qN], bParam)) * 100));
@@ -168,7 +168,7 @@ function Comments({ marketId }: { marketId: string }) {
     <div className="p-4">
       <div className="flex gap-2.5 mb-4">
         <input value={text} onChange={(e) => setText(e.target.value)} placeholder="コメントを書く / Add a comment"
-          className="flex-1 h-10 px-3 border border-border bg-surface2 rounded-[10px] text-[13.5px] outline-none focus:border-primary" />
+          className="flex-1 h-10 px-3 border border-border bg-surface2 rounded-[10px] text-base md:text-[13.5px] outline-none focus:border-primary" />
         <button onClick={post} className="font-bold text-[13px] px-4 rounded-[10px] text-white" style={{ background: "var(--grad)" }}>投稿</button>
       </div>
       {msg && <p className="text-xs text-dim mb-3">{msg}</p>}

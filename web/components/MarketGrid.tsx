@@ -14,16 +14,32 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
   const [activeCat, setActiveCat] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [layout, setLayout] = useState<"cards" | "compact">("cards");
+  const [sort, setSort] = useState<SortKey>("ending");
 
   useEffect(() => {
     const sb = createClient();
+    let pending: Record<string, { market_id: string; id: string; q: number }> = {};
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
     const ch = sb.channel("markets-outcomes")
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "outcomes" }, (payload) => {
         const n = payload.new as { id: string; market_id: string; q: number };
-        setMarkets((prev) => prev.map((m) => m.id === n.market_id
-          ? { ...m, outcomes: m.outcomes.map((o) => (o.id === n.id ? { ...o, q: n.q } : o)) } : m));
+        pending[n.id] = n;
+        // 100msごとにバッチ適用（高頻度更新のガクつき防止）
+        if (!timer) {
+          timer = setTimeout(() => {
+            const updates = Object.values(pending);
+            pending = {};
+            timer = null;
+            if (updates.length === 0) return;
+            setMarkets((prev) => prev.map((m) => {
+              const u = updates.find((up) => up.market_id === m.id);
+              return u ? { ...m, outcomes: m.outcomes.map((o) => (o.id === u.id ? { ...o, q: u.q } : o)) } : m;
+            }));
+          }, 100);
+        }
       }).subscribe();
-    return () => { sb.removeChannel(ch); };
+    return () => { sb.removeChannel(ch); if (timer) clearTimeout(timer); };
   }, []);
 
   const yesPct = (m: MarketWithOutcomes) => {
@@ -31,11 +47,20 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
     return lmsrPrice(os.map((o) => o.q), m.b_param, 0) * 100;
   };
 
-  const filtered = useMemo(() => markets.filter((m) => {
-    if (activeCat && m.category_id !== activeCat) return false;
-    if (search && !m.question.toLowerCase().includes(search.toLowerCase())) return false;
-    return true;
-  }), [markets, activeCat, search]);
+  const filtered = useMemo(() => {
+    const list = markets.filter((m) => {
+      if (activeCat && m.category_id !== activeCat) return false;
+      if (search && !m.question.toLowerCase().includes(search.toLowerCase())) return false;
+      return true;
+    });
+    const contest = (m: MarketWithOutcomes) => Math.abs(yesPct(m) - 50);
+    return list.sort((a, b) => {
+      if (sort === "newest") return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+      if (sort === "contested") return contest(a) - contest(b);
+      return new Date(a.close_time).getTime() - new Date(b.close_time).getTime(); // ending
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [markets, activeCat, search, sort]);
 
   const trending = useMemo(() =>
     [...markets].sort((a, b) => new Date(a.close_time).getTime() - new Date(b.close_time).getTime()).slice(0, 4),
@@ -43,17 +68,22 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
 
   return (
     <div className="max-w-[1240px] mx-auto px-4 md:px-[22px] py-6 pb-20 dm-in">
-      {/* ヒーロー行 */}
-      <div className="flex flex-wrap gap-4 mb-6">
+      {/* ヒーロー行（デスクトップのみ） */}
+      <div className="hidden md:flex flex-wrap gap-4 mb-6">
         <Hero openCount={markets.length} catCount={categories.length} />
         <Trending list={trending} yesPct={yesPct} />
+      </div>
+      {/* モバイル用コンパクトヘッダー */}
+      <div className="md:hidden mb-4">
+        <h1 className="text-lg font-extrabold">予測市場</h1>
+        <p className="text-xs text-dim">{markets.length} マーケット · Realtime</p>
       </div>
 
       {/* カテゴリ */}
       <div className="flex gap-2 overflow-x-auto scrollx pb-2 mb-4">
-        <CatPill active={activeCat === null} onClick={() => setActiveCat(null)} label="すべて" sub="ALL" />
+        <CatPill active={activeCat === null} onClick={() => setActiveCat(null)} label="すべて" />
         {categories.map((c) => (
-          <CatPill key={c.id} active={activeCat === c.id} onClick={() => setActiveCat(c.id)} label={c.name} sub={c.slug} />
+          <CatPill key={c.id} active={activeCat === c.id} onClick={() => setActiveCat(c.id)} label={c.name} slug={c.slug} />
         ))}
       </div>
 
@@ -65,7 +95,7 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
         </div>
         <div className="flex items-center gap-3">
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="検索…"
-            className="h-9 px-3 rounded-[10px] border border-border bg-surface2 text-sm outline-none focus:border-primary w-32 sm:w-44" />
+            className="h-9 px-3 rounded-[10px] border border-border bg-surface2 text-base md:text-sm outline-none focus:border-primary w-28 sm:w-44" />
           <div className="flex gap-1 p-[3px] bg-surface2 border border-border rounded-[11px]">
             <Seg active={layout === "cards"} onClick={() => setLayout("cards")}>カード</Seg>
             <Seg active={layout === "compact"} onClick={() => setLayout("compact")}>リスト</Seg>
@@ -73,12 +103,15 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
         </div>
       </div>
 
+      {/* ソートバー（§3.1） */}
+      <SortBar sort={sort} onSort={setSort} />
+
       {filtered.length === 0 ? (
         <div className="text-dim text-sm py-20 text-center border border-dashed border-border rounded-[var(--radius)]">
           このカテゴリはまだ市場がありません。
         </div>
       ) : layout === "cards" ? (
-        <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(290px,1fr))" }}>
+        <div className="grid gap-3 sm:gap-4" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(min(100%,260px),1fr))" }}>
           {filtered.map((m) => <MarketCard key={m.id} market={m} variant="card" />)}
         </div>
       ) : (
@@ -145,13 +178,44 @@ function Trending({ list, yesPct }: { list: MarketWithOutcomes[]; yesPct: (m: Ma
   );
 }
 
-function CatPill({ active, onClick, label, sub }: { active: boolean; onClick: () => void; label: string; sub: string }) {
+// カテゴリ別グリフ・色（§3.4A）
+const CATEGORY_STYLE: Record<string, { glyph: string; color: string }> = {
+  keiba: { glyph: "🐎", color: "#0e9488" },
+  fx: { glyph: "¥", color: "#f59e0b" },
+  crypto: { glyph: "₿", color: "#f59e0b" },
+  news: { glyph: "🏛", color: "#6366f1" },
+  politics: { glyph: "🏛", color: "#6366f1" },
+  sports: { glyph: "⚽", color: "#10b981" },
+  tech: { glyph: "🤖", color: "#8b5cf6" },
+  entertainment: { glyph: "🎬", color: "#ec4899" },
+};
+const DEFAULT_CAT = { glyph: "📊", color: "var(--primary)" };
+
+function CatPill({ active, onClick, label, slug }: { active: boolean; onClick: () => void; label: string; slug?: string }) {
+  const style = (slug && CATEGORY_STYLE[slug]) || DEFAULT_CAT;
   return (
     <button onClick={onClick}
-      className={`flex flex-col items-start gap-px px-3.5 py-[7px] rounded-[10px] whitespace-nowrap border ${active ? "bg-primary text-white border-primary" : "bg-surface text-dim border-border hover:text-text"}`}>
+      className={`flex items-center gap-2 px-3.5 py-2 rounded-[10px] whitespace-nowrap border transition-all ${active ? "text-white border-transparent shadow-md" : "bg-surface text-dim border-border hover:text-text hover:border-primary/30"}`}
+      style={active ? { background: style.color, borderColor: style.color } : {}}>
+      <span className="text-base leading-none">{style.glyph}</span>
       <span className="text-[13.5px] font-bold leading-none">{label}</span>
-      <span className="text-[10px] uppercase opacity-70 leading-none">{sub}</span>
     </button>
+  );
+}
+
+// ソートバー（§3.1B）
+type SortKey = "ending" | "newest" | "contested";
+const SORT_OPTIONS: [SortKey, string][] = [["ending", "締切が近い"], ["newest", "新着"], ["contested", "接戦"]];
+function SortBar({ sort, onSort }: { sort: SortKey; onSort: (s: SortKey) => void }) {
+  return (
+    <div className="flex gap-1 overflow-x-auto scrollx mb-4">
+      {SORT_OPTIONS.map(([key, label]) => (
+        <button key={key} onClick={() => onSort(key)}
+          className={`px-3 py-1.5 rounded-full text-[12.5px] font-bold whitespace-nowrap border ${sort === key ? "bg-primary text-white border-primary" : "bg-surface border-border text-dim hover:text-text"}`}>
+          {label}
+        </button>
+      ))}
+    </div>
   );
 }
 

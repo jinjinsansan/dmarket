@@ -1,6 +1,6 @@
 // 市場詳細（Server Component で初期取得 → Client で価格更新・トレード）。
 import { notFound } from "next/navigation";
-import { getMarket } from "@/lib/queries";
+import { getMarket, getRelatedMarkets } from "@/lib/queries";
 import { MarketDetailClient } from "@/components/MarketDetailClient";
 
 export const dynamic = "force-dynamic";
@@ -16,11 +16,13 @@ export default async function MarketPage({
   const { pick } = await searchParams;
   const { market, resolution, history } = await getMarket(id);
   if (!market) notFound();
+  const related = await getRelatedMarkets(market.category_id, market.id, 4);
   return (
     <MarketDetailClient
       market={market}
       resolution={resolution}
       history={history}
+      related={related}
       initialPick={pick ? Number(pick) : 0}
     />
   );

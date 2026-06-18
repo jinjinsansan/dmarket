@@ -1,17 +1,24 @@
 "use client";
-// モバイル下部タブバー（Polymarket流）。md未満で表示。
+// モバイル下部タブバー（Polymarket流）。md未満で表示。管理タブは admin のみ。
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
-const TABS = [
+const USER_TABS = [
   { href: "/", label: "マーケット", icon: (a: boolean) => <IconMarket active={a} /> },
   { href: "/leaderboard", label: "ランキング", icon: (a: boolean) => <IconRank active={a} /> },
   { href: "/mypage", label: "マイページ", icon: (a: boolean) => <IconUser active={a} /> },
-  { href: "/admin", label: "管理", icon: (a: boolean) => <IconAdmin active={a} /> },
 ];
+const ADMIN_TAB = { href: "/admin", label: "管理", icon: (a: boolean) => <IconAdmin active={a} /> };
 
 export function BottomNav() {
   const pathname = usePathname();
+  const [isAdmin, setIsAdmin] = useState(false);
+  useEffect(() => {
+    createClient().rpc("is_admin").then(({ data }) => setIsAdmin(Boolean(data)));
+  }, []);
+  const TABS = isAdmin ? [...USER_TABS, ADMIN_TAB] : USER_TABS;
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-border"

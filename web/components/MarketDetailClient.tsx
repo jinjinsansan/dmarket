@@ -10,11 +10,13 @@ import type { MarketWithOutcomes, PricePoint, Resolution } from "@/lib/types";
 import { ProbabilityChart } from "./ProbabilityChart";
 import { TradePanel } from "./TradePanel";
 import { MarketTabs } from "./MarketTabs";
+import { MarketCard } from "./MarketCard";
+import { useAnimatedValue } from "@/lib/useAnimatedValue";
 
 export function MarketDetailClient({
-  market, resolution, history, initialPick,
+  market, resolution, history, related, initialPick,
 }: {
-  market: MarketWithOutcomes; resolution: Resolution | null; history: PricePoint[]; initialPick: number;
+  market: MarketWithOutcomes; resolution: Resolution | null; history: PricePoint[]; related: MarketWithOutcomes[]; initialPick: number;
 }) {
   const router = useRouter();
   const [outcomes, setOutcomes] = useState([...market.outcomes].sort((a, b) => a.display_order - b.display_order));
@@ -26,13 +28,31 @@ export function MarketDetailClient({
 
   useEffect(() => {
     const sb = createClient();
+    let pendingQ: Record<string, { id: string; q: number }> = {};
+    let pendingPts: PricePoint[] = [];
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
     const ch = sb.channel(`market-${market.id}`)
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "outcomes", filter: `market_id=eq.${market.id}` },
-        (p) => { const n = p.new as { id: string; q: number }; setOutcomes((prev) => prev.map((o) => (o.id === n.id ? { ...o, q: n.q } : o))); })
+        (p) => { const n = p.new as { id: string; q: number }; pendingQ[n.id] = n; scheduleFlush(); })
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "market_price_history", filter: `market_id=eq.${market.id}` },
-        (p) => setLivePoints((prev) => [...prev, p.new as PricePoint]))
+        (p) => { pendingPts.push(p.new as PricePoint); scheduleFlush(); })
       .subscribe();
-    return () => { sb.removeChannel(ch); };
+
+    function scheduleFlush() {
+      if (!timer) {
+        timer = setTimeout(() => {
+          const qUpdates = Object.values(pendingQ);
+          const ptUpdates = pendingPts;
+          pendingQ = {};
+          pendingPts = [];
+          timer = null;
+          if (qUpdates.length > 0) setOutcomes((prev) => prev.map((o) => { const u = qUpdates.find((up) => up.id === o.id); return u ? { ...o, q: u.q } : o; }));
+          if (ptUpdates.length > 0) setLivePoints((prev) => [...prev, ...ptUpdates]);
+        }, 100);
+      }
+    }
+    return () => { sb.removeChannel(ch); if (timer) clearTimeout(timer); };
   }, [market.id]);
 
   const prices = useMemo(() => lmsrPrices(outcomes.map((o) => o.q), market.b_param), [outcomes, market.b_param]);
@@ -41,6 +61,11 @@ export function MarketDetailClient({
 
   // チャート用: 先頭アウトカムの確率変化
   const yesPct = prices[0] * 100;
+  const animatedPct = useAnimatedValue(Math.round(yesPct));
+  // 直近の履歴点との差分（▲▼）
+  const yesHist = allHistory.filter((p) => p.outcome_id === outcomes[0]?.id);
+  const prevPct = yesHist.length >= 1 ? Math.round((yesHist[yesHist.length - 1]?.price ?? prices[0]) * 100) : Math.round(yesPct);
+  const delta = Math.round(yesPct) - prevPct;
 
   return (
     <div className="max-w-[1240px] mx-auto px-4 md:px-[22px] py-6 pb-32 lg:pb-20 dm-in">
@@ -65,10 +90,13 @@ export function MarketDetailClient({
 
           {/* 確率＋チャート */}
           <div className="border border-border bg-surface rounded-[var(--radius)] p-5" style={{ boxShadow: "var(--shadow)" }}>
-            <div className="flex items-end justify-between mb-3">
-              <div>
-                <span className="mono text-[38px] font-bold leading-none" style={{ color: vis.tint }}>{Math.round(yesPct)}%</span>
-                <span className="text-[13px] text-dim ml-2">{outcomes[0]?.label} の確率</span>
+            <div className="flex items-end gap-3 mb-3">
+              <span className="mono text-[42px] font-bold leading-none" style={{ color: vis.tint }}>{animatedPct}%</span>
+              <div className="pb-1.5">
+                {delta !== 0 && (
+                  <span className={`text-[13px] font-bold ${delta >= 0 ? "text-pos" : "text-neg"}`}>{delta >= 0 ? "▲" : "▼"} {Math.abs(delta)}pt</span>
+                )}
+                <p className="text-[12px] text-dim">{outcomes[0]?.label} の確率</p>
               </div>
             </div>
             <ProbabilityChart outcomes={outcomes} history={allHistory} color={vis.tint} />
@@ -106,6 +134,16 @@ export function MarketDetailClient({
               </div>
             )}
           </div>
+
+          {/* 関連マーケット（§3.1C） */}
+          {related.length > 0 && (
+            <div>
+              <h2 className="text-[15px] font-bold mb-2">関連マーケット</h2>
+              <div className="flex flex-col gap-2">
+                {related.slice(0, 4).map((m) => <MarketCard key={m.id} market={m} variant="compact" />)}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 右カラム = トレードパネル（デスクトップのみ） */}
@@ -116,7 +154,7 @@ export function MarketDetailClient({
       </div>
 
       {/* モバイル: 下部固定バー → ボトムシート（Polymarket流） */}
-      <div className="lg:hidden fixed left-0 right-0 bottom-16 z-30 bg-surface/95 backdrop-blur border-t border-border px-4 py-3">
+      <div className="lg:hidden fixed left-0 right-0 bottom-16 z-50 bg-surface/95 backdrop-blur border-t border-border px-4 py-3">
         <button onClick={() => setSheetOpen(true)} className="w-full py-3 rounded-[12px] font-extrabold text-white"
           style={{ background: isOpen ? "var(--grad)" : "var(--faint)" }}>
           {isOpen ? "取引する / Trade" : "結果・詳細を見る"}

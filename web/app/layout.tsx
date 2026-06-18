@@ -12,6 +12,7 @@ const robotoMono = Roboto_Mono({ variable: "--font-roboto-mono", subsets: ["lati
 export const metadata: Metadata = {
   title: "D-market — ポイントで読む、世界の確率。",
   description: "換金不可ポイントで楽しむ予測市場。換金なし、勝つのは称号とランキングだけ。",
+  viewport: "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no",
 };
 
 // テーマ初期化（描画前に適用してフラッシュ防止）。既定はダーク。明示的に light を選んだ時のみライト。

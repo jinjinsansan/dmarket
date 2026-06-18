@@ -28,7 +28,7 @@ export function ProbabilityChart({ outcomes, history, color }: { outcomes: Outco
             className={`text-xs font-bold px-2.5 py-1 rounded-md ${range === r ? "bg-surface text-text shadow-sm" : "text-dim"}`}>{r}</button>
         ))}
       </div>
-      <div className="h-56">
+      <div className="h-72 md:h-80">
         {data.length === 0 ? (
           <div className="h-full grid place-items-center text-dim text-sm">まだ価格履歴がありません</div>
         ) : (

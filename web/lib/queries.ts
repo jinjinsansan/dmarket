@@ -33,6 +33,22 @@ export async function getLeaderboard(): Promise<RankRow[]> {
     }));
 }
 
+// 関連市場（同カテゴリの開催中・自分を除く・出来高/締切近め優先で最大数件）
+export async function getRelatedMarkets(categoryId: string | null, excludeId: string, limit = 4): Promise<MarketWithOutcomes[]> {
+  const sb = await createClient();
+  let query = sb
+    .from("markets")
+    .select("*, outcomes(*), category:categories(*)")
+    .eq("status", "open")
+    .gt("close_time", new Date().toISOString())
+    .neq("id", excludeId)
+    .order("close_time", { ascending: true })
+    .limit(limit);
+  if (categoryId) query = query.eq("category_id", categoryId);
+  const { data } = await query;
+  return (data as MarketWithOutcomes[]) ?? [];
+}
+
 export async function getCategories(): Promise<Category[]> {
   const sb = await createClient();
   const { data } = await sb

@@ -103,8 +103,15 @@ export function TradePanel({
       <div className="space-y-1.5 mb-4">
         {outcomes.map((o, i) => (
           <button key={o.id} onClick={() => setPickIdx(i)}
-            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-[10px] text-sm font-bold border-[1.5px] ${i === pickIdx ? "border-primary bg-primary-weak" : "border-border bg-surface"}`}>
-            <span>{o.label}</span><span className="mono">{toCents(prices[i])}</span>
+            className={`btn-press w-full flex items-center justify-between px-3 py-3 rounded-[10px] border-[1.5px] transition-all ${i === pickIdx ? (i === 0 ? "border-pos bg-pos-weak" : i === 1 ? "border-neg bg-neg-weak" : "border-primary bg-primary-weak") : "border-border bg-surface hover:border-primary/50"}`}>
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full shrink-0" style={{ background: i === 0 ? "var(--pos)" : i === 1 ? "var(--neg)" : "var(--primary)" }} />
+              <span className="text-sm font-bold">{o.label}</span>
+            </div>
+            <div className="text-right">
+              <div className="mono text-[18px] font-extrabold leading-none" style={{ color: i === 0 ? "var(--pos)" : i === 1 ? "var(--neg)" : "var(--primary)" }}>{Math.round(prices[i] * 100)}%</div>
+              <div className="text-[11px] text-dim">{toCents(prices[i])}</div>
+            </div>
           </button>
         ))}
       </div>
@@ -148,10 +155,13 @@ export function TradePanel({
           <Row label="平均価格" value={`${toCents(preview.avg)}`} />
           <Row label="株数" value={`${formatPoints(shares)} 株`} />
           {side === "buy" ? (
-            <>
-              <Row label="的中時の受取" value={`${formatPoints(shares * POINTS_PER_SHARE)} pt`} />
-              <Row label="想定リターン" value={`+${formatPoints(shares * POINTS_PER_SHARE - preview.points)} pt`} pos />
-            </>
+            <div className="rounded-[10px] bg-pos-weak border border-pos/20 px-3 py-2.5 mt-1">
+              <div className="flex justify-between items-center">
+                <span className="text-[12px] font-bold text-pos">的中時の受取</span>
+                <span className="mono text-[16px] font-extrabold text-pos">+{formatPoints(shares * POINTS_PER_SHARE - preview.points)} pt</span>
+              </div>
+              <p className="text-[10.5px] text-dim mt-0.5">投資 {formatPoints(preview.points)} pt → 受取 {formatPoints(shares * POINTS_PER_SHARE)} pt</p>
+            </div>
           ) : (
             <>
               <Row label="受取見込み" value={`${formatPoints(preview.points)} pt`} />
@@ -163,7 +173,7 @@ export function TradePanel({
       )}
 
       <button onClick={submit} disabled={busy}
-        className="w-full font-extrabold text-[15.5px] py-3.5 rounded-[12px] text-white disabled:opacity-50"
+        className="btn-press w-full font-extrabold text-[15.5px] py-3.5 rounded-[12px] text-white disabled:opacity-50"
         style={{ background: side === "buy" ? "var(--pos)" : "var(--neg)" }}>
         {busy ? "処理中…" : `${outcomes[pickIdx]?.label}を${side === "buy" ? "買う" : "売る"}`}
       </button>
