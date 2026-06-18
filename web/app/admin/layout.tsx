@@ -28,7 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const onDashboard = pathname === "/admin";
   return (
     <AdminToastProvider>
-      <div className="max-w-[1180px] mx-auto px-4 md:px-[22px] py-6 pb-24 dm-in">
+      <div className="admin-scope max-w-[1180px] mx-auto px-4 md:px-[22px] py-6 pb-24 dm-in">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
             {!onDashboard && (
