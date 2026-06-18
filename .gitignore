@@ -36,3 +36,4 @@ Thumbs.db
 _design_handoff/
 *.zip
 *.local.sql
+*.txt
