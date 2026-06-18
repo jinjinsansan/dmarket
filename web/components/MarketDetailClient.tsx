@@ -97,7 +97,7 @@ export function MarketDetailClient({
             <h2 className="text-[15px] font-bold mb-2">解決ルール / Rules</h2>
             <p className="text-[13.5px] text-dim leading-relaxed">
               {market.description ? market.description + " " : ""}
-              価格は LMSR により取引で変動し、確率＝価格として表示されます。獲得できるのは称号とランキング順位のみで、ポイントは換金できません。
+              価格は参加者の取引で動き、その価格がそのまま「予想される確率」を表します（例: YES 64% = 当たる見込み 64%）。得られるのは称号とランキング順位だけで、ポイントは換金できません。
             </p>
             {resolution && (
               <div className="mt-3 text-[12.5px] text-dim">

@@ -86,7 +86,7 @@ function OrderBook({ outcomes, bParam, prices }: { outcomes: Outcome[]; bParam: 
         <span className="mono text-[15px] font-bold">{toCents(p)}</span>
       </div>
       {bids.map((b, i) => <Row key={`b${i}`} {...b} kind="bid" />)}
-      <p className="text-[11px] text-faint mt-2">※ LMSR（自動マーケットメイカー）の価格曲線から算出した深さです。</p>
+      <p className="text-[11px] text-faint mt-2">※ 取引で価格が連続的に動くため、現在の価格帯ごとの「厚み（深さ）」を表示しています。</p>
     </div>
   );
 }
