@@ -109,6 +109,9 @@ export default function MyPage() {
         </button>
       </div>
       {claimMsg && <p className="text-sm text-primary">{claimMsg}</p>}
+      <div className="text-right">
+        <a href="/api/auth/logout" className="text-xs text-dim hover:text-text underline">ログアウト</a>
+      </div>
 
       {/* ステータス */}
       <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))" }}>

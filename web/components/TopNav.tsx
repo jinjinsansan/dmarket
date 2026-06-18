@@ -87,13 +87,22 @@ export function TopNav() {
                   <span className="text-xs text-dim font-semibold">pt</span>
                 </div>
                 <button onClick={claim}
-                  className="h-[38px] px-4 text-white border-none rounded-[11px] font-bold text-[13.5px]"
+                  className="h-[38px] px-3 md:px-4 text-white border-none rounded-[11px] font-bold text-[13px] md:text-[13.5px]"
                   style={{ background: "var(--grad)", boxShadow: "var(--cta-glow)" }}>
-                  受取 / Claim
+                  受取
                 </button>
+                <a href="/api/auth/logout" title="ログアウト"
+                  className="hidden md:grid w-[38px] h-[38px] border border-border bg-surface rounded-[10px] place-items-center text-dim hover:text-text">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5M21 12H9" /></svg>
+                </a>
               </>
             ) : (
-              <span className="text-sm text-dim" title="LINEログインは準備中">ログイン（準備中）</span>
+              <a href="/api/auth/line/login"
+                className="h-[38px] px-4 flex items-center gap-2 rounded-[11px] font-bold text-[13.5px] text-white"
+                style={{ background: "#06C755" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.5 2 2 5.7 2 10.2c0 4 3.6 7.4 8.5 8 .3.1.8.2.9.5.1.3.1.7 0 1l-.1.8c0 .2-.2.9.8.5s5.4-3.2 7.4-5.5c1.4-1.5 2-3.1 2-5.3C21.5 5.7 17 2 12 2z" /></svg>
+                LINEでログイン
+              </a>
             )}
           </div>
         </div>
