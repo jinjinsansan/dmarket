@@ -34,4 +34,5 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 _design_handoff/
-"Dmarket UIUXリデザイン.zip"
+*.zip
+*.local.sql
