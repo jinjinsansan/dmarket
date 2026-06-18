@@ -91,7 +91,7 @@ export default function MyPage() {
   const title = stats && stats.current_streak >= 5 ? "予言者 / Oracle" : "トレーダー / Trader";
 
   return (
-    <div className="max-w-[1100px] mx-auto px-[22px] py-6 pb-20 dm-in space-y-5">
+    <div className="max-w-[1100px] mx-auto px-4 md:px-[22px] py-6 pb-20 dm-in space-y-5">
       {/* プロフィール */}
       <div className="flex items-center gap-5 border border-border bg-surface rounded-[var(--radius)] p-6" style={{ boxShadow: "var(--shadow)" }}>
         <div className="w-[76px] h-[76px] rounded-full grid place-items-center text-white text-2xl font-extrabold shrink-0" style={{ background: "var(--grad)", boxShadow: "var(--cta-glow)" }}>
@@ -188,5 +188,5 @@ function StatCard({ label, value, unit, cls }: { label: string; value: string; u
   );
 }
 function Center({ children }: { children: React.ReactNode }) {
-  return <div className="max-w-[1100px] mx-auto px-[22px] py-20 text-center text-dim">{children}</div>;
+  return <div className="max-w-[1100px] mx-auto px-4 md:px-[22px] py-20 text-center text-dim">{children}</div>;
 }

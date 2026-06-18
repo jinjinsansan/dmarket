@@ -51,13 +51,13 @@ export function TopNav() {
   return (
     <>
       <header className="sticky top-0 z-40 bg-surface border-b border-border">
-        <div className="max-w-[1240px] mx-auto px-[22px] h-[66px] flex items-center gap-[22px]">
+        <div className="max-w-[1240px] mx-auto px-4 md:px-[22px] h-[60px] md:h-[66px] flex items-center gap-3 md:gap-[22px]">
           <Link href="/" className="flex items-center gap-2.5 shrink-0">
             <Logo />
             <Wordmark />
           </Link>
 
-          <div className="flex-1 max-w-[420px] relative hidden sm:block">
+          <div className="flex-1 max-w-[420px] relative hidden md:block">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--faint)" strokeWidth="2"
               className="absolute left-[13px] top-1/2 -translate-y-1/2">
               <circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" />
@@ -67,7 +67,8 @@ export function TopNav() {
             </Link>
           </div>
 
-          <nav className="flex items-center gap-1.5 shrink-0">
+          {/* ナビリンクはデスクトップのみ。モバイルは下部タブバー(BottomNav) */}
+          <nav className="hidden md:flex items-center gap-1.5 shrink-0">
             {NAV.map((n) => (
               <Link key={n.href} href={n.href}
                 className={`text-sm font-semibold px-2.5 py-2 rounded-[9px] ${isActive(n.href) ? "text-text" : "text-dim hover:text-text"}`}>
@@ -76,7 +77,7 @@ export function TopNav() {
             ))}
           </nav>
 
-          <div className="flex items-center gap-2.5 shrink-0 ml-auto">
+          <div className="flex items-center gap-2 md:gap-2.5 shrink-0 ml-auto">
             <ThemeToggle />
             {loggedIn ? (
               <>

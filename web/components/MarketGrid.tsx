@@ -42,7 +42,7 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
   [markets]);
 
   return (
-    <div className="max-w-[1240px] mx-auto px-[22px] py-6 pb-20 dm-in">
+    <div className="max-w-[1240px] mx-auto px-4 md:px-[22px] py-6 pb-20 dm-in">
       {/* ヒーロー行 */}
       <div className="flex flex-wrap gap-4 mb-6">
         <Hero openCount={markets.length} catCount={categories.length} />

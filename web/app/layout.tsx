@@ -3,6 +3,7 @@ import { Roboto, Noto_Sans_JP, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { TopNav } from "@/components/TopNav";
 import { Footer } from "@/components/Footer";
+import { BottomNav } from "@/components/BottomNav";
 
 const roboto = Roboto({ variable: "--font-roboto", subsets: ["latin"], weight: ["400", "500", "700"] });
 const noto = Noto_Sans_JP({ variable: "--font-noto", subsets: ["latin"], weight: ["400", "500", "700"] });
@@ -24,8 +25,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       </head>
       <body className="min-h-screen flex flex-col bg-bg text-text">
         <TopNav />
-        <main className="flex-1 w-full">{children}</main>
+        {/* モバイルは下部タブバー分の余白を確保 */}
+        <main className="flex-1 w-full pb-16 md:pb-0">{children}</main>
         <Footer />
+        <BottomNav />
       </body>
     </html>
   );

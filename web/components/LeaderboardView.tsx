@@ -22,7 +22,7 @@ export function LeaderboardView({ rows }: { rows: RankRow[] }) {
   const rest = sorted.slice(3);
 
   return (
-    <div className="max-w-[880px] mx-auto px-[22px] py-6 pb-20 dm-in">
+    <div className="max-w-[880px] mx-auto px-4 md:px-[22px] py-6 pb-20 dm-in">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-[23px] font-extrabold">ランキング / Leaderboard</h1>
         <div className="flex gap-1 p-[3px] bg-surface2 border border-border rounded-[11px]">

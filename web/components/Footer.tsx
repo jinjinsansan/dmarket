@@ -5,7 +5,7 @@ import { Logo } from "./Logo";
 export function Footer() {
   return (
     <footer className="border-t border-border mt-16">
-      <div className="max-w-[1240px] mx-auto px-[22px] py-10 grid gap-8 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
+      <div className="max-w-[1240px] mx-auto px-4 md:px-[22px] py-10 grid gap-8 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
         <div>
           <div className="flex items-center gap-2.5 mb-3">
             <Logo size={28} />
@@ -21,7 +21,7 @@ export function Footer() {
         <FooterCol title="アカウント" links={[["ログイン", "/"], ["管理", "/admin"]]} />
       </div>
       <div className="border-t border-border">
-        <div className="max-w-[1240px] mx-auto px-[22px] py-3.5 flex justify-between flex-wrap gap-2 text-[11.5px] text-faint">
+        <div className="max-w-[1240px] mx-auto px-4 md:px-[22px] py-3.5 flex justify-between flex-wrap gap-2 text-[11.5px] text-faint">
           <span>© 2026 D-market</span>
           <span>本サービスは賭博に該当しません（換金不可・有償発行なし・譲渡禁止・賞品ゼロ）。</span>
         </div>

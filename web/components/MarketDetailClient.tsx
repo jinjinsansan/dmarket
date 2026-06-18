@@ -19,7 +19,9 @@ export function MarketDetailClient({
   const [outcomes, setOutcomes] = useState([...market.outcomes].sort((a, b) => a.display_order - b.display_order));
   const [livePoints, setLivePoints] = useState<PricePoint[]>([]);
   const [pickIdx, setPickIdx] = useState(initialPick);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const vis = marketVisual({ id: market.id, slug: market.category?.slug, image_url: market.image_url });
+  const applyTraded = (id: string, q: number) => setOutcomes((prev) => prev.map((o) => (o.id === id ? { ...o, q } : o)));
 
   useEffect(() => {
     const sb = createClient();
@@ -40,7 +42,7 @@ export function MarketDetailClient({
   const yesPct = prices[0] * 100;
 
   return (
-    <div className="max-w-[1240px] mx-auto px-[22px] py-6 pb-20 dm-in">
+    <div className="max-w-[1240px] mx-auto px-4 md:px-[22px] py-6 pb-32 lg:pb-20 dm-in">
       <button onClick={() => router.push("/")} className="flex items-center gap-1.5 text-[13px] font-semibold text-dim hover:text-text pb-3.5">
         ← マーケット一覧へ戻る
       </button>
@@ -102,13 +104,32 @@ export function MarketDetailClient({
           </div>
         </div>
 
-        {/* 右カラム = トレードパネル */}
-        <div className="flex-[1_1_320px] max-w-[392px] lg:sticky lg:top-[88px] w-full">
+        {/* 右カラム = トレードパネル（デスクトップのみ） */}
+        <div className="hidden lg:block flex-[1_1_320px] max-w-[392px] lg:sticky lg:top-[88px] w-full">
           <TradePanel market={market} outcomes={outcomes} prices={prices} resolution={resolution}
-            pickIdx={pickIdx} setPickIdx={setPickIdx}
-            onTraded={(id, q) => setOutcomes((prev) => prev.map((o) => (o.id === id ? { ...o, q } : o)))} />
+            pickIdx={pickIdx} setPickIdx={setPickIdx} onTraded={applyTraded} />
         </div>
       </div>
+
+      {/* モバイル: 下部固定バー → ボトムシート（Polymarket流） */}
+      <div className="lg:hidden fixed left-0 right-0 bottom-16 z-30 bg-surface/95 backdrop-blur border-t border-border px-4 py-3">
+        <button onClick={() => setSheetOpen(true)} className="w-full py-3 rounded-[12px] font-extrabold text-white"
+          style={{ background: isOpen ? "var(--grad)" : "var(--faint)" }}>
+          {isOpen ? "取引する / Trade" : "結果・詳細を見る"}
+        </button>
+      </div>
+
+      {sheetOpen && (
+        <div className="lg:hidden fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/40 dm-fade" onClick={() => setSheetOpen(false)} />
+          <div className="absolute left-0 right-0 bottom-0 bg-bg rounded-t-[20px] p-4 max-h-[88vh] overflow-y-auto dm-sheet">
+            <div className="w-10 h-1 bg-border rounded-full mx-auto mb-3" />
+            <TradePanel market={market} outcomes={outcomes} prices={prices} resolution={resolution}
+              pickIdx={pickIdx} setPickIdx={setPickIdx} onTraded={applyTraded} />
+            <button onClick={() => setSheetOpen(false)} className="w-full mt-3 py-2 text-dim text-sm">閉じる</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
