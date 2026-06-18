@@ -4,11 +4,14 @@ import Link from "next/link";
 import { Dashboard } from "@/components/admin/Dashboard";
 
 const MENU = [
+  { href: "/admin/economy", title: "経済モニタ", desc: "ポイント供給・LMSR補助金・インフレ監視・手動ジョブ", icon: "￥" },
+  { href: "/admin/markets", title: "市場マネージャ", desc: "全市場一覧・b調整・締切編集・非表示/中止（ゴミ掃除）", icon: "▦" },
   { href: "/admin/users", title: "ユーザー", desc: "一覧・プレイ履歴・ポイント付与/消滅・フラグ", icon: "◍" },
+  { href: "/admin/params", title: "パラメータ設定", desc: "付与額・b既定値（コールドスタート調整）", icon: "⚙" },
   { href: "/admin/create", title: "市場作成", desc: "二択市場を手動で作成（初期YES確率でシード）", icon: "＋" },
   { href: "/admin/queue", title: "解決キュー", desc: "締切後の手動市場を確定／中止", icon: "✓" },
-  { href: "/admin/settings", title: "カテゴリ設定", desc: "目標数・Poly上限・プリセット・カテゴリ追加", icon: "⚙" },
-  { href: "/admin/templates", title: "テンプレート", desc: "自動生成テンプレの作成・削除", icon: "▤" },
+  { href: "/admin/settings", title: "カテゴリ設定", desc: "目標数・Poly上限・プリセット・カテゴリ追加", icon: "▤" },
+  { href: "/admin/templates", title: "テンプレート", desc: "自動生成テンプレの作成・削除", icon: "▥" },
 ];
 
 export default function AdminDashboardPage() {
