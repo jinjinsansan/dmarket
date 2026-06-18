@@ -28,15 +28,21 @@ export function TradePanel({
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [balance, setBalance] = useState<number | null>(null);
+  const [positions, setPositions] = useState<Record<string, { shares: number; cost_basis: number }>>({});
 
   useEffect(() => {
     (async () => {
       const sb = createClient();
       const { data: { user } } = await sb.auth.getUser();
       if (!user) return;
-      const { data } = await sb.from("wallets").select("balance").eq("user_id", user.id).maybeSingle();
-      setBalance(data?.balance ?? 0);
+      const { data: w } = await sb.from("wallets").select("balance").eq("user_id", user.id).maybeSingle();
+      setBalance(w?.balance ?? 0);
+      const { data: pos } = await sb.from("positions").select("outcome_id, shares, cost_basis").in("outcome_id", outcomes.map((o) => o.id));
+      const map: Record<string, { shares: number; cost_basis: number }> = {};
+      for (const p of pos ?? []) map[p.outcome_id] = { shares: p.shares, cost_basis: p.cost_basis };
+      setPositions(map);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const isOpen = market.status === "open" && new Date(market.close_time).getTime() > Date.now();
@@ -102,6 +108,25 @@ export function TradePanel({
           </button>
         ))}
       </div>
+
+      {positions[outcomes[pickIdx]?.id] && (() => {
+        const ps = positions[outcomes[pickIdx].id];
+        const value = Math.floor(prices[pickIdx] * 100 * ps.shares);
+        const pnl = value - ps.cost_basis;
+        const avg = ps.shares > 0 ? ps.cost_basis / ps.shares / 100 : 0;
+        return (
+          <div className="mb-4 p-3 rounded-[10px] bg-surface2 space-y-1 text-[13px]">
+            <div className="text-[11px] font-bold text-dim mb-1">保有ポジション</div>
+            <Row label="保有株" value={`${formatPoints(ps.shares)} 株`} />
+            <Row label="平均取得" value={toCents(avg)} />
+            <Row label="評価額" value={`${formatPoints(value)} pt`} />
+            <div className="flex justify-between">
+              <span className="text-dim">含み損益</span>
+              <span className={`mono ${pnl >= 0 ? "text-pos" : "text-neg"}`}>{pnl >= 0 ? "+" : ""}{formatPoints(pnl)} pt</span>
+            </div>
+          </div>
+        );
+      })()}
 
       <div className="text-[12.5px] font-bold text-dim mb-2">金額 (pt)</div>
       <div className="flex items-center border border-border rounded-[11px] bg-surface2 px-3.5 mb-2">

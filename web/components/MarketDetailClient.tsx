@@ -9,6 +9,7 @@ import { marketVisual } from "@/lib/market-visual";
 import type { MarketWithOutcomes, PricePoint, Resolution } from "@/lib/types";
 import { ProbabilityChart } from "./ProbabilityChart";
 import { TradePanel } from "./TradePanel";
+import { MarketTabs } from "./MarketTabs";
 
 export function MarketDetailClient({
   market, resolution, history, initialPick,
@@ -87,6 +88,9 @@ export function MarketDetailClient({
               </button>
             ))}
           </div>
+
+          {/* タブ: 注文板 / 保有者 / 取引履歴 / コメント */}
+          <MarketTabs marketId={market.id} outcomes={outcomes} bParam={market.b_param} prices={prices} />
 
           {/* ルール */}
           <div className="border border-border bg-surface rounded-[var(--radius)] p-5" style={{ boxShadow: "var(--shadow)" }}>
