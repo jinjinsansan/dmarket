@@ -20,19 +20,33 @@ function seedQBinary(b: number, price: number): number {
   const p = Math.min(Math.max(price, 1e-6), 1 - 1e-6);
   return b * Math.log(p / (1 - p));
 }
-// 英語→日本語。ANTHROPIC_API_KEY があれば Claude(haiku)、無ければ無料 MyMemory、失敗時は原文。
+// 英語→日本語。優先順位 DeepSeek → Claude(haiku) → 無料MyMemory → 原文。
+// DEEPSEEK_API_KEY か ANTHROPIC_API_KEY を Secret に設定すれば高品質。
 async function toJapanese(text: string): Promise<string> {
   if (!text) return text;
-  const key = Deno.env.get("ANTHROPIC_API_KEY");
+  const SYS = "予測市場の質問文を、自然で簡潔な日本語に翻訳する。出力は訳文のみ。引用符・注釈・前置きは付けない。";
+  const deepseek = Deno.env.get("DEEPSEEK_API_KEY");
+  const anthropic = Deno.env.get("ANTHROPIC_API_KEY");
   try {
-    if (key) {
+    if (deepseek) {
+      const res = await fetch("https://api.deepseek.com/chat/completions", {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: `Bearer ${deepseek}` },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [{ role: "system", content: SYS }, { role: "user", content: text }],
+          max_tokens: 300, temperature: 0,
+        }),
+      });
+      if (res.ok) { const j = await res.json(); const out = j?.choices?.[0]?.message?.content?.trim(); if (out) return out; }
+    }
+    if (anthropic) {
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
-        headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
+        headers: { "content-type": "application/json", "x-api-key": anthropic, "anthropic-version": "2023-06-01" },
         body: JSON.stringify({
           model: "claude-haiku-4-5-20251001", max_tokens: 300,
-          system: "予測市場の質問文を、自然で簡潔な日本語に翻訳する。出力は訳文のみ。引用符・注釈・前置きは付けない。",
-          messages: [{ role: "user", content: text }],
+          system: SYS, messages: [{ role: "user", content: text }],
         }),
       });
       if (res.ok) { const j = await res.json(); const out = j?.content?.[0]?.text?.trim(); if (out) return out; }
