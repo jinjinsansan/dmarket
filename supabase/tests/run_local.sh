@@ -30,7 +30,8 @@ echo "→ stub"; psqlc -f supabase/tests/_local_stub.sql
 for f in 0001_core_tables 0002_lmsr_functions 0003_grant_rpcs \
          0004_trade_rpcs 0005_resolve_rpcs 0006_realtime 0007_supply_resolution \
          0008_market_creation 0010_profiles 0011_leaderboard 0012_admin \
-         0013_monetization_antifraud 0014_admin_dashboard 0015_market_creation_fix 0016_line_auth 0017_detail_tabs; do
+         0013_monetization_antifraud 0014_admin_dashboard 0015_market_creation_fix 0016_line_auth 0017_detail_tabs \
+         0022_prize_points; do
   echo "→ migration $f"; psqlc -f "supabase/migrations/$f.sql"
 done
 
@@ -41,4 +42,5 @@ echo "→ leaderboard";     psqlc -f supabase/tests/0004_leaderboard.sql
 echo "→ admin";           psqlc -f supabase/tests/0005_admin.sql
 echo "→ antifraud";       psqlc -f supabase/tests/0006_antifraud.sql
 echo "→ admin dashboard"; psqlc -f supabase/tests/0007_admin_dashboard.sql
+echo "→ prize points";    psqlc -f supabase/tests/0008_prize_points.sql
 echo "ALL TESTS PASSED"
