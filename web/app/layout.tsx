@@ -11,7 +11,7 @@ const robotoMono = Roboto_Mono({ variable: "--font-roboto-mono", subsets: ["lati
 
 export const metadata: Metadata = {
   title: "D-market — ポイントで読む、世界の確率。",
-  description: "換金不可ポイントで楽しむ予測市場。換金なし、勝つのは称号とランキングだけ。",
+  description: "無償ポイントで楽しむ予測市場。換金不可・譲渡禁止。貯めたポイントは景品と交換できます。",
 };
 
 // ピンチズームは禁止しない（アクセシビリティ）。入力欄は16pxで自動ズームを防止済み。

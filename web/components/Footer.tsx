@@ -12,18 +12,18 @@ export function Footer() {
             <span className="font-bold text-[17px]">D-<span className="text-dim font-medium">market</span></span>
           </div>
           <p className="text-[12.5px] text-dim leading-7 max-w-xs">
-            ポイント制の予測市場。換金不可・賞品ゼロ、勝つのは称号とランキングだけ。
+            無償ポイント制の予測市場。換金不可・譲渡禁止。貯めたポイントは景品と交換できます。
             <b className="text-text font-bold"> D-swipe</b> ファミリーのプロダクトです。
           </p>
         </div>
         <FooterCol title="プロダクト" links={[["マーケット", "/"], ["ランキング", "/leaderboard"], ["マイページ", "/mypage"]]} />
-        <FooterCol title="法的情報" links={[["利用規約", "/"], ["プライバシー", "/"], ["賭博非該当について", "/"]]} />
+        <FooterCol title="法的情報" links={[["利用規約", "/legal/terms"], ["プライバシー", "/legal/privacy"], ["賭博非該当について", "/legal/no-gambling"]]} />
         <FooterCol title="アカウント" links={[["ログイン", "/"], ["管理", "/admin"]]} />
       </div>
       <div className="border-t border-border">
         <div className="max-w-[1240px] mx-auto px-4 md:px-[22px] py-3.5 flex justify-between flex-wrap gap-2 text-[11.5px] text-faint">
           <span>© 2026 D-market</span>
-          <span>本サービスは賭博に該当しません（換金不可・有償発行なし・譲渡禁止・賞品ゼロ）。</span>
+          <span>本サービスは賭博に該当しません（ポイントは無償発行・換金不可・譲渡禁止）。<a href="/legal/no-gambling" className="underline hover:text-text">詳細</a></span>
         </div>
       </div>
     </footer>

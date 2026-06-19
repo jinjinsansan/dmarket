@@ -104,6 +104,73 @@ body {
   display: none;
 }
 
+/* 法的情報ページの本文スタイル（typography プラグイン無しで素のHTMLを整える） */
+.legal {
+  max-width: 820px;
+}
+.legal h2 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+  margin-top: 2.2rem;
+  margin-bottom: 0.7rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--border);
+}
+.legal h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 1.3rem;
+  margin-bottom: 0.4rem;
+}
+.legal p {
+  color: var(--dim);
+  line-height: 1.95;
+  font-size: 14px;
+  margin-bottom: 0.85rem;
+}
+.legal ul,
+.legal ol {
+  margin: 0 0 1rem 0;
+  padding-left: 1.4rem;
+}
+.legal ul {
+  list-style: disc;
+}
+.legal ol {
+  list-style: decimal;
+}
+.legal li {
+  color: var(--dim);
+  line-height: 1.9;
+  font-size: 14px;
+  margin-bottom: 0.35rem;
+}
+.legal strong {
+  color: var(--text);
+  font-weight: 700;
+}
+.legal a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.legal .lead {
+  font-size: 14.5px;
+  color: var(--text);
+}
+.legal .callout {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 1rem 0 1.4rem;
+}
+.legal .callout p {
+  margin-bottom: 0;
+}
+
 /* 管理画面の入力欄は、モバイルで16pxに揃えて iOS の自動ズームを防ぐ（ユーザー向け入力は各所で16px化済み） */
 @media (max-width: 767px) {
   .admin-scope input:not([type="checkbox"]):not([type="radio"]),

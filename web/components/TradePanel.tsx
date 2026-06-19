@@ -179,7 +179,7 @@ export function TradePanel({
       </button>
 
       {msg && <p className="text-sm text-center text-dim mt-2.5">{msg}</p>}
-      <p className="text-[11.5px] text-faint text-center mt-3 leading-relaxed">換金不可・賞品ゼロ / No cash-out — glory only</p>
+      <p className="text-[11.5px] text-faint text-center mt-3 leading-relaxed">換金不可・無償ポイント（景品交換あり） / No cash-out</p>
     </Panel>
   );
 }
