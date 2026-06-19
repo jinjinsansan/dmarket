@@ -25,10 +25,10 @@ export function MarketTabs({ marketId, outcomes, bParam, prices }: {
   const [tab, setTab] = useState<Tab>("book");
   return (
     <div className="border border-border bg-surface rounded-[var(--radius)] overflow-hidden" style={{ boxShadow: "var(--shadow)" }}>
-      <div className="flex border-b border-border overflow-x-auto scrollx">
+      <div className="flex border-b border-border">
         {TABS.map(([k, label]) => (
           <button key={k} onClick={() => setTab(k)}
-            className={`px-4 py-3 text-sm font-bold whitespace-nowrap border-b-2 -mb-px ${tab === k ? "border-primary text-text" : "border-transparent text-dim hover:text-text"}`}>
+            className={`flex-1 px-2 py-3 text-[13px] sm:text-sm font-bold whitespace-nowrap border-b-2 -mb-px ${tab === k ? "border-primary text-text" : "border-transparent text-dim hover:text-text"}`}>
             {label}
           </button>
         ))}
