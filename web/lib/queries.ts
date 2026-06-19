@@ -1,5 +1,7 @@
 // Server Components 用の初期取得ヘルパ（RLS public により未ログインでも市場系は読める）
+import { unstable_cache } from "next/cache";
 import { createClient } from "./supabase/server";
+import { createAnonClient } from "./supabase/anon";
 import type { Category, MarketWithOutcomes, Outcome, PricePoint, Resolution } from "./types";
 
 export interface RankRow {
@@ -33,76 +35,96 @@ export async function getLeaderboard(): Promise<RankRow[]> {
     }));
 }
 
-// 関連市場（同カテゴリの開催中・自分を除く・出来高/締切近め優先で最大数件）
-export async function getRelatedMarkets(categoryId: string | null, excludeId: string, limit = 4): Promise<MarketWithOutcomes[]> {
-  const sb = await createClient();
-  let query = sb
-    .from("markets")
-    .select("*, outcomes(*), category:categories(*)")
-    .eq("status", "open")
-    .gt("close_time", new Date().toISOString())
-    .neq("id", excludeId)
-    .order("close_time", { ascending: true })
-    .limit(limit);
-  if (categoryId) query = query.eq("category_id", categoryId);
-  const { data } = await query;
-  return (data as MarketWithOutcomes[]) ?? [];
-}
+// 関連市場（同カテゴリの開催中・自分を除く・締切近め優先で最大数件）。15秒キャッシュ。
+export const getRelatedMarkets = unstable_cache(
+  async (categoryId: string | null, excludeId: string, limit = 4): Promise<MarketWithOutcomes[]> => {
+    const sb = createAnonClient();
+    let query = sb
+      .from("markets")
+      .select("*, outcomes(*), category:categories(*)")
+      .eq("status", "open")
+      .gt("close_time", new Date().toISOString())
+      .neq("id", excludeId)
+      .order("close_time", { ascending: true })
+      .limit(limit);
+    if (categoryId) query = query.eq("category_id", categoryId);
+    const { data } = await query;
+    return (data as unknown as MarketWithOutcomes[]) ?? [];
+  },
+  ["related-markets"],
+  { revalidate: 15, tags: ["markets"] },
+);
 
-export async function getCategories(): Promise<Category[]> {
-  const sb = await createClient();
-  const { data } = await sb
-    .from("categories")
-    .select("*")
-    .eq("is_active", true)
-    .order("display_order");
-  return data ?? [];
-}
+// カテゴリ一覧（滅多に変わらない）。60秒キャッシュ。
+export const getCategories = unstable_cache(
+  async (): Promise<Category[]> => {
+    const sb = createAnonClient();
+    const { data } = await sb
+      .from("categories")
+      .select("*")
+      .eq("is_active", true)
+      .order("display_order");
+    return (data as unknown as Category[]) ?? [];
+  },
+  ["categories"],
+  { revalidate: 60, tags: ["categories"] },
+);
 
-// 市場一覧（アウトカム同梱）。status と category で絞り込み可。
-export async function getMarkets(opts?: { categoryId?: string }): Promise<MarketWithOutcomes[]> {
-  const sb = await createClient();
-  let query = sb
-    .from("markets")
-    .select("*, outcomes(*)")
-    .eq("status", "open")
-    .gt("close_time", new Date().toISOString())
-    .order("close_time", { ascending: true });
-  if (opts?.categoryId) query = query.eq("category_id", opts.categoryId);
-  const { data } = await query;
-  return (data as MarketWithOutcomes[]) ?? [];
-}
+// 市場一覧（アウトカム同梱）。10秒キャッシュ＝同時アクセス時もDB呼び出しはTTLごとに1回へ集約。
+// 価格はクライアント側 Realtime が補正するため、10秒のスナップショット鮮度で十分。
+export const getMarkets = unstable_cache(
+  async (opts?: { categoryId?: string }): Promise<MarketWithOutcomes[]> => {
+    const sb = createAnonClient();
+    let query = sb
+      .from("markets")
+      .select("*, outcomes(*)")
+      .eq("status", "open")
+      .gt("close_time", new Date().toISOString())
+      .order("close_time", { ascending: true })
+      .limit(200);
+    if (opts?.categoryId) query = query.eq("category_id", opts.categoryId);
+    const { data } = await query;
+    return (data as unknown as MarketWithOutcomes[]) ?? [];
+  },
+  ["markets-list"],
+  { revalidate: 10, tags: ["markets"] },
+);
 
-export async function getMarket(id: string): Promise<{
-  market: MarketWithOutcomes | null;
-  resolution: Resolution | null;
-  history: PricePoint[];
-}> {
-  const sb = await createClient();
-  const { data: market } = await sb
-    .from("markets")
-    .select("*, outcomes(*), category:categories(*)")
-    .eq("id", id)
-    .maybeSingle();
-  if (!market) return { market: null, resolution: null, history: [] };
+// 市場詳細（公開部分のみ）。5秒キャッシュ。保有/残高などユーザー固有はクライアントで別途取得。
+export const getMarket = unstable_cache(
+  async (id: string): Promise<{
+    market: MarketWithOutcomes | null;
+    resolution: Resolution | null;
+    history: PricePoint[];
+  }> => {
+    const sb = createAnonClient();
+    const { data: market } = await sb
+      .from("markets")
+      .select("*, outcomes(*), category:categories(*)")
+      .eq("id", id)
+      .maybeSingle();
+    if (!market) return { market: null, resolution: null, history: [] };
 
-  // アウトカムは表示順に整列
-  (market as MarketWithOutcomes).outcomes.sort(
-    (a: Outcome, b: Outcome) => a.display_order - b.display_order,
-  );
+    // アウトカムは表示順に整列
+    (market as unknown as MarketWithOutcomes).outcomes.sort(
+      (a: Outcome, b: Outcome) => a.display_order - b.display_order,
+    );
 
-  const [{ data: resolution }, { data: history }] = await Promise.all([
-    sb.from("resolutions").select("*").eq("market_id", id).maybeSingle(),
-    sb
-      .from("market_price_history")
-      .select("outcome_id, price, recorded_at")
-      .eq("market_id", id)
-      .order("recorded_at", { ascending: true }),
-  ]);
+    const [{ data: resolution }, { data: history }] = await Promise.all([
+      sb.from("resolutions").select("*").eq("market_id", id).maybeSingle(),
+      sb
+        .from("market_price_history")
+        .select("outcome_id, price, recorded_at")
+        .eq("market_id", id)
+        .order("recorded_at", { ascending: true }),
+    ]);
 
-  return {
-    market: market as MarketWithOutcomes,
-    resolution: (resolution as Resolution) ?? null,
-    history: (history as PricePoint[]) ?? [],
-  };
-}
+    return {
+      market: market as unknown as MarketWithOutcomes,
+      resolution: (resolution as unknown as Resolution) ?? null,
+      history: (history as unknown as PricePoint[]) ?? [],
+    };
+  },
+  ["market-detail"],
+  { revalidate: 5, tags: ["markets"] },
+);
