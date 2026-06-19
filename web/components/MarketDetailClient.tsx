@@ -55,6 +55,14 @@ export function MarketDetailClient({
     return () => { sb.removeChannel(ch); if (timer) clearTimeout(timer); };
   }, [market.id]);
 
+  // シート表示中は背景スクロールをロック（モバイルのがくつき・裏スクロール防止）
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, [sheetOpen]);
+
   const prices = useMemo(() => lmsrPrices(outcomes.map((o) => o.q), market.b_param), [outcomes, market.b_param]);
   const allHistory = useMemo(() => [...history, ...livePoints], [history, livePoints]);
   const isOpen = market.status === "open" && new Date(market.close_time).getTime() > Date.now();
@@ -68,7 +76,7 @@ export function MarketDetailClient({
   const delta = Math.round(yesPct) - prevPct;
 
   return (
-    <div className="max-w-[1240px] mx-auto px-4 md:px-[22px] py-6 pb-32 lg:pb-20 dm-in">
+    <div className="max-w-[1240px] mx-auto px-4 md:px-[22px] py-6 pb-[calc(9rem+env(safe-area-inset-bottom))] lg:pb-20 dm-in">
       <button onClick={() => router.push("/")} className="flex items-center gap-1.5 text-[13px] font-semibold text-dim hover:text-text pb-3.5">
         ← マーケット一覧へ戻る
       </button>
@@ -153,22 +161,31 @@ export function MarketDetailClient({
         </div>
       </div>
 
-      {/* モバイル: 下部固定バー → ボトムシート（Polymarket流） */}
-      <div className="lg:hidden fixed left-0 right-0 bottom-16 z-50 bg-surface/95 backdrop-blur border-t border-border px-4 py-3">
-        <button onClick={() => setSheetOpen(true)} className="w-full py-3 rounded-[12px] font-extrabold text-white"
-          style={{ background: isOpen ? "var(--grad)" : "var(--faint)" }}>
-          {isOpen ? "取引する / Trade" : "結果・詳細を見る"}
-        </button>
-      </div>
+      {/* モバイル: 下部固定バー → ボトムシート（Polymarket流）。
+          BottomNav（safe-area 含む）の上に配置し被りを防止。シート表示中は隠して
+          backdrop-filter の再合成によるがくつきを避ける。 */}
+      {!sheetOpen && (
+        <div className="lg:hidden fixed left-0 right-0 z-40 bg-surface border-t border-border px-4 py-3"
+          style={{ bottom: "calc(3.5rem + env(safe-area-inset-bottom))" }}>
+          <button onClick={() => setSheetOpen(true)} className="w-full py-3 rounded-[12px] font-extrabold text-white"
+            style={{ background: isOpen ? "var(--grad)" : "var(--faint)" }}>
+            {isOpen ? "取引する / Trade" : "結果・詳細を見る"}
+          </button>
+        </div>
+      )}
 
       {sheetOpen && (
         <div className="lg:hidden fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black/40 dm-fade" onClick={() => setSheetOpen(false)} />
-          <div className="absolute left-0 right-0 bottom-0 bg-bg rounded-t-[20px] p-4 max-h-[88vh] overflow-y-auto dm-sheet">
-            <div className="w-10 h-1 bg-border rounded-full mx-auto mb-3" />
-            <TradePanel market={market} outcomes={outcomes} prices={prices} resolution={resolution}
-              pickIdx={pickIdx} setPickIdx={setPickIdx} onTraded={applyTraded} />
-            <button onClick={() => setSheetOpen(false)} className="w-full mt-3 py-2 text-dim text-sm">閉じる</button>
+          {/* 外側=transform アニメ専用 / 内側=スクロール。レイヤーを分けてがくつきを防止 */}
+          <div className="absolute left-0 right-0 bottom-0 dm-sheet">
+            <div className="bg-bg rounded-t-[20px] p-4 max-h-[88vh] overflow-y-auto overscroll-contain"
+              style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
+              <div className="w-10 h-1 bg-border rounded-full mx-auto mb-3" />
+              <TradePanel market={market} outcomes={outcomes} prices={prices} resolution={resolution}
+                pickIdx={pickIdx} setPickIdx={setPickIdx} onTraded={applyTraded} />
+              <button onClick={() => setSheetOpen(false)} className="w-full mt-3 py-2 text-dim text-sm">閉じる</button>
+            </div>
           </div>
         </div>
       )}
