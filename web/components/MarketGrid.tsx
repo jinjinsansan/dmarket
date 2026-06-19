@@ -142,7 +142,7 @@ function FeaturedCarousel({ markets, sparks }: { markets: MarketWithOutcomes[]; 
 
   return (
     <div className="flex-[2_1_460px] relative border border-border bg-surface rounded-[16px] p-5 cursor-pointer overflow-hidden min-h-[236px]"
-      style={{ boxShadow: "var(--shadow)" }} onClick={go}>
+      style={{ boxShadow: "var(--shadow)" }} onClick={go} onMouseEnter={() => router.prefetch(`/market/${m.id}`)}>
       <div className="flex items-start gap-3 mb-4">
         <div className="w-12 h-12 rounded-[11px] grid place-items-center text-white text-xl font-extrabold shrink-0 overflow-hidden"
           style={{ background: vis.image ? `url(${vis.image}) center/cover` : vis.tint }}>{!vis.image && vis.glyph}</div>
@@ -197,7 +197,7 @@ function Trending({ list, yesPct }: { list: MarketWithOutcomes[]; yesPct: (m: Ma
         {list.map((m, i) => {
           const vis = marketVisual({ id: m.id, slug: m.category?.slug, image_url: m.image_url });
           return (
-            <div key={m.id} onClick={() => router.push(`/market/${m.id}`)} className="flex items-center gap-2.5 cursor-pointer group">
+            <div key={m.id} onClick={() => router.push(`/market/${m.id}`)} onMouseEnter={() => router.prefetch(`/market/${m.id}`)} className="flex items-center gap-2.5 cursor-pointer group">
               <span className="mono text-xs text-faint w-3">{i + 1}</span>
               <div className="w-7 h-7 rounded-lg grid place-items-center text-white text-xs font-extrabold shrink-0 overflow-hidden" style={{ background: vis.image ? `url(${vis.image}) center/cover` : vis.tint }}>{!vis.image && vis.glyph}</div>
               <span className="flex-1 text-[12.5px] truncate group-hover:text-primary">{m.question}</span>

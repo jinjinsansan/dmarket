@@ -17,6 +17,7 @@ export const MarketCard = memo(function MarketCard({ market, variant = "card", s
   const vis = marketVisual({ id: market.id, slug: market.category?.slug, image_url: market.image_url });
   const open = () => router.push(`/market/${market.id}`);
   const pick = (i: number) => router.push(`/market/${market.id}?pick=${i}`);
+  const warm = () => router.prefetch(`/market/${market.id}`);
   const isOpen = market.status === "open" && new Date(market.close_time).getTime() > Date.now();
 
   // Realtime 価格更新フラッシュ
@@ -41,7 +42,7 @@ export const MarketCard = memo(function MarketCard({ market, variant = "card", s
 
   if (variant === "compact") {
     return (
-      <div onClick={open}
+      <div onClick={open} onMouseEnter={warm} onTouchStart={warm}
         className="card-hover flex items-center gap-3 border border-border bg-surface rounded-[12px] px-3.5 py-3 cursor-pointer hover:border-primary/40"
         style={{ boxShadow: "var(--shadow)" }}>
         <Thumb s={36} />
@@ -63,7 +64,7 @@ export const MarketCard = memo(function MarketCard({ market, variant = "card", s
 
   // ── card（本家風・ほどよいサイズ／4列） ──
   return (
-    <div onClick={open}
+    <div onClick={open} onMouseEnter={warm} onTouchStart={warm}
       className="card-hover flex flex-col gap-3 border border-border bg-surface rounded-[14px] p-4 cursor-pointer hover:border-primary/40 min-h-[168px]"
       style={{ boxShadow: "var(--shadow)" }}>
       <div className="flex items-start gap-3">
