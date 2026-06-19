@@ -95,6 +95,15 @@ body {
   border-radius: 6px;
 }
 
+/* スクロール可能だがバーは隠す（カテゴリナビ等） */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* 管理画面の入力欄は、モバイルで16pxに揃えて iOS の自動ズームを防ぐ（ユーザー向け入力は各所で16px化済み） */
 @media (max-width: 767px) {
   .admin-scope input:not([type="checkbox"]):not([type="radio"]),

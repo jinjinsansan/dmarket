@@ -136,6 +136,7 @@ function FeaturedCarousel({ markets, sparks }: { markets: MarketWithOutcomes[]; 
   const yes = lmsrPrice(os.map((o) => o.q), m.b_param, 0);
   const vis = marketVisual({ id: m.id, slug: m.category?.slug, image_url: m.image_url });
   const spark = sparks[m.id];
+  const hasChart = spark && spark.length >= 2;
   const go = () => router.push(`/market/${m.id}`);
   const pick = (k: number) => router.push(`/market/${m.id}?pick=${k}`);
 
@@ -152,20 +153,21 @@ function FeaturedCarousel({ markets, sparks }: { markets: MarketWithOutcomes[]; 
       </div>
 
       <div className="flex gap-4 items-end">
-        <div className="shrink-0">
+        <div className={hasChart ? "shrink-0" : "flex-1"}>
           <div className="flex items-baseline gap-1.5 mb-2.5">
             <span className="mono text-[34px] font-extrabold leading-none" style={{ color: vis.tint }}>{Math.round(yes * 100)}%</span>
             <span className="text-[12px] text-dim font-bold">確率</span>
           </div>
-          <div className="flex gap-2 w-[210px]">
+          <div className={`flex gap-2 ${hasChart ? "w-[210px]" : "max-w-[360px]"}`}>
             <button onClick={(e) => { e.stopPropagation(); pick(0); }} className="btn-press flex-1 py-2 rounded-[9px] font-bold text-[13px] bg-pos-weak text-pos hover:bg-pos hover:text-white transition-colors">はい <span className="mono text-[11.5px]">{toCents(yes)}</span></button>
             <button onClick={(e) => { e.stopPropagation(); pick(1); }} className="btn-press flex-1 py-2 rounded-[9px] font-bold text-[13px] bg-neg-weak text-neg hover:bg-neg hover:text-white transition-colors">いいえ <span className="mono text-[11.5px]">{toCents(1 - yes)}</span></button>
           </div>
         </div>
-        <div className="flex-1 min-w-0 h-[86px] flex items-end justify-center">
-          {spark && spark.length >= 2 ? <Sparkline data={spark} color={vis.tint} width={240} height={80} />
-            : <p className="text-[11.5px] text-faint self-center">価格はこれから動きます</p>}
-        </div>
+        {hasChart && (
+          <div className="flex-1 min-w-0 h-[86px] flex items-end justify-center">
+            <Sparkline data={spark} color={vis.tint} width={240} height={80} />
+          </div>
+        )}
       </div>
 
       {/* ドット＋矢印 */}
@@ -209,35 +211,20 @@ function Trending({ list, yesPct }: { list: MarketWithOutcomes[]; yesPct: (m: Ma
   );
 }
 
-// カテゴリ別グリフ・色
-const CATEGORY_STYLE: Record<string, { glyph: string; color: string }> = {
-  all: { glyph: "🔥", color: "var(--primary)" },
-  keiba: { glyph: "🐎", color: "#0e9488" },
-  fx: { glyph: "¥", color: "#f59e0b" },
-  crypto: { glyph: "₿", color: "#f59e0b" },
-  news: { glyph: "🏛", color: "#6366f1" },
-  politics: { glyph: "🏛", color: "#6366f1" },
-  sports: { glyph: "⚽", color: "#10b981" },
-  tech: { glyph: "🤖", color: "#8b5cf6" },
-  entertainment: { glyph: "🎬", color: "#ec4899" },
-};
-const DEFAULT_CAT = { glyph: "📊", color: "var(--primary)" };
-
-// 細いカテゴリナビ（本家風・アンダーライン）
+// 細いカテゴリナビ（本家風・アンダーライン・テキストのみ）
 function CategoryNav({ categories, active, onSelect }: { categories: Category[]; active: string | null; onSelect: (id: string | null) => void }) {
-  const items: { id: string | null; name: string; slug: string }[] = [
-    { id: null, name: "すべて", slug: "all" },
-    ...categories.map((c) => ({ id: c.id, name: c.name, slug: c.slug })),
+  const items: { id: string | null; name: string }[] = [
+    { id: null, name: "すべて" },
+    ...categories.map((c) => ({ id: c.id, name: c.name })),
   ];
   return (
-    <div className="flex items-center gap-0.5 overflow-x-auto scrollx border-b border-border mb-5">
+    <div className="flex items-center gap-0.5 overflow-x-auto hide-scrollbar border-b border-border mb-5">
       {items.map((c) => {
         const isAct = active === c.id;
-        const style = CATEGORY_STYLE[c.slug] ?? DEFAULT_CAT;
         return (
           <button key={c.id ?? "all"} onClick={() => onSelect(c.id)}
-            className={`flex items-center gap-1.5 px-3 py-2.5 text-[13.5px] font-bold whitespace-nowrap border-b-2 -mb-px transition-colors ${isAct ? "border-primary text-text" : "border-transparent text-dim hover:text-text"}`}>
-            <span className="text-[15px] leading-none">{style.glyph}</span>{c.name}
+            className={`px-3.5 py-2.5 text-[13.5px] font-bold whitespace-nowrap border-b-2 -mb-px transition-colors ${isAct ? "border-primary text-text" : "border-transparent text-dim hover:text-text"}`}>
+            {c.name}
           </button>
         );
       })}
