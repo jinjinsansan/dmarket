@@ -31,7 +31,7 @@ for f in 0001_core_tables 0002_lmsr_functions 0003_grant_rpcs \
          0004_trade_rpcs 0005_resolve_rpcs 0006_realtime 0007_supply_resolution \
          0008_market_creation 0010_profiles 0011_leaderboard 0012_admin \
          0013_monetization_antifraud 0014_admin_dashboard 0015_market_creation_fix 0016_line_auth 0017_detail_tabs \
-         0022_prize_points; do
+         0022_prize_points 0023_prize_win_reward; do
   echo "→ migration $f"; psqlc -f "supabase/migrations/$f.sql"
 done
 

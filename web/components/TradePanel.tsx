@@ -9,7 +9,7 @@ import { POINTS_PER_SHARE } from "@/lib/constants";
 import type { MarketWithOutcomes, Outcome, Resolution } from "@/lib/types";
 
 const ERROR_JA: Record<string, string> = {
-  insufficient_balance: "ポイントが足りません。デイリーボーナスを受け取れます。",
+  insufficient_balance: "参加ポイントが足りません。デイリーボーナスを受け取れます。",
   market_closed: "この市場は締め切られました。",
   insufficient_shares: "売却できる株数が足りません。",
   trade_too_small: "取引量が小さすぎます。",
@@ -83,7 +83,7 @@ export function TradePanel({
       <Panel>
         <h3 className="font-bold mb-2">結果 / Result</h3>
         {market.status === "void"
-          ? <p className="text-sm text-dim">この市場は中止され、取得ポイントは返金されました。</p>
+          ? <p className="text-sm text-dim">この市場は中止され、取得した参加ポイントは返金されました。</p>
           : <p className="text-sm">勝ち: <b className="text-pos">{winner?.label ?? "—"}</b></p>}
         {resolution?.source_url && <a href={resolution.source_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline break-all">根拠を見る</a>}
       </Panel>

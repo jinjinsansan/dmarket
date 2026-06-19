@@ -1,5 +1,5 @@
 "use client";
-// 管理: 経済モニタ（ポイント供給・LMSR補助金・インフレ・台帳監査）＋手動ジョブ。
+// 管理: 経済モニタ（参加ポイント供給・LMSR補助金・インフレ・台帳監査）＋手動ジョブ。賞品ptは別台帳。
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAdminToast } from "@/components/admin/AdminToast";
@@ -61,9 +61,9 @@ export default function AdminEconomyPage() {
 
       {/* KPI */}
       <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(160px,1fr))" }}>
-        <Stat label="総供給量" value={formatPoints(e.total_supply)} unit="pt" hint="流通している全ポイント" />
+        <Stat label="総供給量" value={formatPoints(e.total_supply)} unit="pt" hint="流通している全参加ポイント" />
         <Stat label="本日のインフレ" value={`${e.inflation_today >= 0 ? "+" : ""}${formatPoints(e.inflation_today)}`} unit="pt" alert={e.inflation_today > 0} hint="今日の純増減" />
-        <Stat label="LMSR補助金（累計）" value={`${e.trading_subsidy >= 0 ? "+" : ""}${formatPoints(e.trading_subsidy)}`} unit="pt" alert={e.trading_subsidy > 0} hint="取引で純創出されたポイント" />
+        <Stat label="LMSR補助金（累計）" value={`${e.trading_subsidy >= 0 ? "+" : ""}${formatPoints(e.trading_subsidy)}`} unit="pt" alert={e.trading_subsidy > 0} hint="取引で純創出された参加ポイント" />
         <Stat label="無償発行（累計）" value={formatPoints(e.issued_free)} unit="pt" hint="登録/デイリー/運営付与" />
         <Stat label="ユーザー数" value={formatPoints(e.users)} />
         <Stat label="開催中 / 解決済" value={`${e.markets_open} / ${e.markets_resolved}`} />
@@ -71,7 +71,7 @@ export default function AdminEconomyPage() {
 
       {/* 理由別内訳 */}
       <section>
-        <h2 className="text-sm font-bold mb-2">ポイント増減の理由別内訳（累計）</h2>
+        <h2 className="text-sm font-bold mb-2">参加ポイント増減の理由別内訳（累計）</h2>
         <div className="rounded-[var(--radius)] border border-border bg-surface divide-y divide-border" style={{ boxShadow: "var(--shadow)" }}>
           {reasons.map(([r, v]) => (
             <div key={r} className="flex items-center gap-3 px-4 py-2.5 text-sm">

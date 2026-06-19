@@ -5,8 +5,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { lmsrPrice } from "@/lib/lmsr";
 import { formatPoints, pnlText } from "@/lib/format";
-import { LEDGER_REASON_LABEL } from "@/lib/constants";
-import type { LedgerRow } from "@/lib/types";
+import { LEDGER_REASON_LABEL, PRIZE_REASON_LABEL } from "@/lib/constants";
+import type { LedgerRow, PrizeLedgerRow } from "@/lib/types";
 
 interface Holding { marketId: string; question: string; label: string; shares: number; costBasis: number; value: number; }
 interface Badge { id: string; name: string; description: string | null; earned: boolean; }
@@ -17,6 +17,8 @@ export default function MyPage() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [name, setName] = useState("プレイヤー");
   const [balance, setBalance] = useState(0);
+  const [prizeBalance, setPrizeBalance] = useState(0);
+  const [prizeLedger, setPrizeLedger] = useState<PrizeLedgerRow[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [ledger, setLedger] = useState<LedgerRow[]>([]);
@@ -30,18 +32,22 @@ export default function MyPage() {
       if (!user) { setLoggedIn(false); setLoading(false); return; }
       setLoggedIn(true);
 
-      const [{ data: wallet }, { data: profile }, { data: st }, { data: positions }, { data: led }, { data: allBadges }, { data: mine }] =
+      const [{ data: wallet }, { data: prizeWallet }, { data: profile }, { data: st }, { data: positions }, { data: led }, { data: prizeLed }, { data: allBadges }, { data: mine }] =
         await Promise.all([
           sb.from("wallets").select("balance").eq("user_id", user.id).maybeSingle(),
+          sb.from("prize_wallets").select("balance").eq("user_id", user.id).maybeSingle(),
           sb.from("profiles").select("display_name").eq("user_id", user.id).maybeSingle(),
           sb.from("user_stats").select("net_worth, win_count, resolved_count, current_streak").eq("user_id", user.id).maybeSingle(),
           sb.from("positions").select("shares, cost_basis, outcome:outcomes(id, label, market_id)").gt("shares", 0),
           sb.from("point_ledger").select("id, delta, reason, shares, balance_after, created_at").order("created_at", { ascending: false }).limit(50),
+          sb.from("prize_ledger").select("id, delta, reason, expires_at, balance_after, created_at").order("created_at", { ascending: false }).limit(50),
           sb.from("badges").select("id, name, description"),
           sb.from("user_badges").select("badge_id").eq("user_id", user.id),
         ]);
 
       setBalance(wallet?.balance ?? 0);
+      setPrizeBalance(prizeWallet?.balance ?? 0);
+      setPrizeLedger((prizeLed as PrizeLedgerRow[]) ?? []);
       if (profile?.display_name) setName(profile.display_name);
       setStats((st as Stats) ?? { net_worth: wallet?.balance ?? 0, win_count: 0, resolved_count: 0, current_streak: 0 });
       setLedger((led as LedgerRow[]) ?? []);
@@ -89,6 +95,12 @@ export default function MyPage() {
   const hitRate = stats && stats.resolved_count > 0 ? Math.round((stats.win_count / stats.resolved_count) * 100) : null;
   const earnedCount = badges.filter((b) => b.earned).length;
   const title = stats && stats.current_streak >= 5 ? "予言者 / Oracle" : "トレーダー / Trader";
+  // 賞品ptの直近の有効期限（未失効の付与分のうち最も早いもの）
+  const now = Date.now();
+  const nextExpiry = prizeLedger
+    .filter((l) => l.delta > 0 && l.expires_at && new Date(l.expires_at).getTime() > now)
+    .map((l) => new Date(l.expires_at as string).getTime())
+    .sort((a, b) => a - b)[0];
 
   return (
     <div className="max-w-[1100px] mx-auto px-4 md:px-[22px] py-6 pb-20 dm-in space-y-5">
@@ -115,7 +127,8 @@ export default function MyPage() {
 
       {/* ステータス */}
       <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))" }}>
-        <StatCard label="残高 / Balance" value={`${formatPoints(balance)}`} unit="pt" />
+        <StatCard label="参加ポイント / Balance" value={`${formatPoints(balance)}`} unit="pt" />
+        <StatCard label="賞品ポイント / Prize" value={`${formatPoints(prizeBalance)}`} unit="pt" cls="text-primary" />
         <StatCard label="評価額 / Positions" value={`${formatPoints(holdValue)}`} unit="pt" />
         <StatCard label="合計損益 / P&L" value={pnlText(unrealized).text} cls={pnlText(unrealized).cls} />
         <StatCard label="的中率 / Hit rate" value={hitRate === null ? "—" : `${hitRate}%`} />
@@ -161,6 +174,46 @@ export default function MyPage() {
             })}
           </div>
         )}
+      </section>
+
+      {/* 賞品ポイント（二層ポイント制 Phase B） */}
+      <section>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-[15px] font-bold">賞品ポイント / Prize points</h2>
+          <span className="text-xs text-dim">予想が的中すると貯まる・景品と交換予定</span>
+        </div>
+        <div className="border border-border bg-surface rounded-[var(--radius)] p-5" style={{ boxShadow: "var(--shadow)" }}>
+          <div className="flex items-end justify-between flex-wrap gap-2">
+            <div>
+              <div className="text-xs text-dim font-semibold mb-1">残高 / Balance</div>
+              <div className="mono text-[26px] font-bold text-primary">{formatPoints(prizeBalance)}<span className="text-xs text-dim"> pt</span></div>
+            </div>
+            {nextExpiry && (
+              <div className="text-right">
+                <div className="text-xs text-dim font-semibold mb-1">最短の有効期限</div>
+                <div className="mono text-sm">{new Date(nextExpiry).toLocaleDateString("ja-JP")}</div>
+              </div>
+            )}
+          </div>
+          {prizeLedger.length > 0 && (
+            <div className="mt-4 border-t border-border divide-y divide-border">
+              {prizeLedger.map((l) => (
+                <div key={l.id} className="flex items-center gap-3 py-2.5 text-sm">
+                  <span className="mono text-dim text-xs w-32">{new Date(l.created_at).toLocaleString("ja-JP")}</span>
+                  <span className="flex-1">{PRIZE_REASON_LABEL[l.reason] ?? l.reason}</span>
+                  {l.delta > 0 && l.expires_at && (
+                    <span className="text-xs text-dim">〜{new Date(l.expires_at).toLocaleDateString("ja-JP")}</span>
+                  )}
+                  <span className={`mono ${l.delta >= 0 ? "text-pos" : "text-neg"}`}>{l.delta >= 0 ? "+" : ""}{formatPoints(l.delta)}</span>
+                  <span className="mono text-xs text-dim w-20 text-right">{formatPoints(l.balance_after)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {prizeLedger.length === 0 && (
+            <p className="mt-3 text-dim text-sm">まだ賞品ポイントはありません。予想を的中させると貯まります。</p>
+          )}
+        </div>
       </section>
 
       {/* 履歴 */}

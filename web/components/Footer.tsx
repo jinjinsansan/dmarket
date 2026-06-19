@@ -12,7 +12,7 @@ export function Footer() {
             <span className="font-bold text-[17px]">D-<span className="text-dim font-medium">market</span></span>
           </div>
           <p className="text-[12.5px] text-dim leading-7 max-w-xs">
-            無償ポイント制の予測市場。換金不可・譲渡禁止。貯めたポイントは景品と交換できます。
+            無償ポイント制の予測市場。換金不可・譲渡禁止。予想を当てて貯めた賞品ポイントは景品と交換できます。
             <b className="text-text font-bold"> D-swipe</b> ファミリーのプロダクトです。
           </p>
         </div>

@@ -115,6 +115,45 @@ begin
   select balance into v_bal from prize_wallets where user_id = carol;
   assert v_bal = 0, format('carol should stay 0 (already consumed), got %s', v_bal);
 
+  -- ── Phase B: 解決の的中報酬で賞品ptが付与される（0023） ──
+  -- prize_win_rate=1 を前提に、dave が 7 株勝つ → 7 賞品pt 付与。
+  declare
+    dave    uuid;
+    v_cat   uuid;
+    v_mkt   uuid;
+    v_yes   uuid;
+    v_no    uuid;
+    v_before bigint;
+  begin
+    dave := _test_make_user('dave@prize.local');
+    perform _test_set_jwt(dave);
+    perform grant_signup_bonus();  -- 参加pt 1000
+
+    insert into categories(slug, name) values ('prizecat', 'PrizeCat') returning id into v_cat;
+    insert into markets(category_id, question, b_param, source, resolution_kind, status, close_time, resolve_time)
+      values (v_cat, 'Prize reward test?', 50, 'admin', 'manual', 'open', now() + interval '1 day', now() + interval '2 day')
+      returning id into v_mkt;
+    insert into outcomes(market_id, label, display_order) values (v_mkt, 'YES', 0) returning id into v_yes;
+    insert into outcomes(market_id, label, display_order) values (v_mkt, 'NO', 1)  returning id into v_no;
+
+    perform buy_shares(v_yes, 7);
+    -- 解決前は賞品ptなし
+    select coalesce(balance, 0) into v_before from prize_wallets where user_id = dave;
+    assert coalesce(v_before, 0) = 0, format('dave should have 0 prize pt before resolve, got %s', v_before);
+
+    perform resolve_market(v_mkt, v_yes, 'https://example.test/prize');
+
+    -- 勝ち株 7 × rate 1 = 7 賞品pt
+    select balance into v_bal from prize_wallets where user_id = dave;
+    assert v_bal = 7, format('dave should earn 7 prize pt (7 shares x rate 1), got %s', v_bal);
+    -- win_reward 台帳行が市場ひも付きで作られ、有効期限が入る
+    assert exists (
+      select 1 from prize_ledger
+      where user_id = dave and reason = 'win_reward' and market_id = v_mkt
+        and delta = 7 and expires_at is not null
+    ), 'win_reward ledger row must exist with market_id and expiry';
+  end;
+
   -- ── 不変条件: balance == Σ ledger.delta ──────────
   for alice in select user_id from prize_wallets loop
     select balance into v_bal from prize_wallets where user_id = alice;

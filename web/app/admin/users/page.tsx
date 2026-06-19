@@ -1,5 +1,5 @@
 "use client";
-// 管理: ユーザー一覧＋運用（プレイ履歴・ポイント付与/消滅・フラグ）。
+// 管理: ユーザー一覧＋運用（プレイ履歴・参加ポイント付与/消滅・フラグ）。
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAdminToast } from "@/components/admin/AdminToast";
@@ -140,9 +140,9 @@ function UserDetail({ r, onChanged, notify }: { r: UserRow; onChanged: () => voi
 
   return (
     <div className="bg-surface2 p-4 grid gap-4 lg:grid-cols-[1fr_1fr_320px]">
-      {/* 取引/ポイント履歴 */}
+      {/* 取引/参加ポイント履歴 */}
       <div>
-        <div className="text-xs font-bold text-dim mb-2">取引・ポイント履歴</div>
+        <div className="text-xs font-bold text-dim mb-2">取引・参加ポイント履歴</div>
         <div className="max-h-64 overflow-y-auto rounded-[10px] border border-border bg-surface divide-y divide-border">
           {ledger.length === 0 ? <p className="p-3 text-xs text-dim">履歴なし</p> : ledger.map((l) => (
             <div key={l.id} className="flex items-center gap-2 px-3 py-2 text-xs">
@@ -174,7 +174,7 @@ function UserDetail({ r, onChanged, notify }: { r: UserRow; onChanged: () => voi
       <div className="space-y-3">
         <div className="text-xs font-bold text-dim">運用アクション</div>
         <div className="rounded-[10px] border border-border bg-surface p-3 space-y-2">
-          <div className="text-[11px] text-dim">ポイント付与 / 消滅</div>
+          <div className="text-[11px] text-dim">参加ポイント付与 / 消滅</div>
           <div className="flex gap-2">
             <input type="number" min={1} value={amount} onChange={(e) => setAmount(Math.max(0, Math.floor(Number(e.target.value))))}
               className="num w-24 rounded-sm border border-border bg-surface2 px-2 py-1.5 text-sm" />

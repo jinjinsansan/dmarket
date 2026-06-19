@@ -5,10 +5,11 @@ import { createClient } from "@/lib/supabase/client";
 import { useAdminToast } from "@/components/admin/AdminToast";
 import { formatPoints } from "@/lib/format";
 
-const FIELDS: { key: string; label: string; hint: string }[] = [
+const FIELDS: { key: string; label: string; hint: string; step?: number }[] = [
   { key: "signup_grant", label: "登録ボーナス", hint: "新規登録時に付与（インフレ源）" },
   { key: "daily_grant", label: "デイリーボーナス", hint: "1日1回付与" },
   { key: "b_default", label: "流動性 b（既定値）", hint: "管理者の市場作成フォームの初期値。小さいほど価格が動きやすく補助金が小さい" },
+  { key: "prize_win_rate", label: "的中報酬レート（賞品pt/勝ち株）", hint: "予想的中時に付与する賞品pt = 勝ち株数 × このレート。既定1。景品コスト割れ防止のため低めから", step: 0.1 },
 ];
 
 export default function AdminParamsPage() {
@@ -42,7 +43,7 @@ export default function AdminParamsPage() {
           <label className="flex-1">
             <div className="text-sm font-bold">{f.label}</div>
             <div className="text-xs text-dim mb-2">{f.hint}</div>
-            <input type="number" min={0} value={vals[f.key] ?? 0}
+            <input type="number" min={0} step={f.step ?? 1} value={vals[f.key] ?? 0}
               onChange={(e) => setVals({ ...vals, [f.key]: Math.max(0, Number(e.target.value)) })}
               className="num w-40 rounded-sm border border-border bg-surface2 px-3 py-2" />
           </label>

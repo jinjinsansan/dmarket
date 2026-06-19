@@ -12,3 +12,12 @@ export const LEDGER_REASON_LABEL: Record<string, string> = {
   redeem: "的中償還",
   refund: "返金",
 };
+
+// 賞品ポイント台帳理由の日本語ラベル（二層ポイント制 Phase B）
+export const PRIZE_REASON_LABEL: Record<string, string> = {
+  win_reward: "的中報酬",
+  rank_reward: "ランキング報酬",
+  redeem: "景品交換",
+  expire: "有効期限切れ",
+  adjust: "調整",
+};

@@ -81,10 +81,10 @@ export function TopNav() {
             <ThemeToggle />
             {loggedIn ? (
               <>
-                <div className="flex items-center gap-[7px] h-[38px] px-3 bg-surface2 border border-border rounded-[10px]">
+                <div title="参加ポイント残高（売買に使うポイント）" className="flex items-center gap-[7px] h-[38px] px-3 bg-surface2 border border-border rounded-[10px]">
                   <svg width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#0891b2" /><circle cx="12" cy="12" r="4.4" fill="#e6faff" /></svg>
                   <span className="mono text-sm font-bold">{balance === null ? "—" : formatPoints(balance)}</span>
-                  <span className="text-xs text-dim font-semibold">pt</span>
+                  <span className="text-xs text-dim font-semibold">参加pt</span>
                 </div>
                 <button onClick={claim}
                   className="h-[38px] px-3 md:px-4 text-white border-none rounded-[11px] font-bold text-[13px] md:text-[13.5px]"

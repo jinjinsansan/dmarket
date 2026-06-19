@@ -68,6 +68,16 @@ export interface PositionRow {
   cost_basis: number;
 }
 
+// 賞品ポイント台帳の1行（二層ポイント制 Phase B）
+export interface PrizeLedgerRow {
+  id: number;
+  delta: number;
+  reason: string;
+  expires_at: string | null;
+  balance_after: number;
+  created_at: string;
+}
+
 // RPC 戻り値（SPEC-02 §3）
 export interface TradeResult {
   ok: boolean;
