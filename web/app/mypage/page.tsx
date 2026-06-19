@@ -28,7 +28,8 @@ export default function MyPage() {
   useEffect(() => {
     (async () => {
       const sb = createClient();
-      const { data: { user } } = await sb.auth.getUser();
+      const { data: { session } } = await sb.auth.getSession();
+      const user = session?.user;
       if (!user) { setLoggedIn(false); setLoading(false); return; }
       setLoggedIn(true);
 
@@ -105,18 +106,18 @@ export default function MyPage() {
   return (
     <div className="max-w-[1100px] mx-auto px-4 md:px-[22px] py-6 pb-20 dm-in space-y-5">
       {/* プロフィール */}
-      <div className="flex items-center gap-5 border border-border bg-surface rounded-[var(--radius)] p-6" style={{ boxShadow: "var(--shadow)" }}>
-        <div className="w-[76px] h-[76px] rounded-full grid place-items-center text-white text-2xl font-extrabold shrink-0" style={{ background: "var(--grad)", boxShadow: "var(--cta-glow)" }}>
+      <div className="flex items-center gap-4 sm:gap-5 border border-border bg-surface rounded-[var(--radius)] p-4 sm:p-6 flex-wrap" style={{ boxShadow: "var(--shadow)" }}>
+        <div className="w-16 h-16 sm:w-[76px] sm:h-[76px] rounded-full grid place-items-center text-white text-xl sm:text-2xl font-extrabold shrink-0" style={{ background: "var(--grad)", boxShadow: "var(--cta-glow)" }}>
           {name.slice(0, 1)}
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-[23px] font-bold">{name}</h1>
-            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-primary bg-primary-weak border px-2.5 py-1 rounded-full" style={{ borderColor: "var(--accent2)" }}>★ {title}</span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-[20px] sm:text-[23px] font-bold truncate max-w-full">{name}</h1>
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-primary bg-primary-weak border px-2.5 py-1 rounded-full whitespace-nowrap shrink-0" style={{ borderColor: "var(--accent2)" }}>★ {title}</span>
           </div>
           <div className="text-[13px] text-dim mt-1">総合ランク — · 連勝 {stats?.current_streak ?? 0}</div>
         </div>
-        <button onClick={claim} className="h-[42px] px-[18px] text-white rounded-[12px] font-bold text-[13.5px] shrink-0" style={{ background: "var(--grad)", boxShadow: "var(--cta-glow)" }}>
+        <button onClick={claim} className="h-[42px] px-[18px] text-white rounded-[12px] font-bold text-[13.5px] w-full sm:w-auto sm:shrink-0" style={{ background: "var(--grad)", boxShadow: "var(--cta-glow)" }}>
           デイリー受取 / Claim
         </button>
       </div>

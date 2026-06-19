@@ -23,9 +23,9 @@ export function LeaderboardView({ rows }: { rows: RankRow[] }) {
 
   return (
     <div className="max-w-[880px] mx-auto px-4 md:px-[22px] py-6 pb-20 dm-in">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-[23px] font-extrabold">ランキング / Leaderboard</h1>
-        <div className="flex gap-1 p-[3px] bg-surface2 border border-border rounded-[11px]">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+        <h1 className="text-[22px] sm:text-[23px] font-extrabold">ランキング / Leaderboard</h1>
+        <div className="flex gap-1 p-[3px] bg-surface2 border border-border rounded-[12px] w-full sm:w-auto">
           <Seg active={mode === "networth"} onClick={() => setMode("networth")}>総資産</Seg>
           <Seg active={mode === "accuracy"} onClick={() => setMode("accuracy")}>的中率</Seg>
         </div>
@@ -70,6 +70,9 @@ export function LeaderboardView({ rows }: { rows: RankRow[] }) {
 
 function Seg({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} className={`text-[12.5px] font-bold px-3 py-1.5 rounded-lg ${active ? "bg-surface text-text shadow-sm" : "text-dim"}`}>{children}</button>
+    <button onClick={onClick}
+      className={`flex-1 sm:flex-none text-[13px] font-bold px-4 py-2 rounded-[9px] whitespace-nowrap transition-colors ${active ? "bg-surface text-text shadow-sm" : "text-dim hover:text-text"}`}>
+      {children}
+    </button>
   );
 }

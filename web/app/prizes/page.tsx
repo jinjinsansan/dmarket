@@ -22,7 +22,8 @@ export default function PrizesPage() {
 
   const load = useCallback(async () => {
     const sb = createClient();
-    const { data: { user } } = await sb.auth.getUser();
+    const { data: { session } } = await sb.auth.getSession();
+    const user = session?.user;
     const [{ data: pz }, prizeWallet] = await Promise.all([
       sb.from("prizes").select("*").eq("is_active", true).order("display_order").order("created_at"),
       user ? sb.from("prize_wallets").select("balance").eq("user_id", user.id).maybeSingle() : Promise.resolve({ data: null }),

@@ -33,7 +33,8 @@ export function TradePanel({
   useEffect(() => {
     (async () => {
       const sb = createClient();
-      const { data: { user } } = await sb.auth.getUser();
+      const { data: { session } } = await sb.auth.getSession();
+      const user = session?.user;
       if (!user) return;
       const { data: w } = await sb.from("wallets").select("balance").eq("user_id", user.id).maybeSingle();
       setBalance(w?.balance ?? 0);

@@ -26,7 +26,8 @@ export function TopNav() {
 
   const refresh = useCallback(async () => {
     const sb = createClient();
-    const { data: { user } } = await sb.auth.getUser();
+    const { data: { session } } = await sb.auth.getSession();
+    const user = session?.user;
     if (!user) { setLoggedIn(false); setBalance(null); setIsAdmin(false); return; }
     setLoggedIn(true);
     const [{ data: wallet }, { data: adm }] = await Promise.all([
