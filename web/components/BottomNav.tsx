@@ -22,7 +22,7 @@ export function BottomNav() {
   const TABS = isAdmin ? [...USER_TABS, ADMIN_TAB] : USER_TABS;
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-border"
+    <nav className="md:hidden shrink-0 bg-surface border-t border-border"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
       <div className="flex items-stretch">
         {TABS.map((t) => {

@@ -70,17 +70,19 @@ html.dark {
   box-sizing: border-box;
 }
 
-/* モバイルのラバーバンド（オーバースクロール・バウンド）で固定フッター(BottomNav)が
-   一瞬浮いて見えるのを防止。pull-to-refresh も無効化（アプリ的な挙動）。 */
-html {
-  overscroll-behavior-y: none;
-}
 body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-roboto), var(--font-noto), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  overscroll-behavior-y: none;
+}
+
+/* アプリシェルのスクロール領域（main）。中身だけが弾む滑らかさを保ったままスクロールし、
+   ヘッダー/フッターはこの外にあるため一切動かない（固定フッターの浮き対策）。
+   スクロール連鎖を内部に閉じ込めつつ、要素内のバウンスは維持。 */
+#app-scroll {
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* 数値（価格・確率・残高・時刻）は等幅＋tabular-nums で桁ブレ防止 */

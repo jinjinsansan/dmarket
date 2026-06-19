@@ -55,12 +55,14 @@ export function MarketDetailClient({
     return () => { sb.removeChannel(ch); if (timer) clearTimeout(timer); };
   }, [market.id]);
 
-  // シート表示中は背景スクロールをロック（モバイルのがくつき・裏スクロール防止）
+  // シート表示中はスクロール領域(#app-scroll)をロック（裏スクロール防止）
   useEffect(() => {
     if (!sheetOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = prev; };
+    const scroller = document.getElementById("app-scroll");
+    if (!scroller) return;
+    const prev = scroller.style.overflow;
+    scroller.style.overflow = "hidden";
+    return () => { scroller.style.overflow = prev; };
   }, [sheetOpen]);
 
   const prices = useMemo(() => lmsrPrices(outcomes.map((o) => o.q), market.b_param), [outcomes, market.b_param]);
@@ -155,7 +157,7 @@ export function MarketDetailClient({
         </div>
 
         {/* 右カラム = トレードパネル（デスクトップのみ） */}
-        <div className="hidden lg:block flex-[1_1_320px] max-w-[392px] lg:sticky lg:top-[88px] w-full">
+        <div className="hidden lg:block flex-[1_1_320px] max-w-[392px] lg:sticky lg:top-4 w-full">
           <TradePanel market={market} outcomes={outcomes} prices={prices} resolution={resolution}
             pickIdx={pickIdx} setPickIdx={setPickIdx} onTraded={applyTraded} />
         </div>

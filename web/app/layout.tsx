@@ -4,6 +4,7 @@ import "./globals.css";
 import { TopNav } from "@/components/TopNav";
 import { Footer } from "@/components/Footer";
 import { BottomNav } from "@/components/BottomNav";
+import { ScrollReset } from "@/components/ScrollReset";
 
 const roboto = Roboto({ variable: "--font-roboto", subsets: ["latin"], weight: ["400", "500", "700"] });
 const noto = Noto_Sans_JP({ variable: "--font-noto", subsets: ["latin"], weight: ["400", "500", "700"] });
@@ -31,11 +32,16 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="min-h-screen flex flex-col bg-bg text-text">
+      {/* アプリシェル: body を可視ビューポート高に固定し、中身(main)だけをスクロールさせる。
+          TopNav/BottomNav はスクロール領域の外なので position:fixed を使わず常に固定表示でき、
+          モバイルでフッターが浮く問題が起きない。dvh 非対応ブラウザは h-screen にフォールバック。 */}
+      <body className="h-screen flex flex-col overflow-hidden bg-bg text-text" style={{ height: "100dvh" }}>
         <TopNav />
-        {/* モバイルは下部タブバー分の余白を確保 */}
-        <main className="flex-1 w-full pb-16 md:pb-0">{children}</main>
-        <Footer />
+        <main id="app-scroll" className="flex-1 w-full overflow-y-auto">
+          <ScrollReset />
+          {children}
+          <Footer />
+        </main>
         <BottomNav />
       </body>
     </html>
