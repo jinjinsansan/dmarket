@@ -11,6 +11,7 @@ import { ThemeToggle } from "./ThemeToggle";
 const NAV = [
   { href: "/", label: "マーケット" },
   { href: "/leaderboard", label: "ランキング" },
+  { href: "/prizes", label: "景品" },
   { href: "/mypage", label: "マイページ" },
   { href: "/admin", label: "管理" },
 ];

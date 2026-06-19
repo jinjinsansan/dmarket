@@ -180,7 +180,7 @@ export default function MyPage() {
       <section>
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-[15px] font-bold">賞品ポイント / Prize points</h2>
-          <span className="text-xs text-dim">予想が的中すると貯まる・景品と交換予定</span>
+          <Link href="/prizes" className="text-xs text-primary underline">景品一覧・交換へ →</Link>
         </div>
         <div className="border border-border bg-surface rounded-[var(--radius)] p-5" style={{ boxShadow: "var(--shadow)" }}>
           <div className="flex items-end justify-between flex-wrap gap-2">

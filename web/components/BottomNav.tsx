@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 const USER_TABS = [
   { href: "/", label: "マーケット", icon: (a: boolean) => <IconMarket active={a} /> },
   { href: "/leaderboard", label: "ランキング", icon: (a: boolean) => <IconRank active={a} /> },
+  { href: "/prizes", label: "景品", icon: (a: boolean) => <IconGift active={a} /> },
   { href: "/mypage", label: "マイページ", icon: (a: boolean) => <IconUser active={a} /> },
 ];
 const ADMIN_TAB = { href: "/admin", label: "管理", icon: (a: boolean) => <IconAdmin active={a} /> };
@@ -48,6 +49,9 @@ function IconRank({ active }: { active: boolean }) {
 }
 function IconUser({ active }: { active: boolean }) {
   return <svg width="20" height="20" viewBox="0 0 24 24" stroke="currentColor" {...sw} fill={active ? "currentColor" : "none"} fillOpacity={active ? 0.12 : 0}><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></svg>;
+}
+function IconGift({ active }: { active: boolean }) {
+  return <svg width="20" height="20" viewBox="0 0 24 24" stroke="currentColor" {...sw} fill={active ? "currentColor" : "none"} fillOpacity={active ? 0.12 : 0}><path d="M20 12v9H4v-9M2 7h20v5H2zM12 22V7M12 7C12 7 12 3 8.5 3S5 7 12 7zM12 7C12 7 12 3 15.5 3S19 7 12 7z" /></svg>;
 }
 function IconAdmin({ active }: { active: boolean }) {
   return <svg width="20" height="20" viewBox="0 0 24 24" stroke="currentColor" {...sw} fill={active ? "currentColor" : "none"} fillOpacity={active ? 0.12 : 0}><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z" /></svg>;

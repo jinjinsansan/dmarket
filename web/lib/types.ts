@@ -78,6 +78,41 @@ export interface PrizeLedgerRow {
   created_at: string;
 }
 
+// 景品マスタ（二層ポイント制 Phase C）
+export interface Prize {
+  id: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  cost_points: number;
+  stock: number | null;       // null=無制限
+  is_active: boolean;
+  display_order: number;
+  created_at: string;
+}
+
+// 配送先（個人情報・最小保持）
+export interface ShippingInfo {
+  name?: string;
+  postal?: string;
+  addr?: string;
+  tel?: string;
+  note?: string;
+}
+
+// 交換申込（管理一覧の行：景品名・申込者表示名を結合済み）
+export interface AdminRedemption {
+  id: string;
+  user_id: string;
+  display_name: string;
+  prize_id: string;
+  prize_name: string;
+  cost_points: number;
+  status: "requested" | "approved" | "shipped" | "cancelled";
+  shipping: ShippingInfo | null;
+  created_at: string;
+}
+
 // RPC 戻り値（SPEC-02 §3）
 export interface TradeResult {
   ok: boolean;
