@@ -13,22 +13,28 @@ const NAV = [
   { href: "/leaderboard", label: "ランキング" },
   { href: "/prizes", label: "景品" },
   { href: "/mypage", label: "マイページ" },
-  { href: "/admin", label: "管理" },
 ];
+// 管理は is_admin のときのみ表示（BottomNav と同方針）
+const ADMIN_NAV = { href: "/admin", label: "管理" };
 
 export function TopNav() {
   const pathname = usePathname();
   const [balance, setBalance] = useState<number | null>(null);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     const sb = createClient();
     const { data: { user } } = await sb.auth.getUser();
-    if (!user) { setLoggedIn(false); setBalance(null); return; }
+    if (!user) { setLoggedIn(false); setBalance(null); setIsAdmin(false); return; }
     setLoggedIn(true);
-    const { data } = await sb.from("wallets").select("balance").eq("user_id", user.id).maybeSingle();
-    setBalance(data?.balance ?? 0);
+    const [{ data: wallet }, { data: adm }] = await Promise.all([
+      sb.from("wallets").select("balance").eq("user_id", user.id).maybeSingle(),
+      sb.rpc("is_admin"),
+    ]);
+    setBalance(wallet?.balance ?? 0);
+    setIsAdmin(Boolean(adm));
   }, []);
 
   useEffect(() => {
@@ -70,7 +76,7 @@ export function TopNav() {
 
           {/* ナビリンクはデスクトップのみ。モバイルは下部タブバー(BottomNav) */}
           <nav className="hidden md:flex items-center gap-1.5 shrink-0">
-            {NAV.map((n) => (
+            {(isAdmin ? [...NAV, ADMIN_NAV] : NAV).map((n) => (
               <Link key={n.href} href={n.href}
                 className={`text-sm font-semibold px-2.5 py-2 rounded-[9px] ${isActive(n.href) ? "text-text" : "text-dim hover:text-text"}`}>
                 {n.label}
