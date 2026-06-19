@@ -10,6 +10,8 @@ const noto = Noto_Sans_JP({ variable: "--font-noto", subsets: ["latin"], weight:
 const robotoMono = Roboto_Mono({ variable: "--font-roboto-mono", subsets: ["latin"], weight: ["500", "600", "700"] });
 
 export const metadata: Metadata = {
+  // OGP/Twitterカード/canonical の絶対URL基点。redirect URI と同じ env を参照（末尾スラッシュ・空白除去）。
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "") || "https://d-market.io"),
   title: "D-market — ポイントで読む、世界の確率。",
   description: "無償ポイントで楽しむ予測市場。換金不可・譲渡禁止。予想を当てて貯めた賞品ポイントは景品と交換できます。",
 };
