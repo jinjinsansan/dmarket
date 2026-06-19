@@ -125,7 +125,7 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
           このカテゴリはまだ市場がありません。
         </div>
       ) : layout === "cards" ? (
-        <div className="grid gap-3 sm:gap-4" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(min(100%,260px),1fr))" }}>
+        <div className="grid gap-2.5 sm:gap-3" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(min(100%,210px),1fr))" }}>
           {filtered.map((m) => <MarketCard key={m.id} market={m} variant="card" spark={sparks[m.id]} />)}
         </div>
       ) : (
@@ -139,16 +139,16 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
 
 function Hero({ openCount, catCount }: { openCount: number; catCount: number }) {
   return (
-    <div className="relative overflow-hidden flex-[2_1_480px] rounded-[var(--radius)] px-[34px] py-8 text-[#eaf2fb] border"
-      style={{ background: "var(--hero-grad)", borderColor: "rgba(56,189,248,.22)", boxShadow: "0 20px 50px -28px rgba(8,20,40,.55)" }}>
-      <div className="absolute -right-10 -top-10 w-56 h-56 rounded-full" style={{ background: "radial-gradient(circle,rgba(56,189,248,.25),transparent 70%)" }} />
+    <div className="relative overflow-hidden flex-[2_1_460px] rounded-[16px] px-6 py-5 text-[#eaf2fb] border"
+      style={{ background: "var(--hero-grad)", borderColor: "rgba(56,189,248,.22)", boxShadow: "0 16px 40px -28px rgba(8,20,40,.55)" }}>
+      <div className="absolute -right-8 -top-8 w-40 h-40 rounded-full" style={{ background: "radial-gradient(circle,rgba(56,189,248,.22),transparent 70%)" }} />
       <div className="relative">
-        <div className="text-[11px] font-bold tracking-[.28em] text-[#38bdf8] uppercase mb-3">D-MARKET · 予測市場</div>
-        <h1 className="text-[30px] font-extrabold leading-tight mb-2">ポイントで読む、世界の確率。</h1>
-        <p className="text-[14.5px] opacity-85 max-w-[440px] leading-relaxed mb-6">
-          競馬からニュースまで、世界の「結果」をポイントで予想・売買。換金ゼロ、得るのは的中の快感と称号。
+        <div className="text-[10px] font-bold tracking-[.26em] text-[#38bdf8] uppercase mb-1.5">D-MARKET · 予測市場</div>
+        <h1 className="text-[21px] font-extrabold leading-tight mb-1">ポイントで読む、世界の確率。</h1>
+        <p className="text-[12.5px] opacity-80 max-w-[420px] leading-relaxed mb-3">
+          世界の「結果」をポイントで予想・売買。換金ゼロ、得るのは的中の快感と称号。
         </p>
-        <div className="flex gap-8">
+        <div className="flex gap-6">
           <Stat label="開催中" value={formatPoints(openCount)} />
           <Stat label="カテゴリ" value={formatPoints(catCount)} />
           <Stat label="換金" value="¥0" />
@@ -160,8 +160,8 @@ function Hero({ openCount, catCount }: { openCount: number; catCount: number }) 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <div className="mono text-[22px] font-bold text-[#5fcdf0]">{value}</div>
-      <div className="text-[11px] opacity-70 mt-0.5">{label}</div>
+      <div className="mono text-[17px] font-bold text-[#5fcdf0] leading-none">{value}</div>
+      <div className="text-[10px] opacity-70 mt-0.5">{label}</div>
     </div>
   );
 }
