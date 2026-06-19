@@ -125,7 +125,7 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
           このカテゴリはまだ市場がありません。
         </div>
       ) : layout === "cards" ? (
-        <div className="grid gap-2.5 sm:gap-3" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(min(100%,210px),1fr))" }}>
+        <div className="grid gap-3 sm:gap-3.5" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(min(100%,278px),1fr))" }}>
           {filtered.map((m) => <MarketCard key={m.id} market={m} variant="card" spark={sparks[m.id]} />)}
         </div>
       ) : (
