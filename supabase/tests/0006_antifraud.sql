@@ -20,7 +20,8 @@ begin
     and p.proname not in (
       'grant_signup_bonus','claim_daily_grant','buy_shares','sell_shares',
       'resolve_market','void_market','correct_resolution',
-      'admin_adjust_points'  -- 運営の無償調整（admin_grant/admin_burn・台帳記録・監査・有償/換金/譲渡ではない）
+      'admin_adjust_points',  -- 運営の無償調整（admin_grant/admin_burn・台帳記録・監査・有償/換金/譲渡ではない）
+      'admin_approve_conversion'  -- アフィリエイト成果の無償報酬付与（reason='affiliate'・台帳記録・監査）
     );
   assert v_offenders is null,
     format('unexpected function(s) update wallets: %s', v_offenders);

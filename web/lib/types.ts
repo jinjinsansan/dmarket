@@ -113,6 +113,44 @@ export interface AdminRedemption {
   created_at: string;
 }
 
+// 提携案件（参加ポイント獲得・アフィリエイト Phase 1）
+export interface AffiliateOffer {
+  id: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  reward_points: number;
+  asp: string | null;
+  click_url: string;        // {TOKEN} を含む計測リンク雛形
+  incentive_ok: boolean;
+  is_active: boolean;
+  display_order: number;
+  created_at: string;
+}
+
+// 管理: 成果（承認履歴の行）
+export interface AdminConversion {
+  id: string;
+  token: string;
+  user_id: string;
+  display_name: string;
+  offer_id: string;
+  offer_name: string;
+  reward_points: number;
+  status: "pending" | "approved" | "rejected";
+  created_at: string;
+}
+
+// 管理: 消し込み待ちクリックの行
+export interface AdminClick {
+  token: string;
+  user_id: string;
+  display_name: string;
+  offer_id: string;
+  offer_name: string;
+  clicked_at: string;
+}
+
 // RPC 戻り値（SPEC-02 §3）
 export interface TradeResult {
   ok: boolean;

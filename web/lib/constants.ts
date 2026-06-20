@@ -11,6 +11,9 @@ export const LEDGER_REASON_LABEL: Record<string, string> = {
   sell: "売却",
   redeem: "的中償還",
   refund: "返金",
+  affiliate: "提携特典",
+  admin_grant: "運営付与",
+  admin_burn: "運営調整",
 };
 
 // 賞品ポイント台帳理由の日本語ラベル（二層ポイント制 Phase B）
