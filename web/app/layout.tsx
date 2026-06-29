@@ -5,6 +5,7 @@ import { TopNav } from "@/components/TopNav";
 import { Footer } from "@/components/Footer";
 import { BottomNav } from "@/components/BottomNav";
 import { ScrollReset } from "@/components/ScrollReset";
+import { Splash } from "@/components/Splash";
 
 const roboto = Roboto({ variable: "--font-roboto", subsets: ["latin"], weight: ["400", "500", "700"] });
 const noto = Noto_Sans_JP({ variable: "--font-noto", subsets: ["latin"], weight: ["400", "500", "700"] });
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           TopNav/BottomNav はスクロール領域の外なので position:fixed を使わず常に固定表示でき、
           モバイルでフッターが浮く問題が起きない。dvh 非対応ブラウザは h-screen にフォールバック。 */}
       <body className="h-screen flex flex-col overflow-hidden bg-bg text-text" style={{ height: "100dvh" }}>
+        <Splash />
         <TopNav />
         <main id="app-scroll" className="flex-1 w-full overflow-y-auto">
           <ScrollReset />
