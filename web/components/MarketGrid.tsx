@@ -4,10 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { lmsrPrice } from "@/lib/lmsr";
-import { toPct, toCents } from "@/lib/format";
+import { toPct } from "@/lib/format";
 import { marketVisual } from "@/lib/market-visual";
 import { MarketCard } from "./MarketCard";
-import { Sparkline } from "./Sparkline";
+import { Hero } from "./Hero";
 import type { Category, MarketWithOutcomes } from "@/lib/types";
 
 export function MarketGrid({ initialMarkets, categories }: { initialMarkets: MarketWithOutcomes[]; categories: Category[] }) {
@@ -71,16 +71,26 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
 
   const trending = useMemo(() => [...markets].sort((a, b) => new Date(a.close_time).getTime() - new Date(b.close_time).getTime()).slice(0, 6), [markets]);
 
+  // ヒーロー用データ（注目＝先頭、今日のお題＝天気優先）
+  const catEmoji = (slug?: string | null) => (({ weather: "🌤", ent: "🎬", crypto: "₿", fx: "💱", news: "📰", keiba: "🐎", sports: "⚽" }) as Record<string, string>)[slug ?? ""] ?? "🌍";
+  const toHero = (m: MarketWithOutcomes) => ({ id: m.id, question: m.question, yesPct: Math.round(yesPct(m)), flag: catEmoji(m.category?.slug) });
+  const heroFeatured = trending[0];
+  const heroDaily = markets.find((m) => m.category?.slug === "weather") ?? trending[1] ?? trending[0];
+
   return (
     <div className="max-w-[1240px] mx-auto px-4 md:px-[22px] py-5 pb-20 dm-in">
       {/* 細いカテゴリナビ（本家風） */}
       <CategoryNav categories={categories} active={activeCat} onSelect={setActiveCat} />
 
-      {/* 回転ヒーロー＋注目（デスクトップ） */}
-      <div className="hidden md:flex gap-4 mb-6">
-        <FeaturedCarousel markets={trending} sparks={sparks} />
-        <Trending list={trending} yesPct={yesPct} />
-      </div>
+      {/* ヒーロー（A:ようこそ / B:今日のお題 を訪問毎に交互）＋注目（デスクトップ） */}
+      {heroFeatured && (
+        <div className="hidden md:flex gap-4 mb-6 items-stretch">
+          <div className="flex-[2_1_460px] min-w-0">
+            <Hero featured={toHero(heroFeatured)} daily={toHero(heroDaily)} />
+          </div>
+          <Trending list={trending} yesPct={yesPct} />
+        </div>
+      )}
       <div className="md:hidden mb-4">
         <h1 className="text-lg font-extrabold">予測市場</h1>
         <p className="text-xs text-dim">{markets.length} マーケット · Realtime</p>
@@ -115,72 +125,6 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
           {filtered.map((m) => <MarketCard key={m.id} market={m} variant="compact" spark={sparks[m.id]} />)}
         </div>
       )}
-    </div>
-  );
-}
-
-// ── 回転ヒーロー（注目市場カルーセル・本家風） ───────────────
-function FeaturedCarousel({ markets, sparks }: { markets: MarketWithOutcomes[]; sparks: Record<string, number[]> }) {
-  const router = useRouter();
-  const feat = markets.slice(0, 6);
-  const [idx, setIdx] = useState(0);
-  useEffect(() => {
-    if (feat.length <= 1) return;
-    const t = setInterval(() => setIdx((i) => (i + 1) % feat.length), 6500);
-    return () => clearInterval(t);
-  }, [feat.length]);
-  if (feat.length === 0) return <div className="flex-[2_1_460px]" />;
-  const i = idx % feat.length;
-  const m = feat[i];
-  const os = [...m.outcomes].sort((a, b) => a.display_order - b.display_order);
-  const yes = lmsrPrice(os.map((o) => o.q), m.b_param, 0);
-  const vis = marketVisual({ id: m.id, slug: m.category?.slug, image_url: m.image_url });
-  const spark = sparks[m.id];
-  const hasChart = spark && spark.length >= 2;
-  const go = () => router.push(`/market/${m.id}`);
-  const pick = (k: number) => router.push(`/market/${m.id}?pick=${k}`);
-
-  return (
-    <div className="flex-[2_1_460px] relative border border-border bg-surface rounded-[16px] p-5 cursor-pointer overflow-hidden min-h-[236px]"
-      style={{ boxShadow: "var(--shadow)" }} onClick={go} onMouseEnter={() => router.prefetch(`/market/${m.id}`)}>
-      <div className="flex items-start gap-3 mb-4">
-        <div className="w-12 h-12 rounded-[11px] grid place-items-center text-white text-xl font-extrabold shrink-0 overflow-hidden"
-          style={{ background: vis.image ? `url(${vis.image}) center/cover` : vis.tint }}>{!vis.image && vis.glyph}</div>
-        <div className="min-w-0">
-          <div className="text-[11px] text-dim mb-0.5"><span className="text-primary font-bold">{m.category?.name ?? "市場"}</span></div>
-          <h2 className="text-[19px] font-extrabold leading-snug line-clamp-2">{m.question}</h2>
-        </div>
-      </div>
-
-      <div className="flex gap-4 items-end">
-        <div className={hasChart ? "shrink-0" : "flex-1"}>
-          <div className="flex items-baseline gap-1.5 mb-2.5">
-            <span className="mono text-[34px] font-extrabold leading-none" style={{ color: vis.tint }}>{Math.round(yes * 100)}%</span>
-            <span className="text-[12px] text-dim font-bold">確率</span>
-          </div>
-          <div className={`flex gap-2 ${hasChart ? "w-[210px]" : "max-w-[360px]"}`}>
-            <button onClick={(e) => { e.stopPropagation(); pick(0); }} className="btn-press flex-1 py-2 rounded-[9px] font-bold text-[13px] bg-pos-weak text-pos hover:bg-pos hover:text-white transition-colors">はい <span className="mono text-[11.5px]">{toCents(yes)}</span></button>
-            <button onClick={(e) => { e.stopPropagation(); pick(1); }} className="btn-press flex-1 py-2 rounded-[9px] font-bold text-[13px] bg-neg-weak text-neg hover:bg-neg hover:text-white transition-colors">いいえ <span className="mono text-[11.5px]">{toCents(1 - yes)}</span></button>
-          </div>
-        </div>
-        {hasChart && (
-          <div className="flex-1 min-w-0 h-[86px] flex items-end justify-center">
-            <Sparkline data={spark} color={vis.tint} width={240} height={80} />
-          </div>
-        )}
-      </div>
-
-      {/* ドット＋矢印 */}
-      <div className="absolute left-5 bottom-3 flex gap-1.5">
-        {feat.map((_, k) => (
-          <button key={k} onClick={(e) => { e.stopPropagation(); setIdx(k); }}
-            className={`h-1.5 rounded-full transition-all ${k === i ? "w-5 bg-primary" : "w-1.5 bg-border"}`} aria-label={`slide ${k + 1}`} />
-        ))}
-      </div>
-      <div className="absolute right-3 bottom-2.5 flex gap-1">
-        <button onClick={(e) => { e.stopPropagation(); setIdx((idx - 1 + feat.length) % feat.length); }} className="w-7 h-7 rounded-full border border-border bg-surface grid place-items-center text-dim hover:text-text">‹</button>
-        <button onClick={(e) => { e.stopPropagation(); setIdx((idx + 1) % feat.length); }} className="w-7 h-7 rounded-full border border-border bg-surface grid place-items-center text-dim hover:text-text">›</button>
-      </div>
     </div>
   );
 }
