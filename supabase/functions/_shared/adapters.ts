@@ -97,6 +97,80 @@ async function resolvePoly(b: Record<string, unknown>, outcomes: OutcomeRow[]): 
   return { status: "resolved", winningOutcomeId: o.id, sourceUrl: r.sourceUrl, raw: r };
 }
 
+// ── 天気（気象庁 AMeDAS 観測実績）────────────────────────────────
+// 予報ではなく「観測実績」で客観解決する。キー不要・無料。対象日が完全に終わってから判定。
+// binding: { kind:"weather", station:"44132", date:"2026-07-05",
+//            metric:"temp_max"|"temp_min"|"precip", operator:">=", threshold:30, yes_if_true:true }
+//   ・temp_max/temp_min … その日の最高/最低気温(℃)を threshold と比較
+//   ・precip            … その日の降水量合計(mm)を threshold と比較（"雨が降った"= precip > 0）
+const AMEDAS_BASE = "https://www.jma.go.jp/bosai/amedas/data/point";
+const AMEDAS_BLOCKS = ["00", "03", "06", "09", "12", "15", "18", "21"];
+
+// AMeDAS の値は [value, flag] 形式。flag=0 が正常。value が数値でなければ null。
+function amedasNum(v: unknown): number | null {
+  if (Array.isArray(v) && typeof v[0] === "number") return v[0];
+  return null;
+}
+
+// 対象日の全3時間ブロック(00〜21)を取得し、10分値エントリをマージ。1つも取れなければ null。
+async function fetchAmedasDay(station: string, ymd: string): Promise<Record<string, Record<string, unknown>> | null> {
+  const merged: Record<string, Record<string, unknown>> = {};
+  let got = 0;
+  for (const blk of AMEDAS_BLOCKS) {
+    try {
+      const res = await fetch(`${AMEDAS_BASE}/${station}/${ymd}_${blk}.json`, { headers: { accept: "application/json" } });
+      if (!res.ok) continue;
+      Object.assign(merged, await res.json());
+      got++;
+    } catch { /* 欠損ブロックはスキップ */ }
+  }
+  return got === 0 ? null : merged;
+}
+
+async function resolveWeather(b: Record<string, unknown>, outcomes: OutcomeRow[]): Promise<ResolveResult> {
+  const station = String(b.station);
+  const date = String(b.date); // YYYY-MM-DD（JST）
+  const metric = String(b.metric);
+  const dayEnd = Date.parse(`${date}T23:59:59+09:00`);
+  if (Number.isNaN(dayEnd)) return { status: "error", error: `invalid date: ${date}` };
+  // 当日が終わり観測が出揃うまで（翌日 +30分）は判定しない → pending
+  if (Date.now() < dayEnd + 30 * 60 * 1000) return { status: "pending" };
+
+  const ymd = date.replace(/-/g, "");
+  const day = await fetchAmedasDay(station, ymd);
+  if (!day) return { status: "pending" }; // 観測未取得 → 再試行
+  const entries = Object.values(day);
+
+  let value: number | null = null;
+  if (metric === "temp_max") {
+    // 当日極値フィールド(maxTemp)と10分値(temp)の双方から最大をとる
+    const xs = entries.flatMap((e) => [amedasNum(e.maxTemp), amedasNum(e.temp)]).filter((x): x is number => x !== null);
+    if (xs.length) value = Math.max(...xs);
+  } else if (metric === "temp_min") {
+    const xs = entries.flatMap((e) => [amedasNum(e.minTemp), amedasNum(e.temp)]).filter((x): x is number => x !== null);
+    if (xs.length) value = Math.min(...xs);
+  } else if (metric === "precip") {
+    const xs = entries.map((e) => amedasNum(e.precipitation10m)).filter((x): x is number => x !== null);
+    if (xs.length) value = xs.reduce((a, c) => a + c, 0);
+  } else {
+    return { status: "error", error: `unsupported weather metric: ${metric}` };
+  }
+  if (value === null) return { status: "pending" }; // 有効観測なし → 再試行
+
+  const isTrue = compare(String(b.operator), value, Number(b.threshold));
+  const yesIfTrue = b.yes_if_true !== false;
+  const wantYes = isTrue === yesIfTrue;
+  const yes = findByLabel(outcomes, "YES");
+  const no = findByLabel(outcomes, "NO");
+  if (!yes || !no) return { status: "error", error: "binary YES/NO outcomes not found", raw: { value } };
+  return {
+    status: "resolved",
+    winningOutcomeId: wantYes ? yes.id : no.id,
+    sourceUrl: `${AMEDAS_BASE}/${station}/${ymd}_21.json`,
+    raw: { metric, value, operator: String(b.operator), threshold: Number(b.threshold) },
+  };
+}
+
 export async function resolveBinding(
   binding: Record<string, unknown>,
   outcomes: OutcomeRow[],
@@ -110,6 +184,8 @@ export async function resolveBinding(
         return await resolveRaceResult(binding, outcomes);
       case "poly":
         return await resolvePoly(binding, outcomes);
+      case "weather":
+        return await resolveWeather(binding, outcomes);
       // sports_result は feed 確定後に追加（SPEC-03 §8 実装順5）
       default:
         return { status: "error", error: `unsupported binding kind: ${binding.kind}` };

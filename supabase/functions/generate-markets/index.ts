@@ -21,7 +21,47 @@ Deno.serve(async (_req) => {
       .from("category_feed_settings").select("*").eq("category_id", c.id).maybeSingle();
     if (!settings) continue;
 
-    // (a) 自前テンプレ生成は SPEC-04 §4a。schedule_cron 評価は別途（TODO: 競馬テンプレ接続時）。
+    // (a) 自前テンプレ生成（SPEC-04 §4a）：天気など。params_source.offsets の各日(JST)について
+    //     不足分を create_market_internal で生成。external_ref=tmpl:{id}:{yyyymmdd} で冪等。
+    if (settings.template_enabled) {
+      const { data: tmpls } = await sb
+        .from("market_templates").select("*").eq("category_id", c.id).eq("is_active", true);
+      let tmade = 0;
+      for (const t of tmpls ?? []) {
+        const ps = (t.params_source ?? {}) as Record<string, unknown>;
+        const offsets = Array.isArray(ps.offsets) ? (ps.offsets as number[]) : [0, 1];
+        for (const off of offsets) {
+          const d = jstDateParts(off);
+          const extRef = `tmpl:${t.id}:${d.ymd}`;
+          const { data: exist } = await sb.from("markets").select("id").eq("external_ref", extRef).limit(1);
+          if (exist && exist.length) continue; // 生成済み → スキップ（冪等）
+          const binding = { ...(t.resolution_binding as Record<string, unknown>), date: d.iso };
+          const question = String(t.question_pattern)
+            .replace("{date}", d.md).replace("{area}", String(ps.area ?? ""));
+          const p = Number((t.initial_q_rule as Record<string, unknown> | null)?.p ?? 0.5);
+          const { error: tErr } = await sb.rpc("create_market_internal", {
+            p_category_id: c.id,
+            p_question: question,
+            p_description: null,
+            p_image_url: null,
+            p_market_kind: "binary",
+            p_b: B_DEFAULT,
+            p_source: "template",
+            p_resolution_kind: "auto",
+            p_resolution_binding: binding,
+            p_external_ref: extRef,
+            p_close_time: `${d.iso}T23:59:59+09:00`,
+            p_resolve_time: isoNextDayResolve(d.iso),
+            p_outcomes: [
+              { label: "YES", display_order: 0, q: seedQBinary(B_DEFAULT, p) },
+              { label: "NO", display_order: 1, q: 0 },
+            ],
+          });
+          if (!tErr) tmade++;
+        }
+      }
+      summary[`${c.slug}:tmpl`] = tmade;
+    }
 
     // (b) Polyミラー生成
     const { data: nData, error: nErr } = await sb.rpc("compute_poly_to_generate", {
@@ -106,4 +146,20 @@ function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status, headers: { "content-type": "application/json" },
   });
+}
+
+// JST の (今日 + offsetDays) を {ymd:"20260705", iso:"2026-07-05", md:"7/5"} で返す
+function jstDateParts(offsetDays: number): { ymd: string; iso: string; md: string } {
+  const jst = new Date(Date.now() + 9 * 3.6e6 + offsetDays * 8.64e7);
+  const y = jst.getUTCFullYear(), m = jst.getUTCMonth() + 1, d = jst.getUTCDate();
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return { ymd: `${y}${pad(m)}${pad(d)}`, iso: `${y}-${pad(m)}-${pad(d)}`, md: `${m}/${d}` };
+}
+
+// 対象日(iso="YYYY-MM-DD") の翌日 02:00 JST（観測が出揃った後）に解決
+function isoNextDayResolve(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d) + 8.64e7);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${dt.getUTCFullYear()}-${pad(dt.getUTCMonth() + 1)}-${pad(dt.getUTCDate())}T02:00:00+09:00`;
 }
