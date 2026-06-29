@@ -1,52 +1,54 @@
 @import "tailwindcss";
 
 /* ============================================================
-   D-market デザイントークン（D-swipe ファミリー共有）
-   ライト基調＋ダーク切替（html.dark）。hifi handoff の hex を踏襲。
+   ゴリラ予想 デザイントークン（B案：グレープ・ポップ）
+   ライト基調＋ダーク切替（html.dark）。
+   ★変数名は据え置き・値のみ差し替え → 一般画面/管理画面すべてに反映。
    ============================================================ */
 :root {
-  --bg: #f4f8fd;
+  --bg: #faf6ef;          /* 温かいオフホワイト */
   --surface: #ffffff;
-  --surface2: #eef3fb;
-  --border: #e2ebf6;
-  --text: #0b1f3a;
-  --dim: #5a6e88;
-  --faint: #9fb4d0;
-  --primary: #0284c7;
-  --primary-weak: #e9f6fe;
-  --accent2: #06b6d4;
-  --pos: #0d9f6e;
-  --pos-weak: #e6f7f0;
-  --neg: #ef4444;
-  --neg-weak: #fdecec;
+  --surface2: #f4eee3;
+  --border: #ebe3d6;
+  --text: #2a2018;        /* 温かいニアブラック */
+  --dim: #8b8073;
+  --faint: #c2b7a7;
+  --primary: #7b46e3;     /* グレープ・バイオレット */
+  --primary-weak: #efe8fc;
+  --accent2: #f4be1f;     /* バナナ・イエロー（アクセント） */
+  --pos: #15b877;         /* YES＝グリーン */
+  --pos-weak: #e5f7ef;
+  --neg: #f2604c;         /* NO＝コーラルレッド */
+  --neg-weak: #fceae6;
 
   --radius: 20px;
   --radius-sm: 12px;
-  --grad: linear-gradient(135deg, #0ea5e9, #06b6d4);
-  --hero-grad: linear-gradient(135deg, #0b1f3a, #143a63);
-  --shadow: 0 1px 2px rgba(11, 31, 58, 0.04), 0 14px 40px -18px rgba(11, 31, 58, 0.16);
-  --cta-glow: 0 8px 20px -8px rgba(6, 182, 212, 0.7);
+  --grad: linear-gradient(135deg, #7b46e3, #9d6bf0);
+  --hero-grad: linear-gradient(135deg, #2a1b4d, #4a2e86);
+  --shadow: 0 1px 2px rgba(42, 32, 24, 0.05), 0 14px 40px -18px rgba(42, 32, 24, 0.18);
+  --cta-glow: 0 8px 20px -8px rgba(123, 70, 227, 0.55);
 }
 
 html.dark {
-  --bg: #081424;
-  --surface: #0f243d;
-  --surface2: #152e4c;
-  --border: #21405f;
-  --text: #eaf2fb;
-  --dim: #9fb4d0;
-  --faint: #6b86a8;
-  --primary: #38bdf8;
-  --primary-weak: #11324e;
-  --accent2: #22d3ee;
-  --pos: #2dd4a7;
-  --pos-weak: #0e3328;
-  --neg: #f87171;
-  --neg-weak: #3a1d1d;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 14px 40px -18px rgba(0, 0, 0, 0.5);
+  --bg: #17120d;
+  --surface: #221b14;
+  --surface2: #2c241b;
+  --border: #3b2f23;
+  --text: #f3ece1;
+  --dim: #b2a593;
+  --faint: #796d5d;
+  --primary: #a480f2;
+  --primary-weak: #251b3e;
+  --accent2: #ffd53e;
+  --pos: #2fd18c;
+  --pos-weak: #123026;
+  --neg: #fb7b68;
+  --neg-weak: #3a1d19;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 14px 40px -18px rgba(0, 0, 0, 0.55);
+  --cta-glow: 0 8px 20px -8px rgba(164, 128, 242, 0.5);
 }
 
-/* Tailwind v4 ユーティリティへトークンを供給 */
+/* Tailwind v4 ユーティリティへトークンを供給（マッピングは据え置き） */
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -77,9 +79,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* アプリシェルのスクロール領域（main）。中身だけが弾む滑らかさを保ったままスクロールし、
-   ヘッダー/フッターはこの外にあるため一切動かない（固定フッターの浮き対策）。
-   スクロール連鎖を内部に閉じ込めつつ、要素内のバウンスは維持。 */
+/* アプリシェルのスクロール領域（main）。 */
 #app-scroll {
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
@@ -112,7 +112,7 @@ body {
   display: none;
 }
 
-/* 法的情報ページの本文スタイル（typography プラグイン無しで素のHTMLを整える） */
+/* 法的情報ページの本文スタイル */
 .legal {
   max-width: 820px;
 }
@@ -179,7 +179,7 @@ body {
   margin-bottom: 0;
 }
 
-/* 管理画面の入力欄は、モバイルで16pxに揃えて iOS の自動ズームを防ぐ（ユーザー向け入力は各所で16px化済み） */
+/* 管理画面の入力欄は、モバイルで16pxに揃えて iOS の自動ズームを防ぐ */
 @media (max-width: 767px) {
   .admin-scope input:not([type="checkbox"]):not([type="radio"]),
   .admin-scope textarea,
@@ -188,9 +188,7 @@ body {
   }
 }
 
-/* GPU アクセラレーション（モバイルのガクつき防止）。
-   ※ will-change は本当にアニメするオーバーレイ要素のみに限定。
-   全カード(.card-hover)に付けると多数のGPUレイヤーが生成され逆効果になるため除外。 */
+/* GPU アクセラレーション（モバイルのガクつき防止） */
 .dm-sheet,
 .dm-fade {
   will-change: transform;
@@ -203,7 +201,7 @@ body {
 @media (hover: hover) {
   .card-hover:hover {
     transform: translateY(-2px) translateZ(0);
-    box-shadow: 0 4px 24px -8px rgba(11, 31, 58, 0.18);
+    box-shadow: 0 4px 24px -8px rgba(42, 32, 24, 0.18);
   }
   html.dark .card-hover:hover {
     box-shadow: 0 6px 28px -8px rgba(0, 0, 0, 0.55);

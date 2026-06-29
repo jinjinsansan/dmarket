@@ -13,7 +13,7 @@ const robotoMono = Roboto_Mono({ variable: "--font-roboto-mono", subsets: ["lati
 export const metadata: Metadata = {
   // OGP/Twitterカード/canonical の絶対URL基点。redirect URI と同じ env を参照（末尾スラッシュ・空白除去）。
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "") || "https://d-market.io"),
-  title: "D-market — ポイントで読む、世界の確率。",
+  title: "ゴリラ予想 — 予想して、当てて、楽しむ。",
   description: "無償ポイントで楽しむ予測市場。換金不可・譲渡禁止。予想を当てて貯めた賞品ポイントは景品と交換できます。",
 };
 
@@ -23,8 +23,8 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-// テーマ初期化（描画前に適用してフラッシュ防止）。既定はダーク。明示的に light を選んだ時のみライト。
-const themeScript = `(function(){try{var t=localStorage.getItem('dm-theme');if(t!=='light'){document.documentElement.classList.add('dark')}}catch(e){document.documentElement.classList.add('dark')}})();`;
+// テーマ初期化（描画前に適用してフラッシュ防止）。既定はライト（白基調方針）。明示的に dark を選んだ時のみダーク。
+const themeScript = `(function(){try{var t=localStorage.getItem('dm-theme');if(t==='dark'){document.documentElement.classList.add('dark')}}catch(e){}})();`;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (

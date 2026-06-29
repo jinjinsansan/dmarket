@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { LegalHeader } from "@/components/LegalHeader";
 
 export const metadata: Metadata = {
-  title: "利用規約 | D-market",
-  description: "D-market（ディーマーケット）の利用規約。換金不可・無償発行・譲渡禁止のポイント制予測市場の利用条件を定めます。",
+  title: "利用規約 | ゴリラ予想",
+  description: "ゴリラ予想の利用規約。換金不可・無償発行・譲渡禁止のポイント制予測市場の利用条件を定めます。",
 };
 
 const UPDATED = "2026年6月19日";
@@ -16,7 +16,7 @@ export default function TermsPage() {
         <LegalHeader title="利用規約" updated={UPDATED} />
 
         <p className="lead">
-          本利用規約（以下「本規約」といいます）は、D-market（以下「本サービス」といいます）の提供条件および本サービスの運営者（以下「当社」といいます）と利用者との間の権利義務関係を定めるものです。本サービスを利用する方（以下「利用者」といいます）は、本規約に同意のうえご利用ください。
+          本利用規約（以下「本規約」といいます）は、ゴリラ予想（以下「本サービス」といいます）の提供条件および本サービスの運営者（以下「当社」といいます）と利用者との間の権利義務関係を定めるものです。本サービスを利用する方（以下「利用者」といいます）は、本規約に同意のうえご利用ください。
         </p>
 
         <h2>第1条（適用）</h2>

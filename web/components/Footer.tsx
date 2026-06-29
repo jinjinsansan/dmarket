@@ -9,11 +9,10 @@ export function Footer() {
         <div>
           <div className="flex items-center gap-2.5 mb-3">
             <Logo size={28} />
-            <span className="font-bold text-[17px]">D-<span className="text-dim font-medium">market</span></span>
+            <span className="font-bold text-[17px]">ゴリラ<span className="text-primary">予想</span></span>
           </div>
           <p className="text-[12.5px] text-dim leading-7 max-w-xs">
             無償ポイント制の予測市場。換金不可・譲渡禁止。予想を当てて貯めた賞品ポイントは景品と交換できます。
-            <b className="text-text font-bold"> D-swipe</b> ファミリーのプロダクトです。
           </p>
         </div>
         <FooterCol title="プロダクト" links={[["マーケット", "/"], ["ランキング", "/leaderboard"], ["マイページ", "/mypage"]]} />
@@ -22,7 +21,7 @@ export function Footer() {
       </div>
       <div className="border-t border-border">
         <div className="max-w-[1240px] mx-auto px-4 md:px-[22px] py-3.5 flex justify-between flex-wrap gap-2 text-[11.5px] text-faint">
-          <span>© 2026 D-market</span>
+          <span>© 2026 ゴリラ予想</span>
           <span>本サービスは賭博に該当しません（ポイントは無償発行・換金不可・譲渡禁止）。<a href="/legal/no-gambling" className="underline hover:text-text">詳細</a></span>
         </div>
       </div>

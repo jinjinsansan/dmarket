@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { LegalHeader } from "@/components/LegalHeader";
 
 export const metadata: Metadata = {
-  title: "プライバシーポリシー | D-market",
-  description: "D-market（ディーマーケット）のプライバシーポリシー。取得する情報、利用目的、第三者提供、安全管理について定めます。",
+  title: "プライバシーポリシー | ゴリラ予想",
+  description: "ゴリラ予想のプライバシーポリシー。取得する情報、利用目的、第三者提供、安全管理について定めます。",
 };
 
 const UPDATED = "2026年6月19日";
@@ -16,7 +16,7 @@ export default function PrivacyPage() {
         <LegalHeader title="プライバシーポリシー" updated={UPDATED} />
 
         <p className="lead">
-          D-market（以下「本サービス」といいます）の運営者（以下「当社」といいます）は、利用者の個人情報・利用者情報（以下あわせて「利用者情報」といいます）の保護を重要と考え、以下の方針に従い適切に取り扱います。
+          ゴリラ予想（以下「本サービス」といいます）の運営者（以下「当社」といいます）は、利用者の個人情報・利用者情報（以下あわせて「利用者情報」といいます）の保護を重要と考え、以下の方針に従い適切に取り扱います。
         </p>
 
         <h2>1. 取得する情報</h2>

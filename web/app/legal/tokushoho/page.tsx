@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { LegalHeader } from "@/components/LegalHeader";
 
 export const metadata: Metadata = {
-  title: "特定商取引法に基づく表記 | D-market",
-  description: "D-market（ディーマーケット）の特定商取引法に基づく表記。運営者・連絡先・景品提供に関する事項を記載します。",
+  title: "特定商取引法に基づく表記 | ゴリラ予想",
+  description: "ゴリラ予想の特定商取引法に基づく表記。運営者・連絡先・景品提供に関する事項を記載します。",
 };
 
 const UPDATED = "2026年6月19日";
@@ -25,7 +25,7 @@ export default function TokushohoPage() {
         <LegalHeader title="特定商取引法に基づく表記" updated={UPDATED} />
 
         <p className="lead">
-          本サービス（D-market）は、ポイント（参加ポイント・賞品ポイント）を金銭で販売しておらず、利用者から金銭の支払いを受けるものではありません。本表記は、景品の提供に関する事項の透明性のために掲載するものです。
+          本サービス（ゴリラ予想）は、ポイント（参加ポイント・賞品ポイント）を金銭で販売しておらず、利用者から金銭の支払いを受けるものではありません。本表記は、景品の提供に関する事項の透明性のために掲載するものです。
         </p>
 
         <h2>運営者</h2>

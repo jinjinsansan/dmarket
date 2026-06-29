@@ -91,7 +91,7 @@ export function TopNav() {
             {loggedIn ? (
               <>
                 <div title="参加ポイント残高（売買に使うポイント）" className="flex items-center gap-[7px] h-[38px] px-3 bg-surface2 border border-border rounded-[10px]">
-                  <svg width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#0891b2" /><circle cx="12" cy="12" r="4.4" fill="#e6faff" /></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#F4BE1F" /><circle cx="12" cy="12" r="4.4" fill="#fff" /></svg>
                   <span className="mono text-sm font-bold">{balance === null ? "—" : formatPoints(balance)}</span>
                   <span className="text-xs text-dim font-semibold">参加pt</span>
                 </div>

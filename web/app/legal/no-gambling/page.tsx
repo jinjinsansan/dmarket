@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { LegalHeader } from "@/components/LegalHeader";
 
 export const metadata: Metadata = {
-  title: "賭博非該当について | D-market",
-  description: "D-market が賭博に該当しない理由の説明。市場の予測に用いる参加ポイントは無償発行・換金不可・譲渡禁止で財産的価値がなく、利用者は自己の財産を一切賭けておらず、賭博罪の構成要件を満たしません。",
+  title: "賭博非該当について | ゴリラ予想",
+  description: "ゴリラ予想 が賭博に該当しない理由の説明。市場の予測に用いる参加ポイントは無償発行・換金不可・譲渡禁止で財産的価値がなく、利用者は自己の財産を一切賭けておらず、賭博罪の構成要件を満たしません。",
 };
 
 const UPDATED = "2026年6月19日";
@@ -16,7 +16,7 @@ export default function NoGamblingPage() {
         <LegalHeader title="賭博非該当について" updated={UPDATED} />
 
         <p className="lead">
-          D-market（以下「本サービス」といいます）は、将来の出来事の結果を予測して楽しむ<strong>娯楽サービス</strong>です。本ページでは、本サービスの設計と、当社がどのように賭博等の問題が生じないよう配慮しているかを説明します。
+          ゴリラ予想（以下「本サービス」といいます）は、将来の出来事の結果を予測して楽しむ<strong>娯楽サービス</strong>です。本ページでは、本サービスの設計と、当社がどのように賭博等の問題が生じないよう配慮しているかを説明します。
         </p>
 
         <h2>1. 賭博罪の構成要件</h2>

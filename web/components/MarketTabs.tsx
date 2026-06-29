@@ -9,7 +9,7 @@ import type { Outcome } from "@/lib/types";
 type Tab = "book" | "holders" | "activity" | "comments";
 const TABS: [Tab, string][] = [["book", "注文板"], ["holders", "保有者"], ["activity", "取引履歴"], ["comments", "コメント"]];
 
-const AVATAR_COLORS = ["#2d6cdf", "#15a35b", "#f59e0b", "#8b5cf6", "#ec4899", "#0e9488"];
+const AVATAR_COLORS = ["#7b46e3", "#f4be1f", "#e08a2b", "#3fa8b5", "#e0608a", "#6e8bd8"];
 const colorOf = (s: string) => AVATAR_COLORS[[...s].reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR_COLORS.length];
 const timeAgo = (iso: string) => {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
