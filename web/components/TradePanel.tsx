@@ -97,25 +97,37 @@ export function TradePanel({
   return (
     <Panel>
       <div className="grid grid-cols-2 gap-1 p-1 bg-surface2 rounded-[11px] mb-4">
-        <SideBtn active={side === "buy"} kind="pos" onClick={() => setSide("buy")}>買う / Buy</SideBtn>
-        <SideBtn active={side === "sell"} kind="neg" onClick={() => setSide("sell")}>売る / Sell</SideBtn>
+        <SideBtn active={side === "buy"} kind="pos" onClick={() => setSide("buy")}>乗る</SideBtn>
+        <SideBtn active={side === "sell"} kind="neg" onClick={() => setSide("sell")}>おりる</SideBtn>
       </div>
 
-      <div className="space-y-1.5 mb-4">
-        {outcomes.map((o, i) => (
-          <button key={o.id} onClick={() => setPickIdx(i)}
-            className={`btn-press w-full flex items-center justify-between px-3 py-3 rounded-[10px] border-[1.5px] transition-all ${i === pickIdx ? (i === 0 ? "border-pos bg-pos-weak" : i === 1 ? "border-neg bg-neg-weak" : "border-primary bg-primary-weak") : "border-border bg-surface hover:border-primary/50"}`}>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full shrink-0" style={{ background: i === 0 ? "var(--pos)" : i === 1 ? "var(--neg)" : "var(--primary)" }} />
+      <div className="text-[13px] font-extrabold mb-2.5">{side === "buy" ? "どっちに乗る？" : "どれをおりる？"}</div>
+
+      {outcomes.length === 2 ? (
+        <div className="flex gap-2 mb-4">
+          {outcomes.map((o, i) => {
+            const sel = i === pickIdx;
+            const pos = i === 0;
+            return (
+              <button key={o.id} onClick={() => setPickIdx(i)}
+                className={`btn-press flex-1 rounded-[13px] p-3 text-center border-2 transition-all ${sel ? (pos ? "border-pos bg-pos-weak" : "border-neg bg-neg-weak") : "border-border bg-surface hover:border-primary/40"}`}>
+                <div className={`text-[13px] font-extrabold ${sel ? (pos ? "text-pos" : "text-neg") : "text-dim"}`}>{o.label}</div>
+                <div className={`mono text-[22px] font-extrabold leading-none mt-0.5 ${pos ? "text-pos" : "text-neg"}`}>{Math.round(prices[i] * 100)}%</div>
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="space-y-1.5 mb-4">
+          {outcomes.map((o, i) => (
+            <button key={o.id} onClick={() => setPickIdx(i)}
+              className={`btn-press w-full flex items-center justify-between px-3 py-3 rounded-[10px] border-[1.5px] transition-all ${i === pickIdx ? "border-primary bg-primary-weak" : "border-border bg-surface hover:border-primary/50"}`}>
               <span className="text-sm font-bold">{o.label}</span>
-            </div>
-            <div className="text-right">
-              <div className="mono text-[18px] font-extrabold leading-none" style={{ color: i === 0 ? "var(--pos)" : i === 1 ? "var(--neg)" : "var(--primary)" }}>{Math.round(prices[i] * 100)}%</div>
-              <div className="text-[11px] text-dim">{toCents(prices[i])}</div>
-            </div>
-          </button>
-        ))}
-      </div>
+              <span className="mono text-[18px] font-extrabold text-primary">{Math.round(prices[i] * 100)}%</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {positions[outcomes[pickIdx]?.id] && (() => {
         const ps = positions[outcomes[pickIdx].id];
@@ -174,13 +186,13 @@ export function TradePanel({
       )}
 
       <button onClick={submit} disabled={busy}
-        className="btn-press w-full font-extrabold text-[15.5px] py-3.5 rounded-[12px] text-white disabled:opacity-50"
-        style={{ background: side === "buy" ? "var(--pos)" : "var(--neg)" }}>
-        {busy ? "処理中…" : `${outcomes[pickIdx]?.label}を${side === "buy" ? "買う" : "売る"}`}
+        className="btn-press w-full font-extrabold text-[15.5px] py-3.5 rounded-[14px] text-white disabled:opacity-50"
+        style={{ background: pickIdx === 0 ? "var(--pos)" : pickIdx === 1 ? "var(--neg)" : "var(--primary)" }}>
+        {busy ? "処理中…" : side === "buy" ? `${outcomes[pickIdx]?.label}に乗る` : `${outcomes[pickIdx]?.label}からおりる`}
       </button>
 
       {msg && <p className="text-sm text-center text-dim mt-2.5">{msg}</p>}
-      <p className="text-[11.5px] text-faint text-center mt-3 leading-relaxed">換金不可・無償ポイント（景品交換あり） / No cash-out</p>
+      <p className="text-[11.5px] text-faint text-center mt-3 leading-relaxed">換金不可・無償の参加ポイント（賭けではありません）</p>
     </Panel>
   );
 }

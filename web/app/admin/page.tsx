@@ -2,6 +2,7 @@
 // 管理ダッシュボード: KPI＋カテゴリ現況（Dashboard）＋各機能へのメニューカード。
 import Link from "next/link";
 import { Dashboard } from "@/components/admin/Dashboard";
+import { Logo } from "@/components/Logo";
 
 const MENU = [
   { href: "/admin/economy", title: "経済モニタ", desc: "参加ポイント供給・LMSR補助金・インフレ監視・手動ジョブ", icon: "￥" },
@@ -19,6 +20,12 @@ const MENU = [
 export default function AdminDashboardPage() {
   return (
     <div className="space-y-8">
+      <div className="flex items-center gap-3.5">
+        <Logo size={38} />
+        <h1 className="text-[22px] font-extrabold">管理コンソール</h1>
+        <span className="ml-auto text-[12px] font-extrabold text-primary bg-primary-weak px-3.5 py-1.5 rounded-full">管理者</span>
+      </div>
+
       {/* メニュー */}
       <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))" }}>
         {MENU.map((m) => (

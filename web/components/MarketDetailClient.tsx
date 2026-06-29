@@ -4,8 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { lmsrPrices } from "@/lib/lmsr";
-import { toPct, toCents, timeRemaining, statusLabel } from "@/lib/format";
-import { marketVisual } from "@/lib/market-visual";
+import { toCents, timeRemaining, statusLabel } from "@/lib/format";
 import type { MarketWithOutcomes, PricePoint, Resolution } from "@/lib/types";
 import { ProbabilityChart } from "./ProbabilityChart";
 import { TradePanel } from "./TradePanel";
@@ -23,8 +22,12 @@ export function MarketDetailClient({
   const [livePoints, setLivePoints] = useState<PricePoint[]>([]);
   const [pickIdx, setPickIdx] = useState(initialPick);
   const [sheetOpen, setSheetOpen] = useState(false);
-  const vis = marketVisual({ id: market.id, slug: market.category?.slug, image_url: market.image_url });
   const applyTraded = (id: string, q: number) => setOutcomes((prev) => prev.map((o) => (o.id === id ? { ...o, q } : o)));
+  const shareMarket = () => {
+    const url = `${window.location.origin}/market/${market.id}`;
+    const text = `${market.question}\nゴリラ予想で予想中🦍`;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, "_blank", "noopener,noreferrer");
+  };
 
   useEffect(() => {
     const sb = createClient();
@@ -86,22 +89,21 @@ export function MarketDetailClient({
       <div className="flex flex-wrap gap-6 items-start">
         {/* 左カラム */}
         <div className="flex-[1_1_460px] flex flex-col gap-[18px] min-w-0">
-          <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-[14px] grid place-items-center text-white text-2xl font-extrabold shrink-0"
-              style={{ background: vis.image ? `url(${vis.image}) center/cover` : vis.tint }}>{!vis.image && vis.glyph}</div>
-            <div>
-              <div className="text-[12.5px] text-dim mb-1.5">
-                <span className="text-primary font-bold">{market.category?.name ?? "市場"}</span> · 状態 {statusLabel(market.status)}
-                {isOpen && <> · {timeRemaining(market.close_time)}</>}
-              </div>
-              <h1 className="text-[23px] font-extrabold leading-snug">{market.question}</h1>
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-[12px] font-extrabold text-primary">{market.category?.name ?? "市場"}</span>
+              <span className="text-[11px] text-dim">· {statusLabel(market.status)}{isOpen ? ` · ${timeRemaining(market.close_time)}` : ""}</span>
+              <button onClick={shareMarket} className="btn-press ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold text-primary bg-primary-weak px-3 py-1.5 rounded-full hover:opacity-80">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M18.9 1.6h3.7l-8.1 9.2L24 22.4h-7.4l-5.8-7.6-6.7 7.6H.5l8.6-9.9L0 1.6h7.6l5.2 6.9 6.1-6.9Zm-1.3 18.6h2L6.5 3.7H4.3l13.3 16.5Z" /></svg>シェア
+              </button>
             </div>
+            <h1 className="text-[23px] font-extrabold leading-snug">{market.question}</h1>
           </div>
 
           {/* 確率＋チャート */}
           <div className="border border-border bg-surface rounded-[var(--radius)] p-5" style={{ boxShadow: "var(--shadow)" }}>
             <div className="flex items-end gap-3 mb-3">
-              <span className="mono text-[42px] font-bold leading-none" style={{ color: vis.tint }}>{animatedPct}%</span>
+              <span className="mono text-[46px] font-extrabold leading-none text-primary">{animatedPct}%</span>
               <div className="pb-1.5">
                 {delta !== 0 && (
                   <span className={`text-[13px] font-bold ${delta >= 0 ? "text-pos" : "text-neg"}`}>{delta >= 0 ? "▲" : "▼"} {Math.abs(delta)}pt</span>
@@ -109,7 +111,7 @@ export function MarketDetailClient({
                 <p className="text-[12px] text-dim">{outcomes[0]?.label} の確率</p>
               </div>
             </div>
-            <ProbabilityChart outcomes={outcomes} history={allHistory} color={vis.tint} />
+            <ProbabilityChart outcomes={outcomes} history={allHistory} color="var(--primary)" />
           </div>
 
           {/* アウトカム */}

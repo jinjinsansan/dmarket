@@ -24,7 +24,7 @@ export function LeaderboardView({ rows }: { rows: RankRow[] }) {
   return (
     <div className="max-w-[880px] mx-auto px-4 md:px-[22px] py-6 pb-20 dm-in">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h1 className="text-[22px] sm:text-[23px] font-extrabold">ランキング / Leaderboard</h1>
+        <h1 className="text-[22px] sm:text-[24px] font-black">ランキング</h1>
         <div className="flex gap-1 p-[3px] bg-surface2 border border-border rounded-[12px] w-full sm:w-auto">
           <Seg active={mode === "networth"} onClick={() => setMode("networth")}>総資産</Seg>
           <Seg active={mode === "accuracy"} onClick={() => setMode("accuracy")}>的中率</Seg>
@@ -40,14 +40,15 @@ export function LeaderboardView({ rows }: { rows: RankRow[] }) {
           <div className="grid grid-cols-3 gap-3 mb-6 items-end">
             {podium.map((r, i) => (
               <div key={r.user_id}
-                className="border border-border bg-surface rounded-[var(--radius)] p-4 text-center"
-                style={{ boxShadow: "var(--shadow)", transform: i === 0 ? "translateY(-8px)" : undefined }}>
-                <div className="mono w-7 h-7 mx-auto rounded-full grid place-items-center text-white text-sm font-bold mb-2" style={{ background: MEDAL[i] }}>{i + 1}</div>
-                <div className="w-12 h-12 mx-auto rounded-full grid place-items-center text-white font-extrabold mb-2" style={{ background: "var(--grad)" }}>
+                className={`bg-surface rounded-[16px] p-4 text-center ${i === 0 ? "border-2" : "border border-border"}`}
+                style={{ boxShadow: "var(--shadow)", transform: i === 0 ? "translateY(-10px)" : undefined, borderColor: i === 0 ? "var(--accent2)" : undefined }}>
+                <div className="mono w-7 h-7 mx-auto rounded-full grid place-items-center text-white text-sm font-extrabold mb-2" style={{ background: MEDAL[i] }}>{i + 1}</div>
+                <div className="w-12 h-12 mx-auto rounded-full grid place-items-center font-black text-lg mb-2"
+                  style={{ background: i === 0 ? "var(--primary-weak)" : "var(--surface2)", color: i === 0 ? "var(--primary)" : "var(--text)" }}>
                   {r.display_name.slice(0, 1)}
                 </div>
-                <div className="text-sm font-bold truncate">{r.display_name}</div>
-                <div className="mono text-[15px] font-bold text-primary mt-1">{valueOf(r)}</div>
+                <div className="text-sm font-extrabold truncate">{r.display_name}</div>
+                <div className="mono text-[15px] font-extrabold text-text mt-1">{valueOf(r)}</div>
               </div>
             ))}
           </div>

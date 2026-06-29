@@ -37,55 +37,77 @@ export default function EarnPage() {
   if (loading) return <Center>読み込み中…</Center>;
 
   return (
-    <div className="max-w-[1100px] mx-auto px-4 md:px-[22px] py-6 pb-20 dm-in space-y-5">
-      <div>
-        <h1 className="text-[23px] font-bold">ポイントを貯める / Earn</h1>
-        <p className="text-[13px] text-dim mt-1">提携サービスの案件を完了すると、<b className="text-text">参加ポイント</b>を無償でプレゼント。お金は一切かかりません。</p>
-      </div>
+    <div className="max-w-[760px] mx-auto px-4 md:px-[22px] py-6 pb-20 dm-in">
+      <header>
+        <h1 className="text-[24px] font-black">貯める</h1>
+        <p className="text-[12px] text-dim mt-1">もらえるのは<b className="text-text">換金不可の参加ポイント</b>です</p>
+      </header>
 
-      <div className="border border-border bg-surface rounded-[var(--radius)] p-4 text-[12.5px] text-dim leading-relaxed" style={{ boxShadow: "var(--shadow)" }}>
-        ① 案件の「貯める」を押す → ② 提携先で登録などの条件を達成 → ③ 確認後に参加ポイントを付与（反映に数日かかる場合があります）。
-      </div>
-
-      {err && <p className="text-sm text-neg">{err}</p>}
+      {err && <p className="text-sm text-neg mt-4">{err}</p>}
       {!loggedIn && (
-        <p className="text-sm text-dim border border-border bg-surface rounded-[var(--radius)] p-4">
-          案件に参加するにはログインが必要です。<a href="/api/auth/line/login" className="text-primary underline">LINEでログイン →</a>
+        <p className="text-sm text-dim border border-border bg-surface rounded-[16px] p-4 mt-4">
+          参加するにはログインが必要です。<a href="/api/auth/line/login" className="text-primary underline">LINEでログイン →</a>
         </p>
       )}
 
+      {/* ボーナス（近日公開） */}
+      <h2 className="text-[13px] font-extrabold text-dim mt-6 mb-2.5">ボーナス</h2>
+      <div className="space-y-3">
+        <BonusRow tone="primary" title="Xでシェアボーナス" sub={<>予想をシェアで <b className="text-text mono">+20pt</b>／日</>} soon
+          icon={<svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor"><path d="M18.9 1.6h3.7l-8.1 9.2L24 22.4h-7.4l-5.8-7.6-6.7 7.6H.5l8.6-9.9L0 1.6h7.6l5.2 6.9 6.1-6.9Zm-1.3 18.6h2L6.5 3.7H4.3l13.3 16.5Z" /></svg>} />
+        <BonusRow tone="pos" title="友達紹介" sub={<>1人につき <b className="text-text mono">+200pt</b></>} soon
+          icon={<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="9" cy="8" r="3.2" /><path d="M3 20a6 6 0 0 1 12 0M17 11h4M19 9v4" /></svg>} />
+        <div className="border border-border bg-surface rounded-[16px] p-[15px]" style={{ boxShadow: "var(--shadow)" }}>
+          <div className="text-[13px] font-extrabold mb-1.5">「乗っかり」→ 的中で +1%</div>
+          <p className="text-[11.5px] text-dim leading-[1.65]">友達の予想に乗っかって、その予想が的中したら、獲得ポイントの <b className="text-primary">1%</b> がボーナスでもらえる。みんなで当てるほどお得。<span className="text-faint">（近日公開）</span></p>
+        </div>
+      </div>
+
+      {/* 案件（実装済み） */}
+      <h2 className="text-[13px] font-extrabold text-dim mt-7 mb-2.5">案件でためる</h2>
+      <p className="text-[12px] text-dim mb-3 leading-relaxed">提携サービスの案件を完了すると参加ポイントを無償でプレゼント。①「貯める」→ ②提携先で条件達成 → ③確認後に付与（反映に数日かかる場合があります）。</p>
       {offers.length === 0 ? (
-        <p className="text-dim text-sm border border-border bg-surface rounded-[var(--radius)] p-8 text-center">
+        <p className="text-dim text-sm border border-border bg-surface rounded-[16px] p-8 text-center">
           現在ご案内できる案件はありません。順次追加予定です。<br />
           <Link href="/" className="text-primary underline">市場で予想する →</Link>
         </p>
       ) : (
-        <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(min(100%,300px),1fr))" }}>
+        <div className="space-y-3">
           {offers.map((o) => (
-            <div key={o.id} className="border border-border bg-surface rounded-[var(--radius)] overflow-hidden flex flex-col" style={{ boxShadow: "var(--shadow)" }}>
-              <div className="flex items-stretch">
-                <div className="w-24 shrink-0 bg-surface2 grid place-items-center overflow-hidden">
-                  {o.image_url ? <img src={o.image_url} alt={o.name} className="w-full h-full object-cover" /> : <span className="text-3xl">＋</span>}
-                </div>
-                <div className="p-3.5 flex-1 min-w-0">
-                  <div className="font-bold text-[14.5px] leading-snug">{o.name}</div>
-                  {o.description && <p className="text-[12px] text-dim leading-relaxed mt-1 line-clamp-3">{o.description}</p>}
-                </div>
+            <div key={o.id} className="border border-border bg-surface rounded-[16px] p-3.5 flex items-center gap-3" style={{ boxShadow: "var(--shadow)" }}>
+              <div className="w-12 h-12 rounded-[12px] bg-surface2 grid place-items-center overflow-hidden shrink-0">
+                {o.image_url ? <img src={o.image_url} alt={o.name} className="w-full h-full object-cover" /> : <span className="text-xl text-primary font-black">＋</span>}
               </div>
-              <div className="px-3.5 pb-3.5 mt-auto flex items-center justify-between gap-2">
-                <span className="mono text-pos font-bold text-[15px]">+{formatPoints(o.reward_points)} <span className="text-xs text-dim">参加pt</span></span>
-                <button onClick={() => go(o)} disabled={!loggedIn || busy === o.id}
-                  className="h-[38px] px-4 rounded-[11px] text-white font-bold text-[13px] disabled:opacity-40"
-                  style={{ background: "var(--grad)", boxShadow: loggedIn ? "var(--cta-glow)" : "none" }}>
-                  {busy === o.id ? "…" : loggedIn ? "貯める" : "要ログイン"}
-                </button>
+              <div className="flex-1 min-w-0">
+                <div className="font-extrabold text-[14px] leading-snug truncate">{o.name}</div>
+                <div className="mono text-pos font-extrabold text-[13.5px] mt-0.5">+{formatPoints(o.reward_points)}<span className="text-[11px] text-dim font-bold"> 参加pt</span></div>
               </div>
+              <button onClick={() => go(o)} disabled={!loggedIn || busy === o.id}
+                className="btn-press h-[38px] px-4 rounded-[11px] text-white font-bold text-[13px] disabled:opacity-40 shrink-0"
+                style={{ background: "var(--grad)", boxShadow: loggedIn ? "var(--cta-glow)" : "none" }}>
+                {busy === o.id ? "…" : loggedIn ? "貯める" : "要ログイン"}
+              </button>
             </div>
           ))}
         </div>
       )}
 
-      <p className="text-[11px] text-faint">参加ポイントは予想の売買に使う換金不可のポイントです（景品交換は賞品ポイント）。提携先での登録等はご自身の判断で行ってください。</p>
+      <p className="text-[10.5px] text-faint text-center leading-relaxed mt-6">付与されるポイントはすべて換金不可・無償の参加ポイントです。提携先での登録等はご自身の判断で行ってください。</p>
+    </div>
+  );
+}
+
+function BonusRow({ tone, title, sub, icon, soon }: { tone: "primary" | "pos"; title: string; sub: React.ReactNode; icon: React.ReactNode; soon?: boolean }) {
+  const tc = tone === "primary" ? "text-primary" : "text-pos";
+  const bg = tone === "primary" ? "bg-primary-weak" : "bg-pos-weak";
+  return (
+    <div className="border border-border bg-surface rounded-[16px] p-3.5 flex items-center gap-3" style={{ boxShadow: "var(--shadow)" }}>
+      <div className={`w-10 h-10 rounded-[11px] grid place-items-center shrink-0 ${bg} ${tc}`}>{icon}</div>
+      <div className="flex-1 min-w-0">
+        <div className="text-[13px] font-extrabold">{title}</div>
+        <div className="text-[11px] text-dim">{sub}</div>
+      </div>
+      <span className={`text-[11px] font-extrabold ${tc} ${bg} px-3 py-1.5 rounded-[10px] shrink-0`}>{soon ? "近日公開" : "受け取る"}</span>
     </div>
   );
 }

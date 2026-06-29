@@ -39,15 +39,13 @@ export default function PrizesPage() {
 
   return (
     <div className="max-w-[1100px] mx-auto px-4 md:px-[22px] py-6 pb-20 dm-in space-y-5">
-      <div className="flex items-end justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-[23px] font-bold">景品交換 / Prizes</h1>
-          <p className="text-[13px] text-dim mt-1">予想を当てて貯めた<b className="text-text">賞品ポイント</b>を景品と交換できます（確定交換・抽選なし）。</p>
-        </div>
+      <div>
+        <h1 className="text-[24px] font-black">景品交換</h1>
+        <p className="text-[12px] text-dim mt-1 mb-3">予想を当てて貯めた<b className="text-text">賞品ポイント</b>を交換（確定交換・抽選なし）</p>
         {loggedIn && (
-          <div className="border border-border bg-surface rounded-[14px] px-4 py-2.5 text-right" style={{ boxShadow: "var(--shadow)" }}>
-            <div className="text-[11px] text-dim font-semibold">賞品ポイント残高</div>
-            <div className="mono text-[22px] font-bold text-primary">{formatPoints(balance)}<span className="text-xs text-dim"> pt</span></div>
+          <div className="flex justify-between items-center rounded-[14px] px-4 py-3 border" style={{ background: "var(--primary-weak)", borderColor: "var(--primary)" }}>
+            <span className="text-[12px] font-extrabold text-primary">賞品ポイント残高</span>
+            <span className="mono text-[20px] font-extrabold text-primary">{formatPoints(balance)} <span className="text-[12px]">pt</span></span>
           </div>
         )}
       </div>
