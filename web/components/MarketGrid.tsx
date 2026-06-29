@@ -74,27 +74,25 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
   // ヒーロー用データ（注目＝先頭、今日のお題＝天気優先）
   const catEmoji = (slug?: string | null) => (({ weather: "🌤", ent: "🎬", crypto: "₿", fx: "💱", news: "📰", keiba: "🐎", sports: "⚽" }) as Record<string, string>)[slug ?? ""] ?? "🌍";
   const toHero = (m: MarketWithOutcomes) => ({ id: m.id, question: m.question, yesPct: Math.round(yesPct(m)), flag: catEmoji(m.category?.slug) });
-  const heroFeatured = trending[0];
-  const heroDaily = markets.find((m) => m.category?.slug === "weather") ?? trending[1] ?? trending[0];
+  // 今日のお題＝天気カテゴリを優先、無ければ締切が近い先頭
+  const heroDaily = markets.find((m) => m.category?.slug === "weather") ?? trending[0];
 
   return (
     <div className="max-w-[1240px] mx-auto px-4 md:px-[22px] py-5 pb-20 dm-in">
       {/* 細いカテゴリナビ（本家風） */}
       <CategoryNav categories={categories} active={activeCat} onSelect={setActiveCat} />
 
-      {/* ヒーロー（A:ようこそ / B:今日のお題 を訪問毎に交互）＋注目（デスクトップ） */}
-      {heroFeatured && (
-        <div className="hidden md:flex gap-4 mb-6 items-stretch">
-          <div className="flex-[2_1_460px] min-w-0">
-            <Hero featured={toHero(heroFeatured)} daily={toHero(heroDaily)} />
+      {/* ヒーロー（紫「今日のお題」・モバイル/デスクトップ両対応）＋注目トピック（デスクトップのみ右） */}
+      {heroDaily && (
+        <div className="flex flex-col md:flex-row gap-4 mb-6 md:items-stretch">
+          <div className="md:flex-[2_1_460px] min-w-0">
+            <Hero daily={toHero(heroDaily)} />
           </div>
-          <Trending list={trending} yesPct={yesPct} />
+          <div className="hidden md:block flex-[1_1_280px] min-w-0">
+            <Trending list={trending} yesPct={yesPct} />
+          </div>
         </div>
       )}
-      <div className="md:hidden mb-4">
-        <h1 className="text-lg font-extrabold">予測市場</h1>
-        <p className="text-xs text-dim">{markets.length} マーケット · Realtime</p>
-      </div>
 
       {/* マーケット一覧ヘッダー */}
       <div className="flex items-center justify-between gap-3 mb-3">
