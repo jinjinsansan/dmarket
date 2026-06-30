@@ -73,7 +73,7 @@ export default function MyPage() {
         sb.from("user_stats").select("net_worth, win_count, resolved_count, current_streak").eq("user_id", user.id).maybeSingle(),
         sb.from("positions").select("shares, cost_basis, outcome:outcomes(id, label, market_id)").gt("shares", 0),
         sb.from("point_ledger").select("id, delta, reason, shares, balance_after, created_at").order("created_at", { ascending: false }).limit(50),
-        sb.from("prize_ledger").select("id, delta, reason, expires_at, balance_after, created_at").order("created_at", { ascending: false }).limit(50),
+        sb.from("prize_ledger").select("id, delta, reason, market_id, expires_at, balance_after, created_at, market:markets(question)").order("created_at", { ascending: false }).limit(50),
         sb.from("badges").select("id, name, description"),
         sb.from("user_badges").select("badge_id").eq("user_id", user.id),
         sb.rpc("my_redemptions"),
@@ -83,7 +83,7 @@ export default function MyPage() {
 
     setBalance(wallet?.balance ?? 0);
     setPrizeBalance(prizeWallet?.balance ?? 0);
-    setPrizeLedger((prizeLed as PrizeLedgerRow[]) ?? []);
+    setPrizeLedger((prizeLed as unknown as PrizeLedgerRow[]) ?? []);
     if (profile?.display_name) setLineName(profile.display_name);
     setNickname((profile?.nickname as string) ?? "");
     setAvatarUrl((profile?.avatar_url as string) ?? "");
@@ -363,10 +363,13 @@ export default function MyPage() {
             <div className="mt-4 border-t border-border divide-y divide-border">
               {prizeLedger.map((l) => (
                 <div key={l.id} className="flex items-center gap-3 py-2.5 text-sm">
-                  <span className="mono text-dim text-xs w-32">{new Date(l.created_at).toLocaleString("ja-JP")}</span>
-                  <span className="flex-1">{PRIZE_REASON_LABEL[l.reason] ?? l.reason}</span>
+                  <span className="mono text-dim text-xs w-32 shrink-0">{new Date(l.created_at).toLocaleString("ja-JP")}</span>
+                  <span className="flex-1 min-w-0">
+                    <span className="font-semibold">{PRIZE_REASON_LABEL[l.reason] ?? l.reason}</span>
+                    {l.market?.question && <span className="block text-[11px] text-dim truncate">{l.market.question}</span>}
+                  </span>
                   {l.delta > 0 && l.expires_at && (
-                    <span className="text-xs text-dim">〜{new Date(l.expires_at).toLocaleDateString("ja-JP")}</span>
+                    <span className="text-xs text-dim shrink-0">〜{new Date(l.expires_at).toLocaleDateString("ja-JP")}</span>
                   )}
                   <span className={`mono ${l.delta >= 0 ? "text-pos" : "text-neg"}`}>{l.delta >= 0 ? "+" : ""}{formatPoints(l.delta)}</span>
                   <span className="mono text-xs text-dim w-20 text-right">{formatPoints(l.balance_after)}</span>

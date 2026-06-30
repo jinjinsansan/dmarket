@@ -75,6 +75,8 @@ export interface PrizeLedgerRow {
   id: number;
   delta: number;
   reason: string;
+  market_id?: string | null;
+  market?: { question: string } | null;
   expires_at: string | null;
   balance_after: number;
   created_at: string;
