@@ -11,7 +11,7 @@ const UPDATED = "2026年6月19日";
 
 // ⚠️ 仮情報（リリース前）。リリース時に正式な情報へ差し替えること。
 const OPERATOR = {
-  company: "ゴリラ予想運営",
+  company: "ゴリラ予想運営（法人化予定）",
   manager: "木村 綾香",
   address: "東京都港区銀座",
   lineUrl: "https://lin.ee/Zts2DeT", // 公式LINE
