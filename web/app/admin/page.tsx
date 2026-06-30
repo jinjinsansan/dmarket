@@ -7,6 +7,9 @@ import { Dashboard } from "@/components/admin/Dashboard";
 
 type Item = { href: string; title: string; desc: string; icon: string };
 const GROUPS: { title: string; items: Item[] }[] = [
+  { title: "はじめに", items: [
+    { href: "/admin/guide", title: "運営ガイド（必読）", desc: "立ち上げ期の考え方・LMSR/AMM・市場の作り方と成立のさせ方", icon: "📘" },
+  ] },
   { title: "市場運営", items: [
     { href: "/admin/create", title: "市場作成", desc: "二択市場を手動で作成（初期YES確率でシード）", icon: "＋" },
     { href: "/admin/templates", title: "テンプレート", desc: "天気・デイリーなどの自動生成テンプレ", icon: "▥" },
