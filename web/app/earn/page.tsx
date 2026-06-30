@@ -178,10 +178,10 @@ export default function EarnPage() {
           )}
         </div>
 
-        {/* 乗っかり（近日公開） */}
+        {/* シェアで応援ボーナス（乗っかり） */}
         <div className="border border-border bg-surface rounded-[16px] p-[15px]" style={{ boxShadow: "var(--shadow)" }}>
-          <div className="text-[13px] font-extrabold mb-1.5">「乗っかり」→ 的中で +1% <span className="text-[10px] font-bold text-pos bg-pos-weak px-1.5 py-px rounded">稼働中</span></div>
-          <p className="text-[11.5px] text-dim leading-[1.65]">市場の<b className="text-text">シェア</b>ボタンであなたのリンクを拡散 → 友達がそのリンクから乗って予想が的中すると、友達の獲得ポイントの <b className="text-primary">1%</b> があなたにボーナスで入ります（参加pt・換金不可）。みんなで当てるほどお得🦍</p>
+          <div className="text-[13px] font-extrabold mb-1.5">友達があなたのリンクで的中 → あなたに +1% <span className="text-[10px] font-bold text-pos bg-pos-weak px-1.5 py-px rounded">稼働中</span></div>
+          <p className="text-[11.5px] text-dim leading-[1.65]">あなたが市場の<b className="text-text">シェア</b>ボタンで広めたリンクから、友達が予想して的中すると、その獲得分の <b className="text-primary">1%</b> が<b className="text-text">あなた</b>にボーナスで入ります（参加pt・換金不可）。<b className="text-text">友達の取り分は減りません</b>。シェアして応援するほどお得🦍</p>
         </div>
       </div>
 
