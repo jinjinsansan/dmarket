@@ -48,6 +48,7 @@ export default function MyPage() {
   const [promo, setPromo] = useState("");
   const [promoBusy, setPromoBusy] = useState(false);
   const [promoMsg, setPromoMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [creatorStatus, setCreatorStatus] = useState<string | null>(null);
 
   const name = nickname || lineName;
 
@@ -60,7 +61,7 @@ export default function MyPage() {
     setUid(user.id);
 
     const [{ data: wallet }, { data: prizeWallet }, { data: profile }, { data: priv }, { data: st },
-      { data: positions }, { data: led }, { data: prizeLed }, { data: allBadges }, { data: mine }, { data: reds }] =
+      { data: positions }, { data: led }, { data: prizeLed }, { data: allBadges }, { data: mine }, { data: reds }, { data: cstat }] =
       await Promise.all([
         sb.from("wallets").select("balance").eq("user_id", user.id).maybeSingle(),
         sb.from("prize_wallets").select("balance").eq("user_id", user.id).maybeSingle(),
@@ -73,6 +74,7 @@ export default function MyPage() {
         sb.from("badges").select("id, name, description"),
         sb.from("user_badges").select("badge_id").eq("user_id", user.id),
         sb.rpc("my_redemptions"),
+        sb.rpc("my_creator_status"),
       ]);
 
     setBalance(wallet?.balance ?? 0);
@@ -85,6 +87,7 @@ export default function MyPage() {
     setStats((st as Stats) ?? { net_worth: wallet?.balance ?? 0, win_count: 0, resolved_count: 0, current_streak: 0 });
     setLedger((led as LedgerRow[]) ?? []);
     setRedemptions((reds as Redemption[]) ?? []);
+    setCreatorStatus(((cstat as { status: string }[] | null)?.[0]?.status) ?? null);
     const earned = new Set((mine ?? []).map((b) => b.badge_id));
     setBadges((allBadges ?? []).map((b) => ({ ...b, earned: earned.has(b.id) })));
 
@@ -248,6 +251,31 @@ export default function MyPage() {
           </button>
         </div>
         {promoMsg && <p className={`text-sm mt-2 font-semibold ${promoMsg.ok ? "text-pos" : "text-neg"}`}>{promoMsg.text}</p>}
+      </section>
+
+      {/* 市場づくり（クリエイター審査ステータス） */}
+      <section className="border border-border bg-surface rounded-[var(--radius)] p-5 flex items-center gap-3 flex-wrap" style={{ boxShadow: "var(--shadow)" }}>
+        <div className="flex-1 min-w-0">
+          <h2 className="text-[15px] font-bold">市場をつくる</h2>
+          <p className="text-[12px] text-dim mt-0.5">
+            {creatorStatus === "approved" ? "承認クリエイターです。市場を作成できます。"
+              : creatorStatus === "pending" ? "クリエイター審査中です。承認をお待ちください。"
+              : creatorStatus === "rejected" || creatorStatus === "dismissed" ? "前回の審査は通過しませんでした。再申請できます。"
+              : "審査に通ると、自分の市場を作れます（作成者テラ銭10%・参加ポイント）。"}
+          </p>
+        </div>
+        {creatorStatus === "approved" ? (
+          <span className="text-[12px] font-bold text-pos bg-pos/10 px-3 py-1.5 rounded-full">承認済み</span>
+        ) : creatorStatus === "pending" ? (
+          <span className="text-[12px] font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full">審査中</span>
+        ) : (
+          <Link href="/create" className="text-[12px] font-bold text-white px-4 py-2 rounded-full shrink-0" style={{ background: "var(--grad)" }}>
+            {creatorStatus ? "再申請する" : "審査を受ける"}
+          </Link>
+        )}
+        {creatorStatus === "approved" && (
+          <Link href="/create" className="text-[12px] font-bold text-primary underline shrink-0">市場を作る →</Link>
+        )}
       </section>
 
       {/* 景品の交換・配送状況 */}
