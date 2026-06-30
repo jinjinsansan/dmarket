@@ -126,7 +126,7 @@ export function MarketDetailClient({
                 <p className="text-[12px] text-dim">{outcomes[0]?.label} の確率</p>
               </div>
             </div>
-            <ProbabilityChart outcomes={outcomes} history={allHistory} color="var(--primary)" />
+            <ProbabilityChart outcomes={outcomes} history={allHistory} color="var(--primary)" currentPct={yesPct} />
           </div>
 
           {/* アウトカム */}

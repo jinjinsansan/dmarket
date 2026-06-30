@@ -9,16 +9,26 @@ const WINDOW_MS: Record<Range, number> = {
   "1H": 3.6e6, "6H": 2.16e7, "1D": 8.64e7, "1W": 6.048e8, "1M": 2.592e9, ALL: Infinity,
 };
 
-export function ProbabilityChart({ outcomes, history, color }: { outcomes: Outcome[]; history: PricePoint[]; color: string }) {
+export function ProbabilityChart({ outcomes, history, color, currentPct }: { outcomes: Outcome[]; history: PricePoint[]; color: string; currentPct?: number }) {
   const [range, setRange] = useState<Range>("ALL");
   const yesId = outcomes[0]?.id;
 
   const data = useMemo(() => {
-    const cutoff = Date.now() - WINDOW_MS[range];
-    return history
+    const now = Date.now();
+    const cutoff = now - WINDOW_MS[range];
+    const pts = history
       .filter((p) => p.outcome_id === yesId && new Date(p.recorded_at).getTime() >= cutoff)
       .map((p) => ({ t: new Date(p.recorded_at).getTime(), pct: Math.round(p.price * 100) }));
-  }, [history, yesId, range]);
+    // 取引が無い市場は履歴点が1個以下＝線が描けない。現在価格で水平のベースラインを補う。
+    if (currentPct != null && pts.length < 2) {
+      const cur = Math.round(currentPct);
+      const last = pts[pts.length - 1];
+      if (!last) return [{ t: now - 36e5, pct: cur }, { t: now, pct: cur }];
+      if (last.t < now) return [...pts, { t: now, pct: cur }];
+      return [{ t: last.t - 36e5, pct: last.pct }, ...pts];
+    }
+    return pts;
+  }, [history, yesId, range, currentPct]);
 
   return (
     <div>
