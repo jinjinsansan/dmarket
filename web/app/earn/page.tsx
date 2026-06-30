@@ -12,13 +12,24 @@ export default function EarnPage() {
   const [offers, setOffers] = useState<AffiliateOffer[]>([]);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const [refCode, setRefCode] = useState<string | null>(null);
+  const [refCount, setRefCount] = useState(0);
+  const [refInput, setRefInput] = useState("");
+  const [toast, setToast] = useState<string | null>(null);
+
+  const flash = (m: string) => { setToast(m); setTimeout(() => setToast(null), 2800); };
 
   const load = useCallback(async () => {
     const sb = createClient();
     const { data: { session } } = await sb.auth.getSession();
-    setLoggedIn(Boolean(session?.user));
+    const li = Boolean(session?.user);
+    setLoggedIn(li);
     const { data } = await sb.from("affiliate_offers").select("*").eq("is_active", true).order("display_order").order("created_at");
     setOffers((data as AffiliateOffer[]) ?? []);
+    if (li) {
+      const { data: rc } = await sb.rpc("my_referral_code");
+      if (rc?.code) { setRefCode(rc.code as string); setRefCount(Number(rc.count ?? 0)); }
+    }
     setLoading(false);
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -33,6 +44,30 @@ export default function EarnPage() {
     }
     window.location.href = data.url as string;
   }
+
+  async function claimShare() {
+    if (!loggedIn) { flash("シェアにはログインが必要です"); return; }
+    const { data, error } = await createClient().rpc("claim_share_bonus");
+    // 付与可否に関わらずシェア画面は開く（拡散が目的）
+    const text = "ゴリラ予想で未来を予想中🦍 換金不可ポイントで遊ぶ予測市場";
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.origin)}`, "_blank", "noopener,noreferrer");
+    if (error) { flash("付与に失敗しました"); return; }
+    if (data?.ok) { window.dispatchEvent(new Event("wallet:refresh")); flash(`シェアボーナス +${data.granted}pt`); }
+    else flash("本日のシェアボーナスは受取済みです");
+  }
+
+  async function applyRef() {
+    const code = refInput.trim().toUpperCase();
+    if (!loggedIn) { flash("紹介にはログインが必要です"); return; }
+    if (!code) return;
+    const { data, error } = await createClient().rpc("apply_referral", { p_code: code });
+    if (error) { flash("適用に失敗しました"); return; }
+    const r = data?.reason;
+    if (data?.ok) { window.dispatchEvent(new Event("wallet:refresh")); setRefInput(""); flash(`紹介ボーナス +${data.granted}pt`); }
+    else flash(r === "already_referred" ? "既にコード適用済みです" : r === "self" ? "自分のコードは使えません" : "コードが無効です");
+  }
+
+  function copyCode() { if (refCode) { navigator.clipboard?.writeText(refCode); flash("コードをコピーしました"); } }
 
   if (loading) return <Center>読み込み中…</Center>;
 
@@ -50,18 +85,62 @@ export default function EarnPage() {
         </p>
       )}
 
-      {/* ボーナス（近日公開） */}
+      {/* ボーナス */}
       <h2 className="text-[13px] font-extrabold text-dim mt-6 mb-2.5">ボーナス</h2>
       <div className="space-y-3">
-        <BonusRow tone="primary" title="Xでシェアボーナス" sub={<>予想をシェアで <b className="text-text mono">+20pt</b>／日</>} soon
-          icon={<svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor"><path d="M18.9 1.6h3.7l-8.1 9.2L24 22.4h-7.4l-5.8-7.6-6.7 7.6H.5l8.6-9.9L0 1.6h7.6l5.2 6.9 6.1-6.9Zm-1.3 18.6h2L6.5 3.7H4.3l13.3 16.5Z" /></svg>} />
-        <BonusRow tone="pos" title="友達紹介" sub={<>1人につき <b className="text-text mono">+200pt</b></>} soon
-          icon={<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="9" cy="8" r="3.2" /><path d="M3 20a6 6 0 0 1 12 0M17 11h4M19 9v4" /></svg>} />
+        {/* Xでシェアボーナス（1日1回 +20） */}
+        <div className="border border-border bg-surface rounded-[16px] p-3.5 flex items-center gap-3" style={{ boxShadow: "var(--shadow)" }}>
+          <div className="w-10 h-10 rounded-[11px] grid place-items-center shrink-0 bg-primary-weak text-primary">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="currentColor"><path d="M18.9 1.6h3.7l-8.1 9.2L24 22.4h-7.4l-5.8-7.6-6.7 7.6H.5l8.6-9.9L0 1.6h7.6l5.2 6.9 6.1-6.9Zm-1.3 18.6h2L6.5 3.7H4.3l13.3 16.5Z" /></svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[13px] font-extrabold">Xでシェアボーナス</div>
+            <div className="text-[11px] text-dim">予想をシェアで <b className="text-text mono">+20pt</b>／日</div>
+          </div>
+          <button onClick={claimShare} className="btn-press text-[12px] font-extrabold text-white px-4 py-2 rounded-[10px] shrink-0" style={{ background: "var(--grad)" }}>シェア</button>
+        </div>
+
+        {/* 友達紹介（紹介者+200 / 自分+100） */}
+        <div className="border border-border bg-surface rounded-[16px] p-3.5" style={{ boxShadow: "var(--shadow)" }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-[11px] grid place-items-center shrink-0 bg-pos-weak text-pos">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><circle cx="9" cy="8" r="3.2" /><path d="M3 20a6 6 0 0 1 12 0M17 11h4M19 9v4" /></svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-[13px] font-extrabold">友達紹介</div>
+              <div className="text-[11px] text-dim">紹介で友達に <b className="text-text mono">+200pt</b>・あなたも <b className="text-text mono">+100pt</b></div>
+            </div>
+          </div>
+          {loggedIn ? (
+            <div className="mt-3 space-y-2.5">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-dim">あなたのコード</span>
+                <span className="mono text-[15px] font-extrabold text-primary tracking-wider">{refCode ?? "—"}</span>
+                <button onClick={copyCode} className="text-[11px] font-bold text-primary bg-primary-weak px-2.5 py-1 rounded-full">コピー</button>
+                <span className="ml-auto text-[11px] text-dim">紹介 {refCount}人</span>
+              </div>
+              <div className="flex gap-2">
+                <input value={refInput} onChange={(e) => setRefInput(e.target.value)} placeholder="友達のコードを入力" maxLength={8}
+                  className="flex-1 h-9 px-3 border border-border bg-surface2 rounded-[10px] text-base md:text-[13px] outline-none focus:border-primary uppercase" />
+                <button onClick={applyRef} className="btn-press text-[12px] font-extrabold text-white px-4 rounded-[10px]" style={{ background: "var(--grad)" }}>適用</button>
+              </div>
+              <p className="text-[10.5px] text-faint">※ 友達のコードを入力できるのは一度きりです。</p>
+            </div>
+          ) : (
+            <p className="mt-2 text-[11px] text-dim">ログインすると紹介コードが使えます。</p>
+          )}
+        </div>
+
+        {/* 乗っかり（近日公開） */}
         <div className="border border-border bg-surface rounded-[16px] p-[15px]" style={{ boxShadow: "var(--shadow)" }}>
           <div className="text-[13px] font-extrabold mb-1.5">「乗っかり」→ 的中で +1%</div>
           <p className="text-[11.5px] text-dim leading-[1.65]">友達の予想に乗っかって、その予想が的中したら、獲得ポイントの <b className="text-primary">1%</b> がボーナスでもらえる。みんなで当てるほどお得。<span className="text-faint">（近日公開）</span></p>
         </div>
       </div>
+
+      {toast && (
+        <div className="fixed left-1/2 bottom-7 z-50 bg-text text-bg text-sm font-semibold px-4 py-2.5 rounded-[12px] shadow-lg" style={{ animation: "dmToast .25s ease" }}>{toast}</div>
+      )}
 
       {/* 案件（実装済み） */}
       <h2 className="text-[13px] font-extrabold text-dim mt-7 mb-2.5">案件でためる</h2>
@@ -93,21 +172,6 @@ export default function EarnPage() {
       )}
 
       <p className="text-[10.5px] text-faint text-center leading-relaxed mt-6">付与されるポイントはすべて換金不可・無償の参加ポイントです。提携先での登録等はご自身の判断で行ってください。</p>
-    </div>
-  );
-}
-
-function BonusRow({ tone, title, sub, icon, soon }: { tone: "primary" | "pos"; title: string; sub: React.ReactNode; icon: React.ReactNode; soon?: boolean }) {
-  const tc = tone === "primary" ? "text-primary" : "text-pos";
-  const bg = tone === "primary" ? "bg-primary-weak" : "bg-pos-weak";
-  return (
-    <div className="border border-border bg-surface rounded-[16px] p-3.5 flex items-center gap-3" style={{ boxShadow: "var(--shadow)" }}>
-      <div className={`w-10 h-10 rounded-[11px] grid place-items-center shrink-0 ${bg} ${tc}`}>{icon}</div>
-      <div className="flex-1 min-w-0">
-        <div className="text-[13px] font-extrabold">{title}</div>
-        <div className="text-[11px] text-dim">{sub}</div>
-      </div>
-      <span className={`text-[11px] font-extrabold ${tc} ${bg} px-3 py-1.5 rounded-[10px] shrink-0`}>{soon ? "近日公開" : "受け取る"}</span>
     </div>
   );
 }
