@@ -37,19 +37,17 @@ export function MyPageHero(p: Props) {
           color="#fff"
           style={{ position: "absolute", right: -40, top: -40, opacity: 0.08 }}
         />
-        <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 18, flexWrap: "wrap" }}>
-          <div style={{ width: 74, height: 74, borderRadius: 999, background: "#fff", display: "grid", placeItems: "center", flexShrink: 0, overflow: "hidden", boxShadow: "0 6px 18px -6px rgba(0,0,0,.4)" }}>
+        <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 14 }}>
+          <div style={{ width: 64, height: 64, borderRadius: 999, background: "#fff", display: "grid", placeItems: "center", flexShrink: 0, overflow: "hidden", boxShadow: "0 6px 18px -6px rgba(0,0,0,.4)" }}>
             {p.avatarUrl ? (
               <img src={p.avatarUrl} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
             ) : (
-              <GorillaFace size={50} color="var(--primary)" />
+              <GorillaFace size={44} color="var(--primary)" />
             )}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 23, fontWeight: 900, color: "#fff" }}>{p.name}</span>
-              <span style={{ fontSize: 11, fontWeight: 800, color: "#3a2566", background: "var(--accent2)", padding: "3px 11px", borderRadius: 999 }}>★ {p.title}</span>
-            </div>
+            <div style={{ fontSize: 21, fontWeight: 900, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</div>
+            <span style={{ display: "inline-block", marginTop: 5, fontSize: 11, fontWeight: 800, color: "#3a2566", background: "var(--accent2)", padding: "3px 11px", borderRadius: 999, whiteSpace: "nowrap" }}>★ {p.title}</span>
             <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 8, flexWrap: "wrap" }}>
               <span style={{ fontSize: 12, color: "rgba(255,255,255,.85)" }}>🔥 連勝 {p.streak}</span>
               {p.hitRate !== null && (
@@ -61,14 +59,14 @@ export function MyPageHero(p: Props) {
               <button onClick={p.onEdit} style={{ fontSize: 11.5, color: "rgba(255,255,255,.65)", textDecoration: "underline", background: "none", border: "none", cursor: "pointer", marginLeft: 4 }}>編集</button>
             </div>
           </div>
-          <button
-            onClick={p.onClaim}
-            className="btn-press"
-            style={{ background: "var(--accent2)", color: "#3a2566", fontSize: 13, fontWeight: 800, padding: "11px 18px", borderRadius: 13, border: "none", cursor: "pointer", flexShrink: 0, alignSelf: "flex-start" }}
-          >
-            デイリー受取
-          </button>
         </div>
+        <button
+          onClick={p.onClaim}
+          className="btn-press w-full sm:w-auto"
+          style={{ position: "relative", marginTop: 14, background: "var(--accent2)", color: "#3a2566", fontSize: 13.5, fontWeight: 800, padding: "12px 20px", borderRadius: 13, border: "none", cursor: "pointer" }}
+        >
+          デイリー受取
+        </button>
       </div>
 
       {/* 2) 2大通貨ウォレット */}
