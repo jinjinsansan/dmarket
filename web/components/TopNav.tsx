@@ -1,5 +1,5 @@
 "use client";
-// 固定ヘッダー（D-market handoff §0）。ロゴ・検索・ナビ・テーマ・残高ピル・Claim。
+// 固定ヘッダー（ゴリラ予想）。ロゴ・検索・ナビ・テーマ・残高ピル・受取。
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
