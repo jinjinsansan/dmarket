@@ -14,6 +14,7 @@ const GROUPS: { title: string; items: Item[] }[] = [
   ] },
   { title: "解決・モデレーション", items: [
     { href: "/admin/queue", title: "解決キュー", desc: "締切後の手動市場を確定／中止", icon: "✓" },
+    { href: "/admin/review", title: "市場の審査", desc: "ユーザーが作成した市場の承認／却下", icon: "🦍" },
     { href: "/admin/comments", title: "通報・コメント管理", desc: "通報されたコメントの確認と非表示／復帰", icon: "💬" },
   ] },
   { title: "報酬・経済", items: [
@@ -34,9 +35,12 @@ const GROUPS: { title: string; items: Item[] }[] = [
 
 export default function AdminDashboardPage() {
   const [reports, setReports] = useState(0);
+  const [reviews, setReviews] = useState(0);
   useEffect(() => {
-    createClient().rpc("admin_list_reported_comments").then(({ data }) =>
+    const sb = createClient();
+    sb.rpc("admin_list_reported_comments").then(({ data }) =>
       setReports(((data as { is_hidden: boolean }[]) ?? []).filter((r) => !r.is_hidden).length));
+    sb.rpc("admin_list_pending_markets").then(({ data }) => setReviews(((data as unknown[]) ?? []).length));
   }, []);
 
   return (
@@ -55,6 +59,9 @@ export default function AdminDashboardPage() {
                     {m.title}
                     {m.href === "/admin/comments" && reports > 0 && (
                       <span className="text-[10px] font-extrabold text-white bg-neg px-1.5 py-px rounded-full">{reports}</span>
+                    )}
+                    {m.href === "/admin/review" && reviews > 0 && (
+                      <span className="text-[10px] font-extrabold text-white bg-primary px-1.5 py-px rounded-full">{reviews}</span>
                     )}
                   </div>
                   <div className="text-xs text-dim mt-0.5 leading-relaxed">{m.desc}</div>

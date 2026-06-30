@@ -101,6 +101,7 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
           <span className="text-xs text-dim">{filtered.length} 件</span>
         </div>
         <div className="flex items-center gap-3">
+          <a href="/create" className="hidden sm:inline-flex items-center gap-1 h-9 px-3 rounded-[10px] text-white text-[13px] font-bold shrink-0" style={{ background: "var(--grad)" }}>＋ 市場を作る</a>
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="検索…"
             className="h-9 px-3 rounded-[10px] border border-border bg-surface2 text-base md:text-sm outline-none focus:border-primary w-28 sm:w-44" />
           <div className="flex gap-1 p-[3px] bg-surface2 border border-border rounded-[11px]">
