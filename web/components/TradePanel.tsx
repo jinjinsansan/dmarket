@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { buyCostPreview, sellRecvPreview, lmsrPrice } from "@/lib/lmsr";
 import { formatPoints, toCents, statusLabel } from "@/lib/format";
 import { POINTS_PER_SHARE } from "@/lib/constants";
+import { Toast } from "./Toast";
 import type { MarketWithOutcomes, Outcome, Resolution } from "@/lib/types";
 
 const ERROR_JA: Record<string, string> = {
@@ -27,6 +28,7 @@ export function TradePanel({
   const [amount, setAmount] = useState(100);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ title: string; sub: string } | null>(null);
   const [balance, setBalance] = useState<number | null>(null);
   const [positions, setPositions] = useState<Record<string, { shares: number; cost_basis: number }>>({});
 
@@ -74,6 +76,8 @@ export function TradePanel({
       window.dispatchEvent(new Event("wallet:refresh"));
       if (typeof data.balance === "number") setBalance(data.balance);
       setMsg(`${outcomes[pickIdx].label}を${shares}株${side === "buy" ? "購入" : "売却"}しました`);
+      setToast({ title: `${outcomes[pickIdx].label}に${side === "buy" ? "乗りました" : "手放しました"}`, sub: `${shares}株 ・ ${formatPoints(preview?.points ?? 0)} pt` });
+      setTimeout(() => setToast(null), 2600);
     }
   }
 
@@ -193,6 +197,7 @@ export function TradePanel({
 
       {msg && <p className="text-sm text-center text-dim mt-2.5">{msg}</p>}
       <p className="text-[11.5px] text-faint text-center mt-3 leading-relaxed">換金不可・無償の参加ポイント（賭けではありません）</p>
+      {toast && <Toast title={toast.title} sub={toast.sub} kind="success" onClose={() => setToast(null)} />}
     </Panel>
   );
 }

@@ -8,6 +8,7 @@ import { formatPoints } from "@/lib/format";
 import { Logo, Wordmark } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { Confetti } from "./Confetti";
+import { Toast, type ToastKind } from "./Toast";
 
 const NAV = [
   { href: "/", label: "マーケット" },
@@ -24,7 +25,7 @@ export function TopNav() {
   const [balance, setBalance] = useState<number | null>(null);
   const [loggedIn, setLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ title: string; sub?: string; kind: ToastKind } | null>(null);
   const [winnings, setWinnings] = useState(0);   // 未受取の的中払戻し合計（pending）
   const [fire, setFire] = useState(0);           // 紙吹雪トリガ
 
@@ -53,13 +54,15 @@ export function TopNav() {
 
   async function claimWinnings() {
     const { data, error } = await createClient().rpc("claim_winnings");
-    if (error) { showToast("受け取りに失敗しました"); return; }
-    if (!data?.ok) { showToast("受け取れる的中はありません"); return; }
+    if (error) { showToast("受け取りに失敗しました", undefined, "error"); return; }
+    if (!data?.ok) { showToast("受け取れる的中はありません", undefined, "info"); return; }
     setFire((f) => f + 1);
-    showToast(`🎉 的中！ +${formatPoints(data.claimed)}pt 受け取りました`);
+    showToast("的中！受け取りました", `+${formatPoints(data.claimed)} pt`, "success");
     window.dispatchEvent(new Event("wallet:refresh"));
   }
-  function showToast(m: string) { setToast(m); setTimeout(() => setToast(null), 2600); }
+  function showToast(title: string, sub?: string, kind: ToastKind = "success") {
+    setToast({ title, sub, kind }); setTimeout(() => setToast(null), 2600);
+  }
 
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
@@ -125,12 +128,7 @@ export function TopNav() {
         </div>
       </header>
 
-      {toast && (
-        <div className="fixed left-1/2 bottom-7 z-50 bg-text text-bg text-sm font-semibold px-4 py-2.5 rounded-[12px] shadow-lg"
-          style={{ animation: "dmToast .25s ease" }}>
-          {toast}
-        </div>
-      )}
+      {toast && <Toast title={toast.title} sub={toast.sub} kind={toast.kind} onClose={() => setToast(null)} />}
       <Confetti fire={fire} />
     </>
   );

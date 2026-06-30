@@ -1,13 +1,12 @@
 "use client";
 // ホーム本体（本家Polymarket風）。細いカテゴリナビ＋回転ヒーロー＋Trending＋密集グリッド＋Realtime。
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { lmsrPrice } from "@/lib/lmsr";
-import { toPct } from "@/lib/format";
-import { marketVisual } from "@/lib/market-visual";
 import { MarketCard } from "./MarketCard";
 import { Hero } from "./Hero";
+import { TrendingTopics } from "./TrendingTopics";
+import { EmptyState } from "./States";
 import type { Category, MarketWithOutcomes } from "@/lib/types";
 
 export function MarketGrid({ initialMarkets, categories }: { initialMarkets: MarketWithOutcomes[]; categories: Category[] }) {
@@ -89,7 +88,7 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
             <Hero daily={toHero(heroDaily)} />
           </div>
           <div className="hidden md:block flex-[1_1_280px] min-w-0">
-            <Trending list={trending} yesPct={yesPct} />
+            <TrendingTopics topics={trending.map((m) => ({ id: m.id, question: m.question, yesPct: Math.round(yesPct(m)) }))} />
           </div>
         </div>
       )}
@@ -114,7 +113,7 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
       <SortBar sort={sort} onSort={setSort} />
 
       {filtered.length === 0 ? (
-        <div className="text-dim text-sm py-20 text-center border border-dashed border-border rounded-[var(--radius)]">このカテゴリはまだ市場がありません。</div>
+        <EmptyState title="このカテゴリはまだ市場がありません" body="他のカテゴリを見るか、時間をおいてのぞいてみてください" />
       ) : layout === "cards" ? (
         <div className="grid gap-3 sm:gap-3.5" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(min(100%,278px),1fr))" }}>
           {filtered.map((m) => <MarketCard key={m.id} market={m} variant="card" spark={sparks[m.id]} />)}
@@ -124,32 +123,6 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
           {filtered.map((m) => <MarketCard key={m.id} market={m} variant="compact" spark={sparks[m.id]} />)}
         </div>
       )}
-    </div>
-  );
-}
-
-function Trending({ list, yesPct }: { list: MarketWithOutcomes[]; yesPct: (m: MarketWithOutcomes) => number }) {
-  const router = useRouter();
-  return (
-    <div className="flex-[1_1_280px] min-w-0 border border-border bg-surface rounded-[16px] px-[18px] py-4" style={{ boxShadow: "var(--shadow)" }}>
-      <div className="flex items-center gap-2 mb-3">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="2.4"><path d="M3 17l6-6 4 4 7-8" /><path d="M14 7h6v6" /></svg>
-        <h3 className="text-[15px] font-extrabold">注目のトピック</h3>
-      </div>
-      <div className="space-y-2.5">
-        {list.map((m, i) => {
-          const vis = marketVisual({ id: m.id, slug: m.category?.slug, image_url: m.image_url });
-          return (
-            <div key={m.id} onClick={() => router.push(`/market/${m.id}`)} onMouseEnter={() => router.prefetch(`/market/${m.id}`)} className="flex items-center gap-2.5 cursor-pointer group">
-              <span className="mono text-xs text-faint w-3">{i + 1}</span>
-              <div className="w-7 h-7 rounded-lg grid place-items-center text-white text-xs font-extrabold shrink-0 overflow-hidden" style={{ background: vis.image ? `url(${vis.image}) center/cover` : vis.tint }}>{!vis.image && vis.glyph}</div>
-              <span className="flex-1 text-[12.5px] truncate group-hover:text-primary">{m.question}</span>
-              <span className="mono text-[12.5px] font-bold" style={{ color: vis.tint }}>{toPct(yesPct(m) / 100)}</span>
-            </div>
-          );
-        })}
-        {list.length === 0 && <p className="text-dim text-xs">市場がありません</p>}
-      </div>
     </div>
   );
 }
