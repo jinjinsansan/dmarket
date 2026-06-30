@@ -93,11 +93,15 @@ export const getMarkets = unstable_cache(
 );
 
 // 市場詳細（公開部分のみ）。5秒キャッシュ。保有/残高などユーザー固有はクライアントで別途取得。
+// resolution / history / related を1回の Promise.all で並列取得（直列round-trip削減）。
+// history は新しい順に上限 HISTORY_LIMIT 件だけ取得し、昇順に直す（cronで肥大しても転送量を一定に保つ）。
+const HISTORY_LIMIT = 1000;
 export const getMarket = unstable_cache(
   async (id: string): Promise<{
     market: MarketWithOutcomes | null;
     resolution: Resolution | null;
     history: PricePoint[];
+    related: MarketWithOutcomes[];
   }> => {
     const sb = createAnonClient();
     const { data: market } = await sb
@@ -105,26 +109,42 @@ export const getMarket = unstable_cache(
       .select("*, outcomes(*), category:categories(*)")
       .eq("id", id)
       .maybeSingle();
-    if (!market) return { market: null, resolution: null, history: [] };
+    if (!market) return { market: null, resolution: null, history: [], related: [] };
 
     // アウトカムは表示順に整列
     (market as unknown as MarketWithOutcomes).outcomes.sort(
       (a: Outcome, b: Outcome) => a.display_order - b.display_order,
     );
+    const catId = (market as unknown as MarketWithOutcomes).category_id;
 
-    const [{ data: resolution }, { data: history }] = await Promise.all([
+    const [{ data: resolution }, { data: history }, { data: related }] = await Promise.all([
       sb.from("resolutions").select("*").eq("market_id", id).maybeSingle(),
       sb
         .from("market_price_history")
         .select("outcome_id, price, recorded_at")
         .eq("market_id", id)
-        .order("recorded_at", { ascending: true }),
+        .order("recorded_at", { ascending: false })
+        .limit(HISTORY_LIMIT),
+      (() => {
+        let q = sb
+          .from("markets")
+          .select("*, outcomes(*), category:categories(*)")
+          .eq("status", "open")
+          .gt("close_time", new Date().toISOString())
+          .neq("id", id)
+          .order("close_time", { ascending: true })
+          .limit(4);
+        if (catId) q = q.eq("category_id", catId);
+        return q;
+      })(),
     ]);
 
     return {
       market: market as unknown as MarketWithOutcomes,
       resolution: (resolution as unknown as Resolution) ?? null,
-      history: (history as unknown as PricePoint[]) ?? [],
+      // 取得は降順（最新側）→ チャート描画用に昇順へ戻す
+      history: ((history as unknown as PricePoint[]) ?? []).slice().reverse(),
+      related: (related as unknown as MarketWithOutcomes[]) ?? [],
     };
   },
   ["market-detail"],

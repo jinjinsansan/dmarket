@@ -33,6 +33,18 @@ export const MarketCard = memo(function MarketCard({ market, variant = "card", s
     prevYes.current = yes;
   }, [yes]);
 
+  // 画面に入ったら先読み（モバイルでもタップ前にprefetch済みにして体感を改善）。一度きり。
+  const cardRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver((ents) => {
+      if (ents.some((e) => e.isIntersecting)) { router.prefetch(`/market/${market.id}`); io.disconnect(); }
+    }, { rootMargin: "250px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [market.id, router]);
+
   const share = (e: React.MouseEvent) => {
     e.stopPropagation();
     const url = `${window.location.origin}/market/${market.id}`;
@@ -53,7 +65,7 @@ export const MarketCard = memo(function MarketCard({ market, variant = "card", s
   // ── compact（関連市場・リスト表示用の密集行） ──
   if (variant === "compact") {
     return (
-      <div onClick={open} onMouseEnter={warm} onTouchStart={warm}
+      <div ref={cardRef} onClick={open} onMouseEnter={warm} onTouchStart={warm}
         className="card-hover flex items-center gap-3 border border-border bg-surface rounded-[14px] px-4 py-3 cursor-pointer"
         style={{ boxShadow: CARD_SHADOW }}>
         <div className="flex-1 min-w-0">
@@ -67,7 +79,7 @@ export const MarketCard = memo(function MarketCard({ market, variant = "card", s
 
   // ── card（B案・サムネ無し／大きな%／全幅スパークライン） ──
   return (
-    <div onClick={open} onMouseEnter={warm} onTouchStart={warm}
+    <div ref={cardRef} onClick={open} onMouseEnter={warm} onTouchStart={warm}
       className="card-hover flex flex-col border border-border bg-surface rounded-[18px] p-4 cursor-pointer"
       style={{ boxShadow: CARD_SHADOW }}>
       {/* メタ：カテゴリ＋LIVE */}
