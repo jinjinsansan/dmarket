@@ -2,7 +2,7 @@
 // 固定ヘッダー（ゴリラ予想）。ロゴ・検索・ナビ・テーマ・残高ピル・受取。
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatPoints } from "@/lib/format";
 import { Logo, Wordmark } from "./Logo";
@@ -25,9 +25,8 @@ export function TopNav() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const [winnings, setWinnings] = useState(0);   // 未確認の的中払戻し合計
+  const [winnings, setWinnings] = useState(0);   // 未受取の的中払戻し合計（pending）
   const [fire, setFire] = useState(0);           // 紙吹雪トリガ
-  const winMax = useRef(0);
 
   const refresh = useCallback(async () => {
     const sb = createClient();
@@ -35,18 +34,14 @@ export function TopNav() {
     const user = session?.user;
     if (!user) { setLoggedIn(false); setBalance(null); setIsAdmin(false); setWinnings(0); return; }
     setLoggedIn(true);
-    const [{ data: wallet }, { data: adm }, { data: wins }] = await Promise.all([
+    const [{ data: wallet }, { data: adm }, { data: pend }] = await Promise.all([
       sb.from("wallets").select("balance").eq("user_id", user.id).maybeSingle(),
       sb.rpc("is_admin"),
-      sb.from("point_ledger").select("id, delta").eq("reason", "redeem").order("id", { ascending: false }).limit(50),
+      sb.from("pending_winnings").select("amount").is("claimed_at", null),
     ]);
     setBalance(wallet?.balance ?? 0);
     setIsAdmin(Boolean(adm));
-    // 未確認の的中（localStorage の既読id より新しい redeem を合計）
-    const seen = Number(localStorage.getItem("gp-win-seen") || 0);
-    const rows = (wins as { id: number; delta: number }[]) ?? [];
-    winMax.current = rows.length ? Math.max(...rows.map((r) => r.id)) : seen;
-    setWinnings(rows.filter((r) => r.id > seen).reduce((a, r) => a + r.delta, 0));
+    setWinnings(((pend as { amount: number }[]) ?? []).reduce((a, r) => a + r.amount, 0));
   }, []);
 
   useEffect(() => {
@@ -56,11 +51,13 @@ export function TopNav() {
     return () => window.removeEventListener("wallet:refresh", h);
   }, [refresh]);
 
-  function claimWinnings() {
-    localStorage.setItem("gp-win-seen", String(winMax.current));
-    showToast(`🎉 的中！ +${formatPoints(winnings)}pt 受け取りました`);
-    setWinnings(0);
+  async function claimWinnings() {
+    const { data, error } = await createClient().rpc("claim_winnings");
+    if (error) { showToast("受け取りに失敗しました"); return; }
+    if (!data?.ok) { showToast("受け取れる的中はありません"); return; }
     setFire((f) => f + 1);
+    showToast(`🎉 的中！ +${formatPoints(data.claimed)}pt 受け取りました`);
+    window.dispatchEvent(new Event("wallet:refresh"));
   }
   function showToast(m: string) { setToast(m); setTimeout(() => setToast(null), 2600); }
 
