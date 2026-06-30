@@ -2,11 +2,12 @@
 // 固定ヘッダー（ゴリラ予想）。ロゴ・検索・ナビ・テーマ・残高ピル・受取。
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { formatPoints } from "@/lib/format";
 import { Logo, Wordmark } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
+import { Confetti } from "./Confetti";
 
 const NAV = [
   { href: "/", label: "マーケット" },
@@ -24,19 +25,28 @@ export function TopNav() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [winnings, setWinnings] = useState(0);   // 未確認の的中払戻し合計
+  const [fire, setFire] = useState(0);           // 紙吹雪トリガ
+  const winMax = useRef(0);
 
   const refresh = useCallback(async () => {
     const sb = createClient();
     const { data: { session } } = await sb.auth.getSession();
     const user = session?.user;
-    if (!user) { setLoggedIn(false); setBalance(null); setIsAdmin(false); return; }
+    if (!user) { setLoggedIn(false); setBalance(null); setIsAdmin(false); setWinnings(0); return; }
     setLoggedIn(true);
-    const [{ data: wallet }, { data: adm }] = await Promise.all([
+    const [{ data: wallet }, { data: adm }, { data: wins }] = await Promise.all([
       sb.from("wallets").select("balance").eq("user_id", user.id).maybeSingle(),
       sb.rpc("is_admin"),
+      sb.from("point_ledger").select("id, delta").eq("reason", "redeem").order("id", { ascending: false }).limit(50),
     ]);
     setBalance(wallet?.balance ?? 0);
     setIsAdmin(Boolean(adm));
+    // 未確認の的中（localStorage の既読id より新しい redeem を合計）
+    const seen = Number(localStorage.getItem("gp-win-seen") || 0);
+    const rows = (wins as { id: number; delta: number }[]) ?? [];
+    winMax.current = rows.length ? Math.max(...rows.map((r) => r.id)) : seen;
+    setWinnings(rows.filter((r) => r.id > seen).reduce((a, r) => a + r.delta, 0));
   }, []);
 
   useEffect(() => {
@@ -46,12 +56,11 @@ export function TopNav() {
     return () => window.removeEventListener("wallet:refresh", h);
   }, [refresh]);
 
-  async function claim() {
-    const sb = createClient();
-    const { data, error } = await sb.rpc("claim_daily_grant");
-    if (error) return showToast("ログインが必要です（準備中）");
-    if (data?.ok) { setBalance(data.balance); showToast(`デイリーボーナス +${data.granted}`); }
-    else showToast("本日は受け取り済みです");
+  function claimWinnings() {
+    localStorage.setItem("gp-win-seen", String(winMax.current));
+    showToast(`🎉 的中！ +${formatPoints(winnings)}pt 受け取りました`);
+    setWinnings(0);
+    setFire((f) => f + 1);
   }
   function showToast(m: string) { setToast(m); setTimeout(() => setToast(null), 2600); }
 
@@ -95,11 +104,13 @@ export function TopNav() {
                   <span className="mono text-sm font-bold">{balance === null ? "—" : formatPoints(balance)}</span>
                   <span className="text-xs text-dim font-semibold">参加pt</span>
                 </div>
-                <button onClick={claim}
-                  className="h-[38px] px-3 md:px-4 text-white border-none rounded-[11px] font-bold text-[13px] md:text-[13.5px]"
-                  style={{ background: "var(--grad)", boxShadow: "var(--cta-glow)" }}>
-                  受取
-                </button>
+                {winnings > 0 && (
+                  <button onClick={claimWinnings}
+                    className="btn-press h-[38px] px-3 md:px-4 text-white border-none rounded-[11px] font-extrabold text-[13px] md:text-[13.5px] whitespace-nowrap"
+                    style={{ background: "var(--grad)", boxShadow: "var(--cta-glow)" }}>
+                    🎉 受け取る +{formatPoints(winnings)}
+                  </button>
+                )}
                 <a href="/api/auth/logout" title="ログアウト"
                   className="hidden md:grid w-[38px] h-[38px] border border-border bg-surface rounded-[10px] place-items-center text-dim hover:text-text">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="M16 17l5-5-5-5M21 12H9" /></svg>
@@ -123,6 +134,7 @@ export function TopNav() {
           {toast}
         </div>
       )}
+      <Confetti fire={fire} />
     </>
   );
 }

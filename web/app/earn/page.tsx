@@ -45,6 +45,14 @@ export default function EarnPage() {
     window.location.href = data.url as string;
   }
 
+  async function claimDaily() {
+    if (!loggedIn) { flash("ログインが必要です"); return; }
+    const { data, error } = await createClient().rpc("claim_daily_grant");
+    if (error) { flash("受け取りに失敗しました"); return; }
+    if (data?.ok) { window.dispatchEvent(new Event("wallet:refresh")); flash(`デイリーボーナス +${data.granted}pt`); }
+    else flash("本日は受け取り済みです");
+  }
+
   async function claimShare() {
     if (!loggedIn) { flash("シェアにはログインが必要です"); return; }
     const { data, error } = await createClient().rpc("claim_share_bonus");
@@ -88,6 +96,17 @@ export default function EarnPage() {
       {/* ボーナス */}
       <h2 className="text-[13px] font-extrabold text-dim mt-6 mb-2.5">ボーナス</h2>
       <div className="space-y-3">
+        {/* ログインボーナス（1日1回） */}
+        <div className="border border-border bg-surface rounded-[16px] p-3.5 flex items-center gap-3" style={{ boxShadow: "var(--shadow)" }}>
+          <div className="w-10 h-10 rounded-[11px] grid place-items-center shrink-0" style={{ background: "#FCF1CF", color: "#C99A0E" }}>
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[13px] font-extrabold">ログインボーナス</div>
+            <div className="text-[11px] text-dim">1日1回 <b className="text-text mono">+100pt</b> もらえる</div>
+          </div>
+          <button onClick={claimDaily} className="btn-press text-[12px] font-extrabold text-white px-4 py-2 rounded-[10px] shrink-0" style={{ background: "var(--grad)" }}>受け取る</button>
+        </div>
         {/* Xでシェアボーナス（1日1回 +20） */}
         <div className="border border-border bg-surface rounded-[16px] p-3.5 flex items-center gap-3" style={{ boxShadow: "var(--shadow)" }}>
           <div className="w-10 h-10 rounded-[11px] grid place-items-center shrink-0 bg-primary-weak text-primary">
