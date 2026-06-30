@@ -362,17 +362,19 @@ export default function MyPage() {
           {prizeLedger.length > 0 && (
             <div className="mt-4 border-t border-border divide-y divide-border">
               {prizeLedger.map((l) => (
-                <div key={l.id} className="flex items-center gap-3 py-2.5 text-sm">
-                  <span className="mono text-dim text-xs w-32 shrink-0">{new Date(l.created_at).toLocaleString("ja-JP")}</span>
-                  <span className="flex-1 min-w-0">
-                    <span className="font-semibold">{PRIZE_REASON_LABEL[l.reason] ?? l.reason}</span>
-                    {l.market?.question && <span className="block text-[11px] text-dim truncate">{l.market.question}</span>}
-                  </span>
-                  {l.delta > 0 && l.expires_at && (
-                    <span className="text-xs text-dim shrink-0">〜{new Date(l.expires_at).toLocaleDateString("ja-JP")}</span>
-                  )}
-                  <span className={`mono ${l.delta >= 0 ? "text-pos" : "text-neg"}`}>{l.delta >= 0 ? "+" : ""}{formatPoints(l.delta)}</span>
-                  <span className="mono text-xs text-dim w-20 text-right">{formatPoints(l.balance_after)}</span>
+                <div key={l.id} className="flex items-start justify-between gap-3 py-2.5 text-sm">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold">{PRIZE_REASON_LABEL[l.reason] ?? l.reason}</div>
+                    {l.market?.question && <div className="text-[12px] text-dim truncate">{l.market.question}</div>}
+                    <div className="text-[11px] text-faint mt-0.5">
+                      {new Date(l.created_at).toLocaleString("ja-JP")}
+                      {l.delta > 0 && l.expires_at && <> ・ 〜{new Date(l.expires_at).toLocaleDateString("ja-JP")} まで</>}
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className={`mono font-bold ${l.delta >= 0 ? "text-pos" : "text-neg"}`}>{l.delta >= 0 ? "+" : ""}{formatPoints(l.delta)}</div>
+                    <div className="mono text-[11px] text-dim">残高 {formatPoints(l.balance_after)}</div>
+                  </div>
                 </div>
               ))}
             </div>
