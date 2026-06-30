@@ -25,6 +25,9 @@ const GROUPS: { title: string; items: Item[] }[] = [
     { href: "/admin/affiliate", title: "提携案件", desc: "アフィリエイト案件の登録・公開、成果の手動消し込み", icon: "🔗" },
     { href: "/admin/prizes", title: "景品マスタ", desc: "景品の登録・在庫・公開、交換申込の発送/取消", icon: "🎁" },
   ] },
+  { title: "キャンペーン", items: [
+    { href: "/admin/promos", title: "合言葉キャンペーン", desc: "SNS等で配る合言葉を作成。入力で参加ポイント付与", icon: "🎉" },
+  ] },
   { title: "ユーザー", items: [
     { href: "/admin/users", title: "ユーザー", desc: "一覧・履歴・参加ポイント付与/消滅・フラグ", icon: "◍" },
   ] },

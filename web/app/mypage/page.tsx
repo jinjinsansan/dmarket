@@ -45,6 +45,9 @@ export default function MyPage() {
   const [savingShip, setSavingShip] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [claimMsg, setClaimMsg] = useState<string | null>(null);
+  const [promo, setPromo] = useState("");
+  const [promoBusy, setPromoBusy] = useState(false);
+  const [promoMsg, setPromoMsg] = useState<{ ok: boolean; text: string } | null>(null);
 
   const name = nickname || lineName;
 
@@ -119,6 +122,32 @@ export default function MyPage() {
     const { error } = await createClient().rpc("update_my_shipping", { p_shipping: shipping });
     setSavingShip(false);
     setMsg(error ? `保存に失敗しました（${error.message}）` : "配送先を保存しました");
+  }
+
+  const PROMO_ERR: Record<string, string> = {
+    invalid_code: "合言葉が違います。もう一度確認してください。",
+    inactive: "このキャンペーンは現在受付していません。",
+    not_started: "このキャンペーンはまだ開始していません。",
+    expired: "このキャンペーンは終了しました。",
+    sold_out: "このキャンペーンは上限に達しました。",
+    already_redeemed: "この合言葉は既に受け取り済みです。",
+    empty: "合言葉を入力してください。",
+  };
+  async function redeemPromo() {
+    const code = promo.trim();
+    if (!code) { setPromoMsg({ ok: false, text: "合言葉を入力してください。" }); return; }
+    setPromoBusy(true); setPromoMsg(null);
+    const { data, error } = await createClient().rpc("redeem_promo_code", { p_code: code });
+    setPromoBusy(false);
+    if (error) { setPromoMsg({ ok: false, text: `エラー: ${error.message}` }); return; }
+    if (data?.ok) {
+      setPromo("");
+      setBalance(data.balance);
+      setPromoMsg({ ok: true, text: `🎉 ${data.label ? `「${data.label}」` : ""}参加ポイント +${data.granted} を受け取りました！` });
+      window.dispatchEvent(new Event("wallet:refresh"));
+    } else {
+      setPromoMsg({ ok: false, text: PROMO_ERR[data?.reason as string] ?? "受け取れませんでした。" });
+    }
   }
 
   async function claim() {
@@ -204,6 +233,22 @@ export default function MyPage() {
         <StatCard label="的中率 / Hit rate" value={hitRate === null ? "—" : `${hitRate}%`} />
         <StatCard label="連勝 / Streak" value={`${stats?.current_streak ?? 0}`} cls="text-primary" />
       </div>
+
+      {/* 合言葉・キャンペーン */}
+      <section className="border rounded-[var(--radius)] p-5" style={{ background: "var(--primary-weak)", borderColor: "var(--primary)" }}>
+        <h2 className="text-[15px] font-bold flex items-center gap-2">🎉 合言葉を入力</h2>
+        <p className="text-[12px] text-dim mt-1 mb-3">SNSなどで配られた<b className="text-text">合言葉</b>を入力すると、参加ポイントがもらえます（1つにつき1回）。</p>
+        <div className="flex gap-2 max-w-md">
+          <input value={promo} onChange={(e) => { setPromo(e.target.value); setPromoMsg(null); }}
+            onKeyDown={(e) => { if (e.key === "Enter") redeemPromo(); }}
+            placeholder="合言葉を入力" autoCapitalize="characters"
+            className="flex-1 h-11 px-3 rounded-[11px] border border-border bg-surface text-base sm:text-sm outline-none focus:border-primary tracking-wide" />
+          <button onClick={redeemPromo} disabled={promoBusy} className="h-11 px-5 rounded-[11px] text-white font-bold text-sm disabled:opacity-50 shrink-0" style={{ background: "var(--grad)", boxShadow: "var(--cta-glow)" }}>
+            {promoBusy ? "確認中…" : "受け取る"}
+          </button>
+        </div>
+        {promoMsg && <p className={`text-sm mt-2 font-semibold ${promoMsg.ok ? "text-pos" : "text-neg"}`}>{promoMsg.text}</p>}
+      </section>
 
       {/* 景品の交換・配送状況 */}
       <section>

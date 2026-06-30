@@ -116,6 +116,20 @@ export interface AdminRedemption {
   created_at: string;
 }
 
+// 合言葉キャンペーン（0037）
+export interface PromoCode {
+  id: string;
+  code: string;
+  label: string | null;
+  reward_points: number;
+  max_redemptions: number | null;
+  used_count: number;
+  starts_at: string | null;
+  expires_at: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
 // 提携案件（参加ポイント獲得・アフィリエイト Phase 1）
 export interface AffiliateOffer {
   id: string;
