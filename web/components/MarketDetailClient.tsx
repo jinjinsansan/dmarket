@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { lmsrPrices } from "@/lib/lmsr";
+import { setRefCode } from "@/lib/ref";
 import { toCents, timeRemaining, statusLabel } from "@/lib/format";
 import type { MarketWithOutcomes, PricePoint, Resolution } from "@/lib/types";
 import { ProbabilityChart } from "./ProbabilityChart";
@@ -38,7 +39,7 @@ export function MarketDetailClient({
       const { data: { session } } = await sb.auth.getSession();
       if (!session?.user) return;
       const { data: rc } = await sb.rpc("my_referral_code");
-      if (rc?.code) setMyCode(rc.code as string);
+      if (rc?.code) { setMyCode(rc.code as string); setRefCode(rc.code as string); }
       const ref = new URLSearchParams(window.location.search).get("ref");
       if (ref) await sb.rpc("record_ride", { p_market_id: market.id, p_sharer_code: ref });
     })();

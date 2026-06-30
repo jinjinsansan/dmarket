@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { formatPoints } from "@/lib/format";
 import { Toast } from "@/components/Toast";
+import { setRefCode as cacheRefCode, withRef } from "@/lib/ref";
 import type { AffiliateOffer } from "@/lib/types";
 
 export default function EarnPage() {
@@ -16,12 +17,14 @@ export default function EarnPage() {
   const [refCode, setRefCode] = useState<string | null>(null);
   const [refCount, setRefCount] = useState(0);
   const [refInput, setRefInput] = useState("");
+  const [origin, setOrigin] = useState("");
   const [toast, setToast] = useState<string | null>(null);
 
   const flash = (m: string) => { setToast(m); setTimeout(() => setToast(null), 2800); };
 
   const load = useCallback(async () => {
     const sb = createClient();
+    setOrigin(window.location.origin);
     const { data: { session } } = await sb.auth.getSession();
     const li = Boolean(session?.user);
     setLoggedIn(li);
@@ -29,7 +32,7 @@ export default function EarnPage() {
     setOffers((data as AffiliateOffer[]) ?? []);
     if (li) {
       const { data: rc } = await sb.rpc("my_referral_code");
-      if (rc?.code) { setRefCode(rc.code as string); setRefCount(Number(rc.count ?? 0)); }
+      if (rc?.code) { setRefCode(rc.code as string); cacheRefCode(rc.code as string); setRefCount(Number(rc.count ?? 0)); }
     }
     setLoading(false);
   }, []);
@@ -57,9 +60,10 @@ export default function EarnPage() {
   async function claimShare() {
     if (!loggedIn) { flash("シェアにはログインが必要です"); return; }
     const { data, error } = await createClient().rpc("claim_share_bonus");
-    // 付与可否に関わらずシェア画面は開く（拡散が目的）
-    const text = "ゴリラ予想で未来を予想中🦍 換金不可ポイントで遊ぶ予測市場";
-    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.origin)}`, "_blank", "noopener,noreferrer");
+    // 付与可否に関わらずシェア画面は開く（拡散が目的）。紹介コードを ?ref= で自動付与。
+    const text = "ゴリラ予想で未来を予想中🦍 換金不可ポイントで遊ぶ予測市場。このリンクから始めると2人ともボーナス！";
+    const url = withRef(window.location.origin);
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, "_blank", "noopener,noreferrer");
     if (error) { flash("付与に失敗しました"); return; }
     if (data?.ok) { window.dispatchEvent(new Event("wallet:refresh")); flash(`シェアボーナス +${data.granted}pt`); }
     else flash("本日のシェアボーナスは受取済みです");
@@ -76,7 +80,14 @@ export default function EarnPage() {
     else flash(r === "already_referred" ? "既にコード適用済みです" : r === "self" ? "自分のコードは使えません" : "コードが無効です");
   }
 
+  const refUrl = refCode && origin ? `${origin}/?ref=${refCode}` : "";
   function copyCode() { if (refCode) { navigator.clipboard?.writeText(refCode); flash("コードをコピーしました"); } }
+  function copyUrl() { if (refUrl) { navigator.clipboard?.writeText(refUrl); flash("紹介URLをコピーしました"); } }
+  function shareRefUrl() {
+    if (!refUrl) return;
+    const text = "ゴリラ予想を一緒にやろう🦍 このリンクから始めると2人ともボーナス！";
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(refUrl)}`, "_blank", "noopener,noreferrer");
+  }
 
   if (loading) return <Center>読み込み中…</Center>;
 
@@ -139,6 +150,22 @@ export default function EarnPage() {
                 <button onClick={copyCode} className="text-[11px] font-bold text-primary bg-primary-weak px-2.5 py-1 rounded-full">コピー</button>
                 <span className="ml-auto text-[11px] text-dim">紹介 {refCount}人</span>
               </div>
+
+              {/* 紹介URL（コピペ＆Xでシェア） */}
+              <div>
+                <span className="text-[11px] text-dim">あなたの紹介URL</span>
+                <div className="flex gap-2 mt-1">
+                  <input readOnly value={refUrl} onFocus={(e) => e.currentTarget.select()}
+                    className="flex-1 min-w-0 h-9 px-3 border border-border bg-surface2 rounded-[10px] text-[12px] mono outline-none" />
+                  <button onClick={copyUrl} className="btn-press text-[12px] font-extrabold text-primary bg-primary-weak px-3 rounded-[10px] shrink-0">URLをコピー</button>
+                  <button onClick={shareRefUrl} className="btn-press inline-flex items-center gap-1 text-[12px] font-extrabold text-white px-3 rounded-[10px] shrink-0" style={{ background: "var(--grad)" }}>
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M18.9 1.6h3.7l-8.1 9.2L24 22.4h-7.4l-5.8-7.6-6.7 7.6H.5l8.6-9.9L0 1.6h7.6l5.2 6.9 6.1-6.9Zm-1.3 18.6h2L6.5 3.7H4.3l13.3 16.5Z" /></svg>
+                    シェア
+                  </button>
+                </div>
+                <p className="text-[10.5px] text-faint mt-1">このURLから友達が始めると、紹介が自動で適用されます。</p>
+              </div>
+
               <div className="flex gap-2">
                 <input value={refInput} onChange={(e) => setRefInput(e.target.value)} placeholder="友達のコードを入力" maxLength={8}
                   className="flex-1 h-9 px-3 border border-border bg-surface2 rounded-[10px] text-base md:text-[13px] outline-none focus:border-primary uppercase" />

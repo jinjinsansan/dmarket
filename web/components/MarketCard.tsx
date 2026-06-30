@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { lmsrPrices } from "@/lib/lmsr";
 import { toCents, toPct, timeRemaining } from "@/lib/format";
 import { Sparkline } from "./Sparkline";
+import { withRef } from "@/lib/ref";
 import type { MarketWithOutcomes } from "@/lib/types";
 
 const CARD_SHADOW = "0 1px 2px rgba(0,0,0,.04),0 14px 30px -20px rgba(0,0,0,.18)";
@@ -47,7 +48,7 @@ export const MarketCard = memo(function MarketCard({ market, variant = "card", s
 
   const share = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const url = `${window.location.origin}/market/${market.id}`;
+    const url = withRef(`${window.location.origin}/market/${market.id}`);
     const text = `${market.question}\nゴリラ予想で予想中🦍`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, "_blank", "noopener,noreferrer");
   };

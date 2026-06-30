@@ -9,6 +9,7 @@ import { Logo, Wordmark } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { Confetti } from "./Confetti";
 import { Toast, type ToastKind } from "./Toast";
+import { getRefCode, setRefCode } from "@/lib/ref";
 
 const NAV = [
   { href: "/", label: "マーケット" },
@@ -31,6 +32,9 @@ export function TopNav() {
 
   const refresh = useCallback(async () => {
     const sb = createClient();
+    // 共有リンクの ?ref= を保留（未ログインでも保持し、ログイン後に友達紹介として自動適用）
+    try { const r = new URLSearchParams(window.location.search).get("ref"); if (r) localStorage.setItem("gp-pending-ref", r.toUpperCase()); } catch { /* noop */ }
+
     const { data: { session } } = await sb.auth.getSession();
     const user = session?.user;
     if (!user) { setLoggedIn(false); setBalance(null); setIsAdmin(false); setWinnings(0); return; }
@@ -43,6 +47,21 @@ export function TopNav() {
     setBalance(wallet?.balance ?? 0);
     setIsAdmin(Boolean(adm));
     setWinnings(((pend as { amount: number }[]) ?? []).reduce((a, r) => a + r.amount, 0));
+    // 紹介コードをキャッシュ（市場カード等のシェアに ?ref= を付けるため）。未取得時のみ。
+    if (!getRefCode()) {
+      sb.rpc("my_referral_code").then(({ data }) => { if (data?.code) setRefCode(data.code as string); });
+    }
+    // 保留中の友達紹介コードを適用（共有リンク経由・一度きり）
+    let pendRef: string | null = null;
+    try { pendRef = localStorage.getItem("gp-pending-ref"); } catch { /* noop */ }
+    if (pendRef) {
+      const { data: ap } = await sb.rpc("apply_referral", { p_code: pendRef });
+      try { localStorage.removeItem("gp-pending-ref"); } catch { /* noop */ }
+      if (ap?.ok) {
+        if (typeof ap.balance === "number") setBalance(ap.balance);
+        showToast("紹介ボーナス", `+${ap.granted} pt`, "success");
+      }
+    }
   }, []);
 
   useEffect(() => {
