@@ -7,6 +7,7 @@ import { buyCostPreview, sellRecvPreview, lmsrPrice } from "@/lib/lmsr";
 import { formatPoints, toCents, statusLabel } from "@/lib/format";
 import { POINTS_PER_SHARE } from "@/lib/constants";
 import { Toast } from "./Toast";
+import { RideNudge } from "./RideNudge";
 import type { MarketWithOutcomes, Outcome, Resolution } from "@/lib/types";
 
 const ERROR_JA: Record<string, string> = {
@@ -19,10 +20,11 @@ const ERROR_JA: Record<string, string> = {
 const CHIPS = [25, 100, 500];
 
 export function TradePanel({
-  market, outcomes, prices, resolution, pickIdx, setPickIdx, onTraded,
+  market, outcomes, prices, resolution, pickIdx, setPickIdx, onTraded, rideActive, rideReferrer,
 }: {
   market: MarketWithOutcomes; outcomes: Outcome[]; prices: number[]; resolution: Resolution | null;
   pickIdx: number; setPickIdx: (i: number) => void; onTraded: (outcomeId: string, newQ: number) => void;
+  rideActive?: boolean; rideReferrer?: string | null;
 }) {
   const [side, setSide] = useState<"buy" | "sell">("buy");
   const [amount, setAmount] = useState(100);
@@ -189,6 +191,7 @@ export function TradePanel({
         </div>
       )}
 
+      {rideActive && <div className="mb-2.5"><RideNudge referrerName={rideReferrer} /></div>}
       <button onClick={submit} disabled={busy}
         className="btn-press w-full font-extrabold text-[15.5px] py-3.5 rounded-[14px] text-white disabled:opacity-50"
         style={{ background: pickIdx === 0 ? "var(--pos)" : pickIdx === 1 ? "var(--neg)" : "var(--primary)" }}>

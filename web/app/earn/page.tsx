@@ -5,8 +5,17 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { formatPoints } from "@/lib/format";
 import { Toast } from "@/components/Toast";
+import { RideStats } from "@/components/RideStats";
 import { setRefCode as cacheRefCode, withRef } from "@/lib/ref";
 import type { AffiliateOffer } from "@/lib/types";
+
+type RideStat = { riderCount: number; totalBonus: number; recent: { marketTitle: string; bonusPt: number; agoLabel: string } | null };
+function agoLabel(iso: string): string {
+  const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (s < 3600) return `${Math.max(1, Math.floor(s / 60))}分前`;
+  if (s < 86400) return `${Math.floor(s / 3600)}時間前`;
+  return `${Math.floor(s / 86400)}日前`;
+}
 
 export default function EarnPage() {
   const [loading, setLoading] = useState(true);
@@ -18,6 +27,7 @@ export default function EarnPage() {
   const [refCount, setRefCount] = useState(0);
   const [refInput, setRefInput] = useState("");
   const [origin, setOrigin] = useState("");
+  const [rideStat, setRideStat] = useState<RideStat | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   const flash = (m: string) => { setToast(m); setTimeout(() => setToast(null), 2800); };
@@ -33,6 +43,14 @@ export default function EarnPage() {
     if (li) {
       const { data: rc } = await sb.rpc("my_referral_code");
       if (rc?.code) { setRefCode(rc.code as string); cacheRefCode(rc.code as string); setRefCount(Number(rc.count ?? 0)); }
+      const { data: rs } = await sb.rpc("my_ride_stats");
+      if (rs) {
+        const rec = rs.recent as { marketTitle: string; bonusPt: number; createdAt: string } | null;
+        setRideStat({
+          riderCount: Number(rs.rider_count ?? 0), totalBonus: Number(rs.total_bonus ?? 0),
+          recent: rec ? { marketTitle: rec.marketTitle, bonusPt: rec.bonusPt, agoLabel: agoLabel(rec.createdAt) } : null,
+        });
+      }
     }
     setLoading(false);
   }, []);
@@ -183,6 +201,11 @@ export default function EarnPage() {
           <div className="text-[13px] font-extrabold mb-1.5">友達があなたのリンクで的中 → あなたに +1% <span className="text-[10px] font-bold text-pos bg-pos-weak px-1.5 py-px rounded">稼働中</span></div>
           <p className="text-[11.5px] text-dim leading-[1.65]">あなたが市場の<b className="text-text">シェア</b>ボタンで広めたリンクから、友達が予想して的中すると、その獲得分の <b className="text-primary">1%</b> が<b className="text-text">あなた</b>にボーナスで入ります（参加pt・換金不可）。<b className="text-text">友達の取り分は減りません</b>。シェアして応援するほどお得🦍</p>
         </div>
+
+        {/* 乗っかり実績 */}
+        {loggedIn && rideStat && (
+          <RideStats riderCount={rideStat.riderCount} totalBonus={rideStat.totalBonus} recent={rideStat.recent} onShare={shareRefUrl} />
+        )}
       </div>
 
       {toast && (

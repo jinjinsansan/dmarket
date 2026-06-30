@@ -8,6 +8,7 @@ import { setRefCode } from "@/lib/ref";
 import { toCents, timeRemaining, statusLabel } from "@/lib/format";
 import type { MarketWithOutcomes, PricePoint, Resolution } from "@/lib/types";
 import { ProbabilityChart } from "./ProbabilityChart";
+import { RideBanner } from "./RideBanner";
 import { TradePanel } from "./TradePanel";
 import { MarketTabs } from "./MarketTabs";
 import { MarketCard } from "./MarketCard";
@@ -24,6 +25,7 @@ export function MarketDetailClient({
   const [pickIdx, setPickIdx] = useState(initialPick);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [myCode, setMyCode] = useState<string | null>(null);
+  const [ride, setRide] = useState<{ active: boolean; referrerName: string | null } | null>(null);
   const applyTraded = (id: string, q: number) => setOutcomes((prev) => prev.map((o) => (o.id === id ? { ...o, q } : o)));
   const shareMarket = () => {
     const ref = myCode ? `?ref=${myCode}` : "";
@@ -41,7 +43,10 @@ export function MarketDetailClient({
       const { data: rc } = await sb.rpc("my_referral_code");
       if (rc?.code) { setMyCode(rc.code as string); setRefCode(rc.code as string); }
       const ref = new URLSearchParams(window.location.search).get("ref");
-      if (ref) await sb.rpc("record_ride", { p_market_id: market.id, p_sharer_code: ref });
+      if (ref) {
+        const { data: rr } = await sb.rpc("record_ride", { p_market_id: market.id, p_sharer_code: ref });
+        if (rr?.ok) setRide({ active: true, referrerName: (rr.referrer_name as string) ?? null });
+      }
     })();
   }, [market.id]);
 
@@ -116,6 +121,8 @@ export function MarketDetailClient({
             <h1 className="text-[23px] font-extrabold leading-snug">{market.question}</h1>
           </div>
 
+          {ride?.active && <RideBanner marketId={market.id} referrerName={ride.referrerName} />}
+
           {/* 確率＋チャート */}
           <div className="border border-border bg-surface rounded-[var(--radius)] p-5" style={{ boxShadow: "var(--shadow)" }}>
             <div className="flex items-end gap-3 mb-3">
@@ -177,7 +184,8 @@ export function MarketDetailClient({
         {/* 右カラム = トレードパネル（デスクトップのみ） */}
         <div className="hidden lg:block flex-[1_1_320px] max-w-[392px] lg:sticky lg:top-4 w-full">
           <TradePanel market={market} outcomes={outcomes} prices={prices} resolution={resolution}
-            pickIdx={pickIdx} setPickIdx={setPickIdx} onTraded={applyTraded} />
+            pickIdx={pickIdx} setPickIdx={setPickIdx} onTraded={applyTraded}
+            rideActive={ride?.active} rideReferrer={ride?.referrerName ?? null} />
         </div>
       </div>
 
@@ -203,7 +211,8 @@ export function MarketDetailClient({
               style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}>
               <div className="w-10 h-1 bg-border rounded-full mx-auto mb-3" />
               <TradePanel market={market} outcomes={outcomes} prices={prices} resolution={resolution}
-                pickIdx={pickIdx} setPickIdx={setPickIdx} onTraded={applyTraded} />
+                pickIdx={pickIdx} setPickIdx={setPickIdx} onTraded={applyTraded}
+                rideActive={ride?.active} rideReferrer={ride?.referrerName ?? null} />
               <button onClick={() => setSheetOpen(false)} className="w-full mt-3 py-2 text-dim text-sm">閉じる</button>
             </div>
           </div>

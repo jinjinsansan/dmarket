@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { RideStats } from "@/components/RideStats";
 import { lmsrPrice } from "@/lib/lmsr";
 import { formatPoints, pnlText } from "@/lib/format";
 import { LEDGER_REASON_LABEL, PRIZE_REASON_LABEL } from "@/lib/constants";
@@ -49,6 +50,7 @@ export default function MyPage() {
   const [promoBusy, setPromoBusy] = useState(false);
   const [promoMsg, setPromoMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [creatorStatus, setCreatorStatus] = useState<string | null>(null);
+  const [rideStat, setRideStat] = useState<{ riderCount: number; totalBonus: number } | null>(null);
 
   const name = nickname || lineName;
 
@@ -61,7 +63,7 @@ export default function MyPage() {
     setUid(user.id);
 
     const [{ data: wallet }, { data: prizeWallet }, { data: profile }, { data: priv }, { data: st },
-      { data: positions }, { data: led }, { data: prizeLed }, { data: allBadges }, { data: mine }, { data: reds }, { data: cstat }] =
+      { data: positions }, { data: led }, { data: prizeLed }, { data: allBadges }, { data: mine }, { data: reds }, { data: cstat }, { data: rstat }] =
       await Promise.all([
         sb.from("wallets").select("balance").eq("user_id", user.id).maybeSingle(),
         sb.from("prize_wallets").select("balance").eq("user_id", user.id).maybeSingle(),
@@ -75,6 +77,7 @@ export default function MyPage() {
         sb.from("user_badges").select("badge_id").eq("user_id", user.id),
         sb.rpc("my_redemptions"),
         sb.rpc("my_creator_status"),
+        sb.rpc("my_ride_stats"),
       ]);
 
     setBalance(wallet?.balance ?? 0);
@@ -88,6 +91,7 @@ export default function MyPage() {
     setLedger((led as LedgerRow[]) ?? []);
     setRedemptions((reds as Redemption[]) ?? []);
     setCreatorStatus(((cstat as { status: string }[] | null)?.[0]?.status) ?? null);
+    if (rstat) setRideStat({ riderCount: Number((rstat as { rider_count?: number }).rider_count ?? 0), totalBonus: Number((rstat as { total_bonus?: number }).total_bonus ?? 0) });
     const earned = new Set((mine ?? []).map((b) => b.badge_id));
     setBadges((allBadges ?? []).map((b) => ({ ...b, earned: earned.has(b.id) })));
 
@@ -277,6 +281,11 @@ export default function MyPage() {
           <Link href="/create" className="text-[12px] font-bold text-primary underline shrink-0">市場を作る →</Link>
         )}
       </section>
+
+      {/* 乗っかり実績 */}
+      {rideStat && rideStat.riderCount > 0 && (
+        <RideStats variant="compact" riderCount={rideStat.riderCount} totalBonus={rideStat.totalBonus} />
+      )}
 
       {/* 景品の交換・配送状況 */}
       <section>
