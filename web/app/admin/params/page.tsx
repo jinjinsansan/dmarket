@@ -14,6 +14,7 @@ const FIELDS: { key: string; label: string; hint: string; step?: number }[] = [
   { key: "referral_referrer", label: "友達紹介：紹介した人へ（pt）", hint: "友達がコードを使うと紹介者に付与。既定200" },
   { key: "referral_referee", label: "友達紹介：使った人へ（pt）", hint: "コードを入力した本人に付与。既定100" },
   { key: "ride_rate", label: "乗っかり率（的中時のシェア元へ）", hint: "シェア経由で乗った友達が的中したら、その払戻し×この率をシェア元へ。既定0.01（=1%）", step: 0.01 },
+  { key: "ride_max_per_market", label: "乗っかり上限（1市場×シェア元/pt）", hint: "1つの市場でシェア元1人が受け取れる乗っかりボーナスの上限。単独ファーミング抑制。既定5000・0で無制限" },
 ];
 
 export default function AdminParamsPage() {
