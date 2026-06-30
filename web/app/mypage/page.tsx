@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { RideStats } from "@/components/RideStats";
+import { MyPageHero, BadgeShowcase } from "@/components/MyPageHero";
 import { lmsrPrice } from "@/lib/lmsr";
 import { formatPoints, pnlText } from "@/lib/format";
 import { LEDGER_REASON_LABEL, PRIZE_REASON_LABEL } from "@/lib/constants";
@@ -177,7 +178,6 @@ export default function MyPage() {
   const holdCost = holdings.reduce((s, h) => s + h.costBasis, 0);
   const unrealized = holdValue - holdCost;
   const hitRate = stats && stats.resolved_count > 0 ? Math.round((stats.win_count / stats.resolved_count) * 100) : null;
-  const earnedCount = badges.filter((b) => b.earned).length;
   const title = stats && stats.current_streak >= 5 ? "予言者 / Oracle" : "トレーダー / Trader";
   const now = Date.now();
   const nextExpiry = prizeLedger
@@ -187,58 +187,40 @@ export default function MyPage() {
 
   return (
     <div className="max-w-[1100px] mx-auto px-4 md:px-[22px] py-6 pb-20 dm-in space-y-5">
-      {/* プロフィール */}
-      <div className="border border-border bg-surface rounded-[var(--radius)] p-4 sm:p-6" style={{ boxShadow: "var(--shadow)" }}>
-        <div className="flex items-center gap-4 sm:gap-5 flex-wrap">
-          <Avatar url={avatarUrl} name={name} />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-[20px] sm:text-[23px] font-bold truncate max-w-full">{name}</h1>
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-primary bg-primary-weak border px-2.5 py-1 rounded-full whitespace-nowrap shrink-0" style={{ borderColor: "var(--accent2)" }}>★ {title}</span>
-            </div>
-            <div className="text-[13px] text-dim mt-1">連勝 {stats?.current_streak ?? 0} · 表示名はニックネーム優先</div>
-            <button onClick={() => { setEditProfile((v) => !v); setMsg(null); }} className="mt-2 text-[12.5px] text-primary underline">
-              {editProfile ? "編集を閉じる" : "ニックネーム・アイコンを編集"}
-            </button>
+      {/* プロフィールヒーロー＋2大ウォレット＋副次スタット */}
+      <MyPageHero
+        name={name} title={title} streak={stats?.current_streak ?? 0} hitRate={hitRate}
+        avatarUrl={avatarUrl} balance={balance} prizeBalance={prizeBalance}
+        positionsValue={holdValue} pnl={unrealized}
+        onClaim={claim} onEdit={() => { setEditProfile((v) => !v); setMsg(null); }}
+      />
+
+      {editProfile && (
+        <div className="border border-border bg-surface rounded-[var(--radius)] p-5 space-y-3 max-w-md" style={{ boxShadow: "var(--shadow)" }}>
+          <div className="flex items-center justify-between">
+            <span className="text-[14px] font-bold">プロフィール編集</span>
+            <button onClick={() => setEditProfile(false)} className="text-dim hover:text-text text-sm">閉じる</button>
           </div>
-          <button onClick={claim} className="h-[42px] px-[18px] text-white rounded-[12px] font-bold text-[13.5px] w-full sm:w-auto sm:shrink-0" style={{ background: "var(--grad)", boxShadow: "var(--cta-glow)" }}>
-            デイリー受取 / Claim
+          <label className="block">
+            <span className="text-[12px] text-dim font-semibold">ニックネーム（20文字まで）</span>
+            <input value={nickname} onChange={(e) => setNickname(e.target.value)} maxLength={20} placeholder="表示名（未設定ならLINEの名前）"
+              className="w-full mt-1 h-10 px-3 rounded-[10px] border border-border bg-surface2 text-base sm:text-sm outline-none focus:border-primary" />
+            <span className="text-[11px] text-faint">空にするとLINEの名前（{lineName}）が表示されます。</span>
+          </label>
+          <div>
+            <span className="text-[12px] text-dim font-semibold">アイコン画像</span>
+            <div className="mt-1">
+              <ImageUpload value={avatarUrl} onChange={setAvatarUrl} bucket="avatars" folder={uid} shape="circle" />
+            </div>
+          </div>
+          <button onClick={saveProfile} disabled={savingProfile} className="h-[42px] px-5 rounded-[11px] text-white font-bold text-sm disabled:opacity-50" style={{ background: "var(--grad)", boxShadow: "var(--cta-glow)" }}>
+            {savingProfile ? "保存中…" : "プロフィールを保存"}
           </button>
         </div>
-
-        {editProfile && (
-          <div className="mt-5 pt-5 border-t border-border space-y-3 max-w-md">
-            <label className="block">
-              <span className="text-[12px] text-dim font-semibold">ニックネーム（20文字まで）</span>
-              <input value={nickname} onChange={(e) => setNickname(e.target.value)} maxLength={20} placeholder="表示名（未設定ならLINEの名前）"
-                className="w-full mt-1 h-10 px-3 rounded-[10px] border border-border bg-surface2 text-base sm:text-sm outline-none focus:border-primary" />
-              <span className="text-[11px] text-faint">空にするとLINEの名前（{lineName}）が表示されます。</span>
-            </label>
-            <div>
-              <span className="text-[12px] text-dim font-semibold">アイコン画像</span>
-              <div className="mt-1">
-                <ImageUpload value={avatarUrl} onChange={setAvatarUrl} bucket="avatars" folder={uid} shape="circle" />
-              </div>
-            </div>
-            <button onClick={saveProfile} disabled={savingProfile} className="h-[42px] px-5 rounded-[11px] text-white font-bold text-sm disabled:opacity-50" style={{ background: "var(--grad)", boxShadow: "var(--cta-glow)" }}>
-              {savingProfile ? "保存中…" : "プロフィールを保存"}
-            </button>
-          </div>
-        )}
-      </div>
+      )}
       {(msg || claimMsg) && <p className="text-sm text-primary">{msg ?? claimMsg}</p>}
       <div className="text-right">
         <a href="/api/auth/logout" className="text-xs text-dim hover:text-text underline">ログアウト</a>
-      </div>
-
-      {/* ステータス */}
-      <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))" }}>
-        <StatCard label="参加ポイント / Balance" value={`${formatPoints(balance)}`} unit="pt" />
-        <StatCard label="ゴリラコイン / Prize" value={`${formatPoints(prizeBalance)}`} unit="コイン" cls="text-primary" />
-        <StatCard label="評価額 / Positions" value={`${formatPoints(holdValue)}`} unit="pt" />
-        <StatCard label="合計損益 / P&L" value={pnlText(unrealized).text} cls={pnlText(unrealized).cls} />
-        <StatCard label="的中率 / Hit rate" value={hitRate === null ? "—" : `${hitRate}%`} />
-        <StatCard label="連勝 / Streak" value={`${stats?.current_streak ?? 0}`} cls="text-primary" />
       </div>
 
       {/* 合言葉・キャンペーン */}
@@ -334,25 +316,8 @@ export default function MyPage() {
         </button>
       </section>
 
-      {/* 称号コレクション */}
-      <section className="border border-border bg-surface rounded-[var(--radius)] p-5" style={{ boxShadow: "var(--shadow)" }}>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-[15px] font-bold">称号コレクション / Badges</h2>
-          <span className="text-xs text-dim">{earnedCount} / {badges.length} 獲得</span>
-        </div>
-        <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(190px,1fr))" }}>
-          {badges.map((b) => (
-            <div key={b.id} className={`flex items-center gap-3 p-3 rounded-[14px] ${b.earned ? "bg-surface2" : "opacity-50"}`}>
-              <div className="w-10 h-10 rounded-[11px] grid place-items-center text-white font-extrabold" style={{ background: b.earned ? "var(--grad)" : "var(--faint)" }}>★</div>
-              <div className="min-w-0">
-                <div className="text-[13px] font-bold truncate">{b.name}</div>
-                <div className="text-[11px] text-dim truncate">{b.description}</div>
-              </div>
-            </div>
-          ))}
-          {badges.length === 0 && <p className="text-dim text-sm">称号がありません</p>}
-        </div>
-      </section>
+      {/* 称号コレクション（横スクロール） */}
+      {badges.length > 0 && <BadgeShowcase badges={badges} />}
 
       {/* 保有 */}
       <section>
@@ -434,17 +399,6 @@ export default function MyPage() {
   );
 }
 
-function Avatar({ url, name }: { url: string; name: string }) {
-  if (url) return (
-    <img src={url} alt={name} className="w-16 h-16 sm:w-[76px] sm:h-[76px] rounded-full object-cover shrink-0 border border-border" />
-  );
-  return (
-    <div className="w-16 h-16 sm:w-[76px] sm:h-[76px] rounded-full grid place-items-center text-white text-xl sm:text-2xl font-extrabold shrink-0" style={{ background: "var(--grad)", boxShadow: "var(--cta-glow)" }}>
-      {name.slice(0, 1)}
-    </div>
-  );
-}
-
 function Field({ label, value, onChange, placeholder, wide }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; wide?: boolean }) {
   return (
     <label className={`block ${wide ? "sm:col-span-2" : ""}`}>
@@ -455,14 +409,6 @@ function Field({ label, value, onChange, placeholder, wide }: { label: string; v
   );
 }
 
-function StatCard({ label, value, unit, cls }: { label: string; value: string; unit?: string; cls?: string }) {
-  return (
-    <div className="border border-border bg-surface rounded-[16px] p-4" style={{ boxShadow: "var(--shadow)" }}>
-      <div className="text-xs text-dim font-semibold mb-1.5">{label}</div>
-      <div className={`mono text-[22px] font-bold ${cls ?? ""}`}>{value}{unit && <span className="text-xs text-dim"> {unit}</span>}</div>
-    </div>
-  );
-}
 function Center({ children }: { children: React.ReactNode }) {
   return <div className="max-w-[1100px] mx-auto px-4 md:px-[22px] py-20 text-center text-dim">{children}</div>;
 }
