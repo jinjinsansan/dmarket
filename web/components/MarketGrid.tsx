@@ -161,7 +161,8 @@ function CategoryNav({ categories, active, onSelect }: { categories: Category[];
     ...categories.map((c) => ({ id: c.id, name: c.name })),
   ];
   return (
-    <div className="flex items-center gap-0.5 overflow-x-auto hide-scrollbar border-b border-border mb-5">
+    <div className="flex items-center gap-0.5 overflow-x-auto overflow-y-hidden hide-scrollbar border-b border-border mb-5"
+      style={{ touchAction: "pan-x", overscrollBehaviorX: "contain" }}>
       {items.map((c) => {
         const isAct = active === c.id;
         return (
@@ -179,7 +180,7 @@ type SortKey = "ending" | "newest" | "contested";
 const SORT_OPTIONS: [SortKey, string][] = [["ending", "締切が近い"], ["newest", "新着"], ["contested", "接戦"]];
 function SortBar({ sort, onSort }: { sort: SortKey; onSort: (s: SortKey) => void }) {
   return (
-    <div className="flex gap-1 overflow-x-auto scrollx mb-4">
+    <div className="flex gap-1 overflow-x-auto overflow-y-hidden scrollx mb-4" style={{ touchAction: "pan-x", overscrollBehaviorX: "contain" }}>
       {SORT_OPTIONS.map(([key, label]) => (
         <button key={key} onClick={() => onSort(key)}
           className={`px-3 py-1.5 rounded-full text-[12.5px] font-bold whitespace-nowrap border ${sort === key ? "bg-primary text-white border-primary" : "bg-surface border-border text-dim hover:text-text"}`}>{label}</button>
