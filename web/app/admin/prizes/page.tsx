@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAdminToast } from "@/components/admin/AdminToast";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { formatPoints } from "@/lib/format";
 import type { Prize, AdminRedemption } from "@/lib/types";
 
@@ -94,13 +95,15 @@ export default function AdminPrizesPage() {
             className="w-full rounded-sm bg-surface2 border border-border px-2 py-1.5 text-sm" />
           <input value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="説明（任意）"
             className="w-full rounded-sm bg-surface2 border border-border px-2 py-1.5 text-sm" />
-          <input value={form.image_url ?? ""} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="画像URL（任意）"
-            className="w-full rounded-sm bg-surface2 border border-border px-2 py-1.5 text-sm" />
+          <div>
+            <div className="text-[11px] text-dim font-semibold mb-1">景品の写真・イラスト</div>
+            <ImageUpload value={form.image_url ?? ""} onChange={(url) => setForm({ ...form, image_url: url })} />
+          </div>
           <div className="flex flex-wrap gap-3 items-center">
             <label className="text-xs text-dim flex items-center gap-1">必要ゴリラコイン
               <input type="number" min={1} value={form.cost_points} onChange={(e) => setForm({ ...form, cost_points: Math.max(1, Math.floor(Number(e.target.value))) })}
                 className="num w-24 rounded-sm bg-surface2 border border-border px-2 py-1" />
-              <span className="text-faint">1コイン=1円 / 10,000以上推奨</span>
+              <span className="text-faint">1コイン=1円 / 10,000〜100,000</span>
             </label>
             <label className="text-xs text-dim flex items-center gap-1">在庫
               <input type="number" min={0} value={form.stock ?? ""} placeholder="∞"
@@ -117,8 +120,13 @@ export default function AdminPrizesPage() {
               公開する
             </label>
           </div>
+          {form.cost_points > 100000 && (
+            <p className="text-[11.5px] text-neg bg-neg/10 rounded-sm px-2.5 py-1.5">
+              ⚠️ 景品表示法（一般懸賞）の上限は <b>10万円（=100,000コイン）</b>です。これを超える景品は提供できません。
+            </p>
+          )}
           <div className="flex gap-2">
-            <button onClick={save} disabled={busy || !form.name} className="rounded-sm bg-primary text-white px-4 py-1.5 text-sm disabled:opacity-50">
+            <button onClick={save} disabled={busy || !form.name || form.cost_points > 100000} className="rounded-sm bg-primary text-white px-4 py-1.5 text-sm disabled:opacity-50">
               {editId ? "更新" : "追加"}
             </button>
             {editId && <button onClick={startNew} className="rounded-sm border border-border text-dim px-4 py-1.5 text-sm">キャンセル</button>}
