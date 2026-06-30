@@ -13,7 +13,7 @@ const robotoMono = Roboto_Mono({ variable: "--font-roboto-mono", subsets: ["lati
 
 export const metadata: Metadata = {
   // OGP/Twitterカード/canonical の絶対URL基点。redirect URI と同じ env を参照（末尾スラッシュ・空白除去）。
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "") || "https://d-market.io"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "") || "https://g-yoso.com"),
   title: "ゴリラ予想 — 予想して、当てて、楽しむ。",
   description: "無償ポイントで楽しむ予測市場。換金不可・譲渡禁止。予想を当てて貯めた賞品ポイントは景品と交換できます。",
 };
