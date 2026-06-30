@@ -1,11 +1,13 @@
-// ローディング時のブランド表示：小さなゴリラ＋「読み込み中…」（スケルトンの上に添える）。
+// ローディング時のブランド表示：ゴリラ（マスコット）＋「読み込み中…」。スケルトンの上に大きく出す。
 import { GorillaFace } from "./GorillaFace";
 
 export function LoadingHint({ label = "読み込み中…", className = "" }: { label?: string; className?: string }) {
   return (
-    <div className={`flex items-center gap-2 text-dim text-[12px] font-bold mb-4 ${className}`}>
-      <span className="inline-flex animate-pulse"><GorillaFace size={22} color="var(--faint)" /></span>
-      {label}
+    <div className={`flex flex-col items-center justify-center gap-2 py-7 text-dim ${className}`}>
+      <span className="inline-flex text-primary animate-bounce" style={{ animationDuration: "1.1s" }}>
+        <GorillaFace size={56} color="currentColor" />
+      </span>
+      <span className="text-[12.5px] font-bold">{label}</span>
     </div>
   );
 }
