@@ -282,8 +282,8 @@ export default function MyPage() {
         )}
       </section>
 
-      {/* 乗っかり実績 */}
-      {rideStat && rideStat.riderCount > 0 && (
+      {/* 乗っかり実績（0でも表示） */}
+      {rideStat && (
         <RideStats variant="compact" riderCount={rideStat.riderCount} totalBonus={rideStat.totalBonus} />
       )}
 
