@@ -14,7 +14,7 @@ const OPERATOR = {
   company: "ゴリラ予想運営",
   manager: "木村 綾香",
   address: "東京都港区銀座",
-  lineUrl: "https://lin.ee/XXXXXXX", // 公式LINE（要差し替え）
+  lineUrl: "https://lin.ee/Zts2DeT", // 公式LINE
 };
 
 export default function TokushohoPage() {
