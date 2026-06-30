@@ -133,8 +133,8 @@ export default function EarnPage() {
 
         {/* 乗っかり（近日公開） */}
         <div className="border border-border bg-surface rounded-[16px] p-[15px]" style={{ boxShadow: "var(--shadow)" }}>
-          <div className="text-[13px] font-extrabold mb-1.5">「乗っかり」→ 的中で +1%</div>
-          <p className="text-[11.5px] text-dim leading-[1.65]">友達の予想に乗っかって、その予想が的中したら、獲得ポイントの <b className="text-primary">1%</b> がボーナスでもらえる。みんなで当てるほどお得。<span className="text-faint">（近日公開）</span></p>
+          <div className="text-[13px] font-extrabold mb-1.5">「乗っかり」→ 的中で +1% <span className="text-[10px] font-bold text-pos bg-pos-weak px-1.5 py-px rounded">稼働中</span></div>
+          <p className="text-[11.5px] text-dim leading-[1.65]">市場の<b className="text-text">シェア</b>ボタンであなたのリンクを拡散 → 友達がそのリンクから乗って予想が的中すると、友達の獲得ポイントの <b className="text-primary">1%</b> があなたにボーナスで入ります（参加pt・換金不可）。みんなで当てるほどお得🦍</p>
         </div>
       </div>
 

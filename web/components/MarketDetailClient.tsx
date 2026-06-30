@@ -22,12 +22,27 @@ export function MarketDetailClient({
   const [livePoints, setLivePoints] = useState<PricePoint[]>([]);
   const [pickIdx, setPickIdx] = useState(initialPick);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [myCode, setMyCode] = useState<string | null>(null);
   const applyTraded = (id: string, q: number) => setOutcomes((prev) => prev.map((o) => (o.id === id ? { ...o, q } : o)));
   const shareMarket = () => {
-    const url = `${window.location.origin}/market/${market.id}`;
+    const ref = myCode ? `?ref=${myCode}` : "";
+    const url = `${window.location.origin}/market/${market.id}${ref}`;
     const text = `${market.question}\nゴリラ予想で予想中🦍`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, "_blank", "noopener,noreferrer");
   };
+
+  // 自分の紹介コード取得＋「乗っかり」帰属の記録（?ref= 経由の来訪）
+  useEffect(() => {
+    (async () => {
+      const sb = createClient();
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session?.user) return;
+      const { data: rc } = await sb.rpc("my_referral_code");
+      if (rc?.code) setMyCode(rc.code as string);
+      const ref = new URLSearchParams(window.location.search).get("ref");
+      if (ref) await sb.rpc("record_ride", { p_market_id: market.id, p_sharer_code: ref });
+    })();
+  }, [market.id]);
 
   useEffect(() => {
     const sb = createClient();
