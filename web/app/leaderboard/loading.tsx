@@ -1,7 +1,9 @@
 // ランキングのローディング骨格（force-dynamic のサーバー取得待ちに即時フィードバック）。
+import { LoadingHint } from "@/components/LoadingHint";
 export default function Loading() {
   return (
     <div className="max-w-[880px] mx-auto px-4 md:px-[22px] py-6">
+      <LoadingHint />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div className="h-7 w-48 rounded bg-surface/40" />
         <div className="h-9 w-full sm:w-44 rounded-[12px] bg-surface/40" />

@@ -1,7 +1,9 @@
 // 市場詳細のローディング骨格（実レイアウトに一致 → 体感速度向上）。
+import { LoadingHint } from "@/components/LoadingHint";
 export default function Loading() {
   return (
     <div className="max-w-[1240px] mx-auto px-4 md:px-[22px] py-6 pb-20">
+      <LoadingHint />
       <div className="sk h-4 w-40 mb-4" />
       <div className="flex flex-wrap gap-6 items-start">
         {/* 左カラム */}
