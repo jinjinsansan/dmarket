@@ -1,16 +1,17 @@
 "use client";
-// 景品一覧＋確定交換（二層ポイント制 Phase C）。賞品ポイントで景品と交換（抽選なし）。
+// 景品一覧＋確定交換（二層ポイント制 Phase C）。ゴリラコインで景品と交換（抽選なし）。
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { formatPoints } from "@/lib/format";
+import { CoinIcon } from "@/components/CoinIcon";
 import type { Prize, ShippingInfo } from "@/lib/types";
 
 const REDEEM_ERROR: Record<string, string> = {
   not_authenticated: "交換にはログインが必要です（LINEログイン）。",
   prize_unavailable: "この景品は現在交換できません。",
   out_of_stock: "在庫切れです。",
-  insufficient_prize_points: "賞品ポイントが不足しています。",
+  insufficient_prize_points: "ゴリラコインが不足しています。",
 };
 
 export default function PrizesPage() {
@@ -41,11 +42,11 @@ export default function PrizesPage() {
     <div className="max-w-[1100px] mx-auto px-4 md:px-[22px] py-6 pb-20 dm-in space-y-5">
       <div>
         <h1 className="text-[24px] font-black">景品交換</h1>
-        <p className="text-[12px] text-dim mt-1 mb-3">予想を当てて貯めた<b className="text-text">賞品ポイント</b>を交換（確定交換・抽選なし）</p>
+        <p className="text-[12px] text-dim mt-1 mb-3">予想を当てて貯めた<b className="text-text">ゴリラコイン</b>を交換（<b className="text-text">1コイン=1円相当</b>・確定交換・抽選なし）</p>
         {loggedIn && (
           <div className="flex justify-between items-center rounded-[14px] px-4 py-3 border" style={{ background: "var(--primary-weak)", borderColor: "var(--primary)" }}>
-            <span className="text-[12px] font-extrabold text-primary">賞品ポイント残高</span>
-            <span className="mono text-[20px] font-extrabold text-primary">{formatPoints(balance)} <span className="text-[12px]">pt</span></span>
+            <span className="text-[12px] font-extrabold text-primary inline-flex items-center gap-1.5"><CoinIcon size={16} />ゴリラコイン残高</span>
+            <span className="mono text-[20px] font-extrabold text-primary">{formatPoints(balance)} <span className="text-[12px]">コイン</span></span>
           </div>
         )}
       </div>
@@ -77,7 +78,7 @@ export default function PrizesPage() {
                   <div className="font-bold text-[14.5px] leading-snug">{p.name}</div>
                   {p.description && <p className="text-[12.5px] text-dim leading-relaxed flex-1">{p.description}</p>}
                   <div className="flex items-center justify-between mt-1">
-                    <span className="mono text-primary font-bold text-[17px]">{formatPoints(p.cost_points)}<span className="text-xs text-dim"> pt</span></span>
+                    <span className="mono text-primary font-bold text-[17px] inline-flex items-center gap-1"><CoinIcon size={15} />{formatPoints(p.cost_points)}<span className="text-xs text-dim">コイン</span></span>
                     <span className="text-[11px] text-dim">{p.stock === null ? "" : soldOut ? "在庫切れ" : `残り${p.stock}`}</span>
                   </div>
                   <button
@@ -85,7 +86,7 @@ export default function PrizesPage() {
                     disabled={!loggedIn || soldOut || !canAfford}
                     className="h-[40px] rounded-[11px] text-white font-bold text-[13.5px] disabled:opacity-40 disabled:cursor-not-allowed"
                     style={{ background: "var(--grad)", boxShadow: canAfford && !soldOut ? "var(--cta-glow)" : "none" }}>
-                    {soldOut ? "在庫切れ" : !loggedIn ? "ログインで交換" : !canAfford ? "ポイント不足" : "交換する"}
+                    {soldOut ? "在庫切れ" : !loggedIn ? "ログインで交換" : !canAfford ? "コイン不足" : "交換する"}
                   </button>
                 </div>
               </div>
@@ -126,7 +127,7 @@ function RedeemModal({ prize, onClose, onDone }: { prize: Prize; onClose: () => 
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-[16px] font-bold">{prize.name} と交換</h2>
-            <p className="text-[12.5px] text-dim mt-0.5">必要 <b className="text-primary mono">{formatPoints(prize.cost_points)} pt</b> ・確定交換（取消は発送前のみ）</p>
+            <p className="text-[12.5px] text-dim mt-0.5">必要 <b className="text-primary mono">{formatPoints(prize.cost_points)} コイン</b> ・確定交換（取消は発送前のみ）</p>
           </div>
           <button onClick={onClose} className="text-dim hover:text-text text-xl leading-none">×</button>
         </div>

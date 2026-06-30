@@ -1,5 +1,5 @@
 "use client";
-// 管理: 経済モニタ（参加ポイント供給・LMSR補助金・インフレ・台帳監査）＋手動ジョブ。賞品ptは別台帳。
+// 管理: 経済モニタ（参加ポイント供給・LMSR補助金・インフレ・台帳監査）＋手動ジョブ。ゴリラコインは別台帳。
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAdminToast } from "@/components/admin/AdminToast";

@@ -152,7 +152,7 @@ export function MarketDetailClient({
             <h2 className="text-[15px] font-bold mb-2">解決ルール / Rules</h2>
             <p className="text-[13.5px] text-dim leading-relaxed">
               {market.description ? market.description + " " : ""}
-              価格は参加者の取引で動き、その価格がそのまま「予想される確率」を表します（例: YES 64% = 当たる見込み 64%）。当たると参加ポイントが払い戻され、予想の的中に応じて景品と交換できる賞品ポイントが貯まります。参加ポイントは換金できません。
+              価格は参加者の取引で動き、その価格がそのまま「予想される確率」を表します（例: YES 64% = 当たる見込み 64%）。当たると参加ポイントが払い戻され、予想の的中に応じて景品と交換できるゴリラコインが貯まります。参加ポイントは換金できません。
             </p>
             {resolution && (
               <div className="mt-3 text-[12.5px] text-dim">

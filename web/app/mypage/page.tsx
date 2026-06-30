@@ -96,7 +96,7 @@ export default function MyPage() {
   const hitRate = stats && stats.resolved_count > 0 ? Math.round((stats.win_count / stats.resolved_count) * 100) : null;
   const earnedCount = badges.filter((b) => b.earned).length;
   const title = stats && stats.current_streak >= 5 ? "予言者 / Oracle" : "トレーダー / Trader";
-  // 賞品ptの直近の有効期限（未失効の付与分のうち最も早いもの）
+  // ゴリラコインの直近の有効期限（未失効の付与分のうち最も早いもの）
   const now = Date.now();
   const nextExpiry = prizeLedger
     .filter((l) => l.delta > 0 && l.expires_at && new Date(l.expires_at).getTime() > now)
@@ -129,7 +129,7 @@ export default function MyPage() {
       {/* ステータス */}
       <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))" }}>
         <StatCard label="参加ポイント / Balance" value={`${formatPoints(balance)}`} unit="pt" />
-        <StatCard label="賞品ポイント / Prize" value={`${formatPoints(prizeBalance)}`} unit="pt" cls="text-primary" />
+        <StatCard label="ゴリラコイン / Prize" value={`${formatPoints(prizeBalance)}`} unit="コイン" cls="text-primary" />
         <StatCard label="評価額 / Positions" value={`${formatPoints(holdValue)}`} unit="pt" />
         <StatCard label="合計損益 / P&L" value={pnlText(unrealized).text} cls={pnlText(unrealized).cls} />
         <StatCard label="的中率 / Hit rate" value={hitRate === null ? "—" : `${hitRate}%`} />
@@ -177,10 +177,10 @@ export default function MyPage() {
         )}
       </section>
 
-      {/* 賞品ポイント（二層ポイント制 Phase B） */}
+      {/* ゴリラコイン（二層ポイント制 Phase B） */}
       <section>
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-[15px] font-bold">賞品ポイント / Prize points</h2>
+          <h2 className="text-[15px] font-bold">ゴリラコイン / Prize points</h2>
           <Link href="/prizes" className="text-xs text-primary underline">景品一覧・交換へ →</Link>
         </div>
         <div className="border border-border bg-surface rounded-[var(--radius)] p-5" style={{ boxShadow: "var(--shadow)" }}>
@@ -212,7 +212,7 @@ export default function MyPage() {
             </div>
           )}
           {prizeLedger.length === 0 && (
-            <p className="mt-3 text-dim text-sm">まだ賞品ポイントはありません。予想を的中させると貯まります。</p>
+            <p className="mt-3 text-dim text-sm">まだゴリラコインはありません。予想を的中させると貯まります。</p>
           )}
         </div>
       </section>

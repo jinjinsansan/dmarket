@@ -70,7 +70,7 @@ export default function AdminPrizesPage() {
   }
 
   async function setStatus(r: AdminRedemption, status: string) {
-    if (status === "cancelled" && !confirm(`「${r.prize_name}」の申込を取消します。未発送なら賞品ポイントを返金し在庫を戻します。よろしいですか？`)) return;
+    if (status === "cancelled" && !confirm(`「${r.prize_name}」の申込を取消します。未発送ならゴリラコインを返金し在庫を戻します。よろしいですか？`)) return;
     setBusy(true);
     const { error } = await createClient().rpc("admin_set_redemption_status", { p_id: r.id, p_status: status });
     setBusy(false);
@@ -97,7 +97,7 @@ export default function AdminPrizesPage() {
           <input value={form.image_url ?? ""} onChange={(e) => setForm({ ...form, image_url: e.target.value })} placeholder="画像URL（任意）"
             className="w-full rounded-sm bg-surface2 border border-border px-2 py-1.5 text-sm" />
           <div className="flex flex-wrap gap-3 items-center">
-            <label className="text-xs text-dim flex items-center gap-1">必要賞品pt
+            <label className="text-xs text-dim flex items-center gap-1">必要ゴリラコイン
               <input type="number" min={1} value={form.cost_points} onChange={(e) => setForm({ ...form, cost_points: Math.max(1, Math.floor(Number(e.target.value))) })}
                 className="num w-24 rounded-sm bg-surface2 border border-border px-2 py-1" />
             </label>
@@ -185,7 +185,7 @@ export default function AdminPrizesPage() {
               </div>
             ))}
         </div>
-        <p className="text-xs text-faint">※ 配送先は個人情報です。発送後は最小限の保持・適切な管理をしてください（プライバシーポリシー）。取消は未発送のときのみ賞品ポイントを返金し在庫を戻します。</p>
+        <p className="text-xs text-faint">※ 配送先は個人情報です。発送後は最小限の保持・適切な管理をしてください（プライバシーポリシー）。取消は未発送のときのみゴリラコインを返金し在庫を戻します。</p>
       </section>
     </div>
   );
