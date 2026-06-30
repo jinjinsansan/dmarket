@@ -13,6 +13,7 @@ const MENU = [
   { href: "/admin/params", title: "パラメータ設定", desc: "付与額・b既定値・的中報酬レート（コールドスタート調整）", icon: "⚙" },
   { href: "/admin/create", title: "市場作成", desc: "二択市場を手動で作成（初期YES確率でシード）", icon: "＋" },
   { href: "/admin/queue", title: "解決キュー", desc: "締切後の手動市場を確定／中止", icon: "✓" },
+  { href: "/admin/comments", title: "通報・コメント管理", desc: "通報されたコメントの確認と非表示／復帰（盛り上げの安全運用）", icon: "💬" },
   { href: "/admin/settings", title: "カテゴリ設定", desc: "目標数・Poly上限・プリセット・カテゴリ追加", icon: "▤" },
   { href: "/admin/templates", title: "テンプレート", desc: "自動生成テンプレの作成・削除", icon: "▥" },
 ];
