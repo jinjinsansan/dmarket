@@ -150,7 +150,8 @@ $$;
 grant execute on function my_redemptions() to authenticated;
 
 -- 管理：交換申込一覧（nickname優先＋追跡を含めて返す）
-create or replace function admin_list_redemptions(p_status text default null)
+drop function if exists admin_list_redemptions(text);
+create function admin_list_redemptions(p_status text default null)
 returns table(
   id uuid, user_id uuid, display_name text,
   prize_id uuid, prize_name text, cost_points bigint,
