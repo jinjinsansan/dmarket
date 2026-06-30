@@ -134,6 +134,7 @@ function ApplyFlow({ status, onApplied }: { status: CreatorStatus | null; onAppl
         </Rule>
         <Rule n="5" title="作成者テラ銭 10%">
           あなたの市場で参加者が使った<b className="text-text">取引参加ポイントの10%</b>が、解決時にあなたへ入ります（<b className="text-text">参加ポイントのみ・ゴリラコインではありません</b>・換金不可）。
+          <br /><span className="text-faint">※ 公平性のため、<b className="text-text">自分が作った市場では、作成者は景品ポイント（ゴリラコイン）と乗っかりボーナスの対象外</b>です（報酬はテラ銭のみ）。インサイダー・不正は審査で却下し、悪質な場合は利用停止・景品交換の不承認となります。</span>
         </Rule>
       </div>
 
