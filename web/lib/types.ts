@@ -110,6 +110,9 @@ export interface AdminRedemption {
   cost_points: number;
   status: "requested" | "approved" | "shipped" | "cancelled";
   shipping: ShippingInfo | null;
+  tracking_carrier: string | null;
+  tracking_number: string | null;
+  shipped_at: string | null;
   created_at: string;
 }
 

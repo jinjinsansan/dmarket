@@ -28,6 +28,9 @@ export default function AdminPrizesPage() {
   const [reds, setReds] = useState<AdminRedemption[]>([]);
   const [filter, setFilter] = useState("");
   const [busy, setBusy] = useState(false);
+  const [shipId, setShipId] = useState<string | null>(null);   // 発送入力中の申込
+  const [carrier, setCarrier] = useState("");
+  const [tracking, setTracking] = useState("");
 
   const loadPrizes = useCallback(async () => {
     const { data, error } = await createClient().rpc("admin_list_prizes");
@@ -70,13 +73,22 @@ export default function AdminPrizesPage() {
     if (!error) loadPrizes();
   }
 
-  async function setStatus(r: AdminRedemption, status: string) {
+  async function setStatus(r: AdminRedemption, status: string, carrierVal?: string, trackingVal?: string) {
     if (status === "cancelled" && !confirm(`「${r.prize_name}」の申込を取消します。未発送ならゴリラコインを返金し在庫を戻します。よろしいですか？`)) return;
     setBusy(true);
-    const { error } = await createClient().rpc("admin_set_redemption_status", { p_id: r.id, p_status: status });
+    const { error } = await createClient().rpc("admin_set_redemption_status", {
+      p_id: r.id, p_status: status,
+      p_carrier: carrierVal ?? null, p_tracking: trackingVal ?? null,
+    });
     setBusy(false);
     notify(error ? `失敗: ${error.message}` : `${STATUS_LABEL[status]}に更新しました`);
-    if (!error) { loadReds(); loadPrizes(); }
+    if (!error) { setShipId(null); setCarrier(""); setTracking(""); loadReds(); loadPrizes(); }
+  }
+
+  function openShip(r: AdminRedemption) {
+    setShipId(r.id);
+    setCarrier(r.tracking_carrier ?? "");
+    setTracking(r.tracking_number ?? "");
   }
 
   return (
@@ -184,10 +196,24 @@ export default function AdminPrizesPage() {
                     {r.shipping.note ? <div>備考: {r.shipping.note}</div> : null}
                   </div>
                 )}
-                {r.status !== "shipped" && r.status !== "cancelled" && (
+                {r.status === "shipped" && (r.tracking_carrier || r.tracking_number) && (
+                  <div className="text-xs bg-pos/5 text-dim rounded-[8px] px-2.5 py-1.5">
+                    発送: {r.shipped_at ? new Date(r.shipped_at).toLocaleDateString("ja-JP") : "—"} · 運送会社 <b className="text-text">{r.tracking_carrier || "—"}</b> · 追跡 <b className="text-text num">{r.tracking_number || "—"}</b>
+                  </div>
+                )}
+                {shipId === r.id ? (
+                  <div className="flex flex-wrap items-center gap-2 bg-surface2 rounded-[8px] p-2">
+                    <input value={carrier} onChange={(e) => setCarrier(e.target.value)} placeholder="運送会社（例: 佐川急便 / ヤマト / 日本郵便）"
+                      className="rounded-sm bg-surface border border-border px-2 py-1 text-xs flex-1 min-w-[160px]" />
+                    <input value={tracking} onChange={(e) => setTracking(e.target.value)} placeholder="追跡番号"
+                      className="rounded-sm bg-surface border border-border px-2 py-1 text-xs flex-1 min-w-[140px]" />
+                    <button onClick={() => setStatus(r, "shipped", carrier, tracking)} disabled={busy} className="text-xs rounded-sm bg-primary text-white px-3 py-1 disabled:opacity-50">発送確定</button>
+                    <button onClick={() => setShipId(null)} className="text-xs rounded-sm border border-border px-3 py-1 text-dim">やめる</button>
+                  </div>
+                ) : r.status !== "shipped" && r.status !== "cancelled" && (
                   <div className="flex gap-2">
                     {r.status === "requested" && <button onClick={() => setStatus(r, "approved")} disabled={busy} className="text-xs rounded-sm border border-border px-3 py-1 text-dim hover:text-text">承認</button>}
-                    <button onClick={() => setStatus(r, "shipped")} disabled={busy} className="text-xs rounded-sm bg-primary text-white px-3 py-1 disabled:opacity-50">発送済にする</button>
+                    <button onClick={() => openShip(r)} disabled={busy} className="text-xs rounded-sm bg-primary text-white px-3 py-1 disabled:opacity-50">発送する（追跡番号入力）</button>
                     <button onClick={() => setStatus(r, "cancelled")} disabled={busy} className="text-xs rounded-sm border border-border px-3 py-1 text-neg">取消（返金）</button>
                   </div>
                 )}

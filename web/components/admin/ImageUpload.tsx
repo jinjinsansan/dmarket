@@ -1,14 +1,14 @@
 "use client";
-// 管理: 画像アップロード（Supabase Storage: prize-images バケット）。
-// ファイル選択→アップロード→公開URLを value に反映。手動URL入力も併用可。
+// 画像アップロード（Supabase Storage）。ファイル選択→アップロード→公開URLを value に反映。手動URL入力も併用可。
+// bucket / folder を指定可能。avatars バケットは本人フォルダ（uid/）配下のみ書き込み許可（RLS）。
 import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
-const BUCKET = "prize-images";
 const MAX_BYTES = 5 * 1024 * 1024;
 const OK_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif", "image/svg+xml"];
 
-export function ImageUpload({ value, onChange }: { value: string; onChange: (url: string) => void }) {
+export function ImageUpload({ value, onChange, bucket = "prize-images", folder, shape = "rect" }:
+  { value: string; onChange: (url: string) => void; bucket?: string; folder?: string; shape?: "rect" | "circle" }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -19,9 +19,9 @@ export function ImageUpload({ value, onChange }: { value: string; onChange: (url
     if (file.size > MAX_BYTES) { setErr("ファイルサイズは5MBまでです。"); return; }
     setBusy(true);
     const ext = file.name.split(".").pop()?.toLowerCase() || "png";
-    const path = `${crypto.randomUUID()}.${ext}`;
+    const path = `${folder ? folder.replace(/\/$/, "") + "/" : ""}${crypto.randomUUID()}.${ext}`;
     const sb = createClient();
-    const { error } = await sb.storage.from(BUCKET).upload(path, file, {
+    const { error } = await sb.storage.from(bucket).upload(path, file, {
       cacheControl: "31536000", upsert: false, contentType: file.type,
     });
     if (error) {
@@ -31,17 +31,18 @@ export function ImageUpload({ value, onChange }: { value: string; onChange: (url
         : `アップロード失敗: ${error.message}`);
       return;
     }
-    const { data } = sb.storage.from(BUCKET).getPublicUrl(path);
+    const { data } = sb.storage.from(bucket).getPublicUrl(path);
     onChange(data.publicUrl);
     setBusy(false);
   }
 
+  const boxCls = shape === "circle" ? "w-[80px] h-[80px] rounded-full" : "w-[120px] h-[80px] rounded-[10px]";
   return (
     <div className="space-y-2">
       <div className="flex items-start gap-3">
         <div
           onClick={() => inputRef.current?.click()}
-          className="w-[120px] h-[80px] shrink-0 rounded-[10px] border border-dashed border-border bg-surface2 grid place-items-center overflow-hidden cursor-pointer hover:border-primary"
+          className={`${boxCls} shrink-0 border border-dashed border-border bg-surface2 grid place-items-center overflow-hidden cursor-pointer hover:border-primary`}
           title="クリックして画像を選択">
           {value
             ? <img src={value} alt="プレビュー" className="w-full h-full object-cover" />

@@ -10,6 +10,7 @@ export interface RankRow {
   win_count: number;
   resolved_count: number;
   display_name: string;
+  avatar_url: string | null;
 }
 
 // 総資産ランキング（フラグ済みは除外。他者の絶対残高ではなくスコアとして表示）
@@ -17,12 +18,12 @@ export async function getLeaderboard(): Promise<RankRow[]> {
   const sb = await createClient();
   const { data } = await sb
     .from("user_stats")
-    .select("user_id, net_worth, win_count, resolved_count, profile:profiles(display_name, is_flagged)")
+    .select("user_id, net_worth, win_count, resolved_count, profile:profiles(display_name, nickname, avatar_url, is_flagged)")
     .order("net_worth", { ascending: false })
     .limit(100);
   type Row = {
     user_id: string; net_worth: number; win_count: number; resolved_count: number;
-    profile: { display_name: string; is_flagged: boolean } | null;
+    profile: { display_name: string; nickname: string | null; avatar_url: string | null; is_flagged: boolean } | null;
   };
   return ((data as unknown as Row[]) ?? [])
     .filter((r) => r.profile && !r.profile.is_flagged)
@@ -31,7 +32,8 @@ export async function getLeaderboard(): Promise<RankRow[]> {
       net_worth: r.net_worth,
       win_count: r.win_count,
       resolved_count: r.resolved_count,
-      display_name: r.profile!.display_name,
+      display_name: (r.profile!.nickname?.trim() || r.profile!.display_name),
+      avatar_url: r.profile!.avatar_url,
     }));
 }
 

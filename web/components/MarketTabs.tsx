@@ -11,6 +11,15 @@ const TABS: [Tab, string][] = [["book", "注文板"], ["holders", "保有者"], 
 
 const AVATAR_COLORS = ["#7b46e3", "#f4be1f", "#e08a2b", "#3fa8b5", "#e0608a", "#6e8bd8"];
 const colorOf = (s: string) => AVATAR_COLORS[[...s].reduce((a, c) => a + c.charCodeAt(0), 0) % AVATAR_COLORS.length];
+
+// アバター: 画像があれば表示、なければ頭文字＋カラー
+function Avatar({ name, url, size }: { name: string; url?: string | null; size: number }) {
+  if (url) return <img src={url} alt={name} width={size} height={size} className="rounded-full object-cover shrink-0" style={{ width: size, height: size }} />;
+  return (
+    <div className="rounded-full grid place-items-center text-white font-bold shrink-0"
+      style={{ width: size, height: size, fontSize: size * 0.42, background: colorOf(name) }}>{name.slice(0, 1)}</div>
+  );
+}
 const timeAgo = (iso: string) => {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
   if (s < 60) return "たった今";
@@ -93,7 +102,7 @@ function OrderBook({ outcomes, bParam, prices }: { outcomes: Outcome[]; bParam: 
 
 // ── 保有者 ───────────────────────────────────────────────
 function Holders({ marketId, outcomes }: { marketId: string; outcomes: Outcome[] }) {
-  const [rows, setRows] = useState<{ outcome_id: string; display_name: string; shares: number }[]>([]);
+  const [rows, setRows] = useState<{ outcome_id: string; display_name: string; avatar_url: string | null; shares: number }[]>([]);
   useEffect(() => {
     createClient().rpc("market_holders", { p_market_id: marketId }).then(({ data }) => setRows(data ?? []));
   }, [marketId]);
@@ -106,7 +115,7 @@ function Holders({ marketId, outcomes }: { marketId: string; outcomes: Outcome[]
           <div className="text-xs font-extrabold mb-2.5" style={{ color: i === 0 ? "var(--pos)" : "var(--neg)" }}>{o.label} 保有者</div>
           {byOutcome(o.id).length === 0 ? <p className="text-dim text-xs">まだいません</p> : byOutcome(o.id).map((h, j) => (
             <div key={j} className="flex items-center gap-2.5 py-1.5">
-              <div className="w-7 h-7 rounded-full grid place-items-center text-white text-xs font-bold shrink-0" style={{ background: colorOf(h.display_name) }}>{h.display_name.slice(0, 1)}</div>
+              <Avatar name={h.display_name} url={h.avatar_url} size={28} />
               <span className="flex-1 text-[13px] font-semibold truncate">{h.display_name}</span>
               <span className="mono text-[12.5px] text-dim">{formatPoints(Math.round(h.shares))}</span>
             </div>
@@ -119,7 +128,7 @@ function Holders({ marketId, outcomes }: { marketId: string; outcomes: Outcome[]
 
 // ── 取引履歴 ─────────────────────────────────────────────
 function Activity({ marketId }: { marketId: string }) {
-  const [rows, setRows] = useState<{ side: string; size: number; price: number; created_at: string; display_name: string; outcome_label: string }[]>([]);
+  const [rows, setRows] = useState<{ side: string; size: number; price: number; created_at: string; display_name: string; avatar_url: string | null; outcome_label: string }[]>([]);
   useEffect(() => {
     createClient().rpc("market_activity", { p_market_id: marketId }).then(({ data }) => setRows(data ?? []));
   }, [marketId]);
@@ -127,7 +136,8 @@ function Activity({ marketId }: { marketId: string }) {
   return (
     <div className="py-2">
       {rows.map((a, i) => (
-        <div key={i} className="flex items-center gap-3 px-4 py-2.5 border-t border-border first:border-0">
+        <div key={i} className="flex items-center gap-2.5 px-4 py-2.5 border-t border-border first:border-0">
+          <Avatar name={a.display_name} url={a.avatar_url} size={26} />
           <span className="flex-1 text-[13px] min-w-0 truncate">
             <b className="font-bold">{a.display_name}</b> が <span className="font-bold" style={{ color: a.side === "buy" ? "var(--pos)" : "var(--neg)" }}>{a.side === "buy" ? "購入" : "売却"}</span> · {a.outcome_label}
           </span>
@@ -141,7 +151,7 @@ function Activity({ marketId }: { marketId: string }) {
 }
 
 // ── コメント ─────────────────────────────────────────────
-type CRow = { id: number; parent_id: number | null; body: string; created_at: string; display_name: string; like_count: number; liked: boolean; holding: "YES" | "NO" | null };
+type CRow = { id: number; parent_id: number | null; body: string; created_at: string; display_name: string; avatar_url: string | null; like_count: number; liked: boolean; holding: "YES" | "NO" | null };
 
 function Comments({ marketId }: { marketId: string }) {
   const [list, setList] = useState<CRow[]>([]);
@@ -186,7 +196,7 @@ function Comments({ marketId }: { marketId: string }) {
 
   const Item = ({ c, reply }: { c: CRow; reply?: boolean }) => (
     <div className={`flex gap-3 ${reply ? "mt-3 ml-9" : "py-3 border-t border-border first:border-0"}`}>
-      <div className={`rounded-full grid place-items-center text-white font-bold shrink-0 ${reply ? "w-6 h-6 text-[11px]" : "w-8 h-8 text-[13px]"}`} style={{ background: colorOf(c.display_name) }}>{c.display_name.slice(0, 1)}</div>
+      <Avatar name={c.display_name} url={c.avatar_url} size={reply ? 24 : 32} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
           <b className="font-bold text-[12.5px]">{c.display_name}</b>

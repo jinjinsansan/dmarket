@@ -107,6 +107,17 @@ function RedeemModal({ prize, onClose, onDone }: { prize: Prize; onClose: () => 
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
+  // マイページに保存済みの配送先があれば自動入力
+  useEffect(() => {
+    (async () => {
+      const sb = createClient();
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session?.user) return;
+      const { data } = await sb.from("profile_private").select("shipping").eq("user_id", session.user.id).maybeSingle();
+      if (data?.shipping) setShip((s) => ({ ...s, ...(data.shipping as ShippingInfo) }));
+    })();
+  }, []);
+
   async function submit() {
     if (!ship.name || !ship.addr) { setErr("お名前と住所を入力してください。"); return; }
     setBusy(true); setErr(null);
