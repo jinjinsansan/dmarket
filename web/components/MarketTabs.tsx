@@ -141,50 +141,95 @@ function Activity({ marketId }: { marketId: string }) {
 }
 
 // ── コメント ─────────────────────────────────────────────
+type CRow = { id: number; parent_id: number | null; body: string; created_at: string; display_name: string; like_count: number; liked: boolean; holding: "YES" | "NO" | null };
+
 function Comments({ marketId }: { marketId: string }) {
-  const [list, setList] = useState<{ id: number; body: string; created_at: string; display_name: string; like_count: number; liked: boolean }[]>([]);
+  const [list, setList] = useState<CRow[]>([]);
   const [text, setText] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
+  const [sort, setSort] = useState<"hot" | "new">("hot");
+  const [replyTo, setReplyTo] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState("");
 
   const load = useCallback(async () => {
     const { data } = await createClient().rpc("market_comments", { p_market_id: marketId });
-    setList(data ?? []);
+    setList((data ?? []) as CRow[]);
   }, [marketId]);
   useEffect(() => { load(); }, [load]);
 
-  async function post() {
-    const t = text.trim(); if (!t) return;
-    const { error } = await createClient().rpc("post_comment", { p_market_id: marketId, p_body: t });
-    if (error) { setMsg(error.message === "not_authenticated" ? "コメントするにはログインしてください" : "投稿に失敗しました"); return; }
-    setText(""); setMsg(null); load();
+  async function post(body: string, parentId: number | null) {
+    const t = body.trim(); if (!t) return;
+    const { error } = await createClient().rpc("post_comment", { p_market_id: marketId, p_body: t, p_parent_id: parentId });
+    if (error) { setMsg(error.message.includes("not_authenticated") ? "コメントするにはログインしてください" : "投稿に失敗しました"); return; }
+    setMsg(null); setText(""); setReplyText(""); setReplyTo(null); load();
   }
   async function like(id: number) {
     const { error } = await createClient().rpc("toggle_comment_like", { p_comment_id: id });
     if (error) { setMsg("いいねにはログインが必要です"); return; }
     load();
   }
+  async function report(id: number) {
+    const { data, error } = await createClient().rpc("report_comment", { p_comment_id: id });
+    if (error) { setMsg("通報にはログインが必要です"); return; }
+    setMsg(data?.ok ? "通報しました。ありがとうございます。" : "すでに通報済みです"); load();
+  }
+
+  const tops = list.filter((c) => !c.parent_id);
+  const sortedTops = sort === "hot"
+    ? [...tops].sort((a, b) => b.like_count - a.like_count || +new Date(b.created_at) - +new Date(a.created_at))
+    : [...tops].sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+  const childrenOf = (id: number) => list.filter((c) => c.parent_id === id).sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at));
+
+  const Holding = ({ h }: { h: CRow["holding"] }) => h ? (
+    <span className={`text-[9px] font-extrabold px-1.5 py-px rounded shrink-0 ${h === "YES" ? "text-pos bg-pos-weak" : "text-neg bg-neg-weak"}`}>{h}保有</span>
+  ) : null;
+
+  const Item = ({ c, reply }: { c: CRow; reply?: boolean }) => (
+    <div className={`flex gap-3 ${reply ? "mt-3 ml-9" : "py-3 border-t border-border first:border-0"}`}>
+      <div className={`rounded-full grid place-items-center text-white font-bold shrink-0 ${reply ? "w-6 h-6 text-[11px]" : "w-8 h-8 text-[13px]"}`} style={{ background: colorOf(c.display_name) }}>{c.display_name.slice(0, 1)}</div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
+          <b className="font-bold text-[12.5px]">{c.display_name}</b>
+          <Holding h={c.holding} />
+          <span className="text-faint text-[11px]">· {timeAgo(c.created_at)}</span>
+        </div>
+        <p className="text-[13.5px] leading-relaxed whitespace-pre-wrap break-words">{c.body}</p>
+        <div className="flex items-center gap-4 mt-1.5">
+          <button onClick={() => like(c.id)} className={`inline-flex items-center gap-1.5 text-xs font-semibold ${c.liked ? "text-primary" : "text-dim hover:text-text"}`}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill={c.liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M7 10v11M2 13v6a2 2 0 0 0 2 2h13.5a2 2 0 0 0 2-1.6l1.3-7A1.6 1.6 0 0 0 19 11h-6l1-5a2 2 0 0 0-2-2.5L7 10" /></svg>
+            {c.like_count}
+          </button>
+          {!reply && <button onClick={() => { setReplyTo(replyTo === c.id ? null : c.id); setReplyText(""); }} className="text-xs font-semibold text-dim hover:text-text">返信</button>}
+          <button onClick={() => report(c.id)} className="text-xs font-semibold text-faint hover:text-neg ml-auto">通報</button>
+        </div>
+        {!reply && replyTo === c.id && (
+          <div className="flex gap-2 mt-2.5">
+            <input value={replyText} onChange={(e) => setReplyText(e.target.value)} placeholder="返信を書く" autoFocus
+              className="flex-1 h-9 px-3 border border-border bg-surface2 rounded-[10px] text-base md:text-[13px] outline-none focus:border-primary" />
+            <button onClick={() => post(replyText, c.id)} className="font-bold text-[12px] px-3.5 rounded-[10px] text-white" style={{ background: "var(--grad)" }}>返信</button>
+          </div>
+        )}
+        {!reply && childrenOf(c.id).map((ch) => <Item key={ch.id} c={ch} reply />)}
+      </div>
+    </div>
+  );
 
   return (
     <div className="p-4">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-[14px] font-extrabold">コメント {list.length}</span>
+        <div className="flex gap-1 p-[3px] bg-surface2 border border-border rounded-[10px]">
+          <button onClick={() => setSort("hot")} className={`text-[11.5px] font-bold px-2.5 py-1 rounded-[7px] ${sort === "hot" ? "bg-surface text-text shadow-sm" : "text-dim"}`}>人気順</button>
+          <button onClick={() => setSort("new")} className={`text-[11.5px] font-bold px-2.5 py-1 rounded-[7px] ${sort === "new" ? "bg-surface text-text shadow-sm" : "text-dim"}`}>新着順</button>
+        </div>
+      </div>
       <div className="flex gap-2.5 mb-4">
-        <input value={text} onChange={(e) => setText(e.target.value)} placeholder="コメントを書く / Add a comment"
+        <input value={text} onChange={(e) => setText(e.target.value)} placeholder="この市場についてひとこと 🦍"
           className="flex-1 h-10 px-3 border border-border bg-surface2 rounded-[10px] text-base md:text-[13.5px] outline-none focus:border-primary" />
-        <button onClick={post} className="font-bold text-[13px] px-4 rounded-[10px] text-white" style={{ background: "var(--grad)" }}>投稿</button>
+        <button onClick={() => post(text, null)} className="font-bold text-[13px] px-4 rounded-[10px] text-white" style={{ background: "var(--grad)" }}>投稿</button>
       </div>
       {msg && <p className="text-xs text-dim mb-3">{msg}</p>}
-      {list.length === 0 ? <p className="text-dim text-sm">まだコメントがありません。最初の一言を。</p> : list.map((c) => (
-        <div key={c.id} className="flex gap-3 py-3 border-t border-border first:border-0">
-          <div className="w-8 h-8 rounded-full grid place-items-center text-white text-[13px] font-bold shrink-0" style={{ background: colorOf(c.display_name) }}>{c.display_name.slice(0, 1)}</div>
-          <div className="flex-1 min-w-0">
-            <div className="text-[12.5px] mb-0.5"><b className="font-bold">{c.display_name}</b> <span className="text-faint">· {timeAgo(c.created_at)}</span></div>
-            <p className="text-[13.5px] leading-relaxed whitespace-pre-wrap break-words">{c.body}</p>
-            <button onClick={() => like(c.id)} className={`inline-flex items-center gap-1.5 mt-1.5 text-xs font-semibold ${c.liked ? "text-primary" : "text-dim hover:text-text"}`}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill={c.liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M7 10v11M2 13v6a2 2 0 0 0 2 2h13.5a2 2 0 0 0 2-1.6l1.3-7A1.6 1.6 0 0 0 19 11h-6l1-5a2 2 0 0 0-2-2.5L7 10" /></svg>
-              {c.like_count}
-            </button>
-          </div>
-        </div>
-      ))}
+      {sortedTops.length === 0 ? <p className="text-dim text-sm py-4 text-center">まだコメントがありません。最初の一言を！🦍</p> : sortedTops.map((c) => <Item key={c.id} c={c} />)}
     </div>
   );
 }
