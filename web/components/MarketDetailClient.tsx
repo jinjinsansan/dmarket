@@ -26,6 +26,7 @@ export function MarketDetailClient({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [myCode, setMyCode] = useState<string | null>(null);
   const [ride, setRide] = useState<{ active: boolean; referrerName: string | null } | null>(null);
+  const [rideCount, setRideCount] = useState(0);
   const applyTraded = (id: string, q: number) => setOutcomes((prev) => prev.map((o) => (o.id === id ? { ...o, q } : o)));
   const shareMarket = () => {
     const ref = myCode ? `?ref=${myCode}` : "";
@@ -33,6 +34,13 @@ export function MarketDetailClient({
     const text = `${market.question}\nゴリラ予想で予想中🦍`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, "_blank", "noopener,noreferrer");
   };
+
+  // シェアから参加した人数（社会的証明・ログイン不要で全員に表示）
+  useEffect(() => {
+    createClient().rpc("market_ride_count", { p_market_id: market.id }).then(({ data }) => {
+      if (typeof data === "number") setRideCount(data);
+    });
+  }, [market.id]);
 
   // 自分の紹介コード取得＋「乗っかり」帰属の記録（?ref= 経由の来訪）
   useEffect(() => {
@@ -119,6 +127,9 @@ export function MarketDetailClient({
               </button>
             </div>
             <h1 className="text-[23px] font-extrabold leading-snug">{market.question}</h1>
+            {rideCount >= 2 && (
+              <span className="inline-flex items-center gap-1 mt-2 text-[11.5px] font-bold text-primary bg-primary-weak px-2.5 py-1 rounded-full">🔥 {rideCount}人がシェアから参加</span>
+            )}
           </div>
 
           {ride?.active && <RideBanner marketId={market.id} referrerName={ride.referrerName} />}
