@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { AdminToastProvider } from "@/components/admin/AdminToast";
+import { Logo } from "@/components/Logo";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -29,13 +30,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <AdminToastProvider>
       <div className="admin-scope max-w-[1180px] mx-auto px-4 md:px-[22px] py-6 pb-24 dm-in">
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-3">
-            {!onDashboard && (
-              <Link href="/admin" className="text-sm text-dim hover:text-text flex items-center gap-1">← ダッシュボード</Link>
-            )}
-            <h1 className="text-[23px] font-extrabold">管理コンソール / Admin</h1>
-          </div>
+        <div className="flex items-center gap-3 mb-5">
+          <Logo size={36} />
+          <h1 className="text-[22px] font-extrabold">管理コンソール</h1>
+          {!onDashboard && (
+            <Link href="/admin" className="text-[13px] text-dim hover:text-text">← ダッシュボード</Link>
+          )}
+          <span className="ml-auto text-[12px] font-extrabold text-primary bg-primary-weak px-3.5 py-1.5 rounded-full">管理者</span>
         </div>
         {children}
       </div>
