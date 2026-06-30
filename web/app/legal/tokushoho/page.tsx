@@ -9,13 +9,12 @@ export const metadata: Metadata = {
 
 const UPDATED = "2026年6月19日";
 
-// ⚠️ 以下の【要記入】は、運営会社の正式情報に差し替えてください。
+// ⚠️ 仮情報（リリース前）。リリース時に正式な情報へ差し替えること。
 const OPERATOR = {
-  company: "【要記入：運営会社名（例：株式会社○○）】",
-  manager: "【要記入：運営統括責任者名】",
-  address: "【要記入：所在地（都道府県から番地まで）】",
-  tel: "【要記入：電話番号（請求があれば遅滞なく開示する旨でも可）】",
-  email: "【要記入：問い合わせメールアドレス】",
+  company: "ゴリラ予想運営",
+  manager: "木村 綾香",
+  address: "東京都港区銀座",
+  lineUrl: "https://lin.ee/XXXXXXX", // 公式LINE（要差し替え）
 };
 
 export default function TokushohoPage() {
@@ -34,8 +33,7 @@ export default function TokushohoPage() {
             <Row label="販売事業者（運営者）" value={OPERATOR.company} />
             <Row label="運営統括責任者" value={OPERATOR.manager} />
             <Row label="所在地" value={OPERATOR.address} />
-            <Row label="電話番号" value={OPERATOR.tel} />
-            <Row label="メールアドレス" value={OPERATOR.email} />
+            <Row label="お問い合わせ" value="公式LINEからお問い合わせください" href={OPERATOR.lineUrl} />
           </tbody>
         </table>
 
@@ -64,18 +62,22 @@ export default function TokushohoPage() {
         </div>
 
         <p className="text-[12px] text-faint mt-6">
-          ※ 本ページの【要記入】箇所は、公開前に運営会社の正式情報へ差し替えてください。景品の提供形態によっては特定商取引法の適用関係が変わるため、最終的な記載内容は専門家にご確認ください。
+          ※ 本ページの運営者情報・お問い合わせ先は<strong>仮の情報</strong>です。リリース時に正式な情報へ差し替えます。景品の提供形態によっては特定商取引法の適用関係が変わるため、最終的な記載内容は専門家にご確認ください。
         </p>
       </div>
     </main>
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({ label, value, href }: { label: string; value: string; href?: string }) {
   return (
     <tr className="border-b border-border align-top">
       <th className="text-left font-bold text-text py-2.5 pr-4 w-[40%] whitespace-nowrap">{label}</th>
-      <td className="py-2.5 text-dim">{value}</td>
+      <td className="py-2.5 text-dim">
+        {href
+          ? <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary underline break-all">{value}</a>
+          : value}
+      </td>
     </tr>
   );
 }
