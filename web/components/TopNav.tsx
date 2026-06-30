@@ -118,16 +118,16 @@ export function TopNav() {
             <ThemeToggle />
             {loggedIn ? (
               <>
-                <div title="参加ポイント残高（売買に使うポイント）" className="flex items-center gap-[7px] h-[38px] px-3 bg-surface2 border border-border rounded-[10px]">
+                <div title="参加ポイント残高（売買に使うポイント）" className="flex items-center gap-[6px] h-[38px] px-2.5 md:px-3 bg-surface2 border border-border rounded-[10px]">
                   <svg width="14" height="14" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#F4BE1F" /><circle cx="12" cy="12" r="4.4" fill="#fff" /></svg>
                   <span className="mono text-sm font-bold">{balance === null ? "—" : formatPoints(balance)}</span>
-                  <span className="text-xs text-dim font-semibold">参加pt</span>
+                  <span className="text-xs text-dim font-semibold hidden sm:inline">参加pt</span>
                 </div>
                 {winnings > 0 && (
                   <button onClick={claimWinnings}
-                    className="btn-press h-[38px] px-3 md:px-4 text-white border-none rounded-[11px] font-extrabold text-[13px] md:text-[13.5px] whitespace-nowrap"
+                    className="btn-press h-[38px] px-2.5 md:px-4 text-white border-none rounded-[11px] font-extrabold text-[13px] md:text-[13.5px] whitespace-nowrap"
                     style={{ background: "var(--grad)", boxShadow: "var(--cta-glow)" }}>
-                    🎉 受け取る +{formatPoints(winnings)}
+                    🎉<span className="hidden sm:inline"> 受け取る</span> +{formatPoints(winnings)}
                   </button>
                 )}
                 <a href="/api/auth/logout" title="ログアウト"
