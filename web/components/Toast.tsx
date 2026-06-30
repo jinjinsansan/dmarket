@@ -1,7 +1,9 @@
 "use client";
 // トースト（約定・受け取り・エラー）。下中央からスライドイン。
-// 参照: reference/proposal.html ⑤ 内「Toast」。globals.css の @keyframes dmToast を使用。
-import { useEffect } from "react";
+// body へポータルして position:fixed をビューポート基準に固定（transform/will-change を持つ親に潜らない）。
+// モバイルは下部ナビ＋セーフエリアの上、デスクトップは画面下に表示。globals.css の @keyframes dmToast を使用。
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { GorillaFace, type GorillaExpr } from "./GorillaFace";
 
 export type ToastKind = "success" | "info" | "error";
@@ -19,24 +21,26 @@ export function Toast({
   duration?: number;
   onClose?: () => void;
 }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   useEffect(() => {
     if (!onClose) return;
     const t = setTimeout(onClose, duration);
     return () => clearTimeout(t);
   }, [duration, onClose]);
 
+  if (!mounted) return null;
+
   const expr: GorillaExpr = kind === "error" ? "sad" : kind === "success" ? "win" : "neutral";
   const accent = kind === "error" ? "var(--neg)" : kind === "success" ? "var(--pos)" : "var(--accent2)";
 
-  return (
+  const node = (
     <div
       role="status"
+      // 下部ナビ(モバイル md未満)＋セーフエリアの上に出す。デスクトップは画面下24px。
+      className="fixed left-1/2 z-[100] bottom-[calc(env(safe-area-inset-bottom,0px)+5.5rem)] md:bottom-6"
       style={{
-        position: "fixed",
-        left: "50%",
-        bottom: 84, // BottomNav の上
         transform: "translateX(-50%)",
-        zIndex: 90,
         display: "flex",
         alignItems: "center",
         gap: 11,
@@ -46,7 +50,7 @@ export function Toast({
         padding: "13px 18px",
         boxShadow: "0 10px 30px -10px rgba(0,0,0,.4)",
         animation: "dmToast .26s cubic-bezier(.32,.72,0,1)",
-        maxWidth: "calc(100% - 32px)",
+        maxWidth: "calc(100vw - 32px)",
       }}
     >
       <GorillaFace size={26} expr={expr} color={accent} style={{ flexShrink: 0 }} />
@@ -56,6 +60,8 @@ export function Toast({
       </div>
     </div>
   );
+
+  return createPortal(node, document.body);
 }
 
 // 使用例:

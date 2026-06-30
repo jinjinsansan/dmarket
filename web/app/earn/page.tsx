@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { formatPoints } from "@/lib/format";
+import { Toast } from "@/components/Toast";
 import type { AffiliateOffer } from "@/lib/types";
 
 export default function EarnPage() {
@@ -158,7 +159,11 @@ export default function EarnPage() {
       </div>
 
       {toast && (
-        <div className="fixed left-1/2 bottom-7 z-50 bg-text text-bg text-sm font-semibold px-4 py-2.5 rounded-[12px] shadow-lg" style={{ animation: "dmToast .25s ease" }}>{toast}</div>
+        <Toast
+          title={toast}
+          kind={/失敗|エラー|必要/.test(toast) ? "error" : /\+\s*\d/.test(toast) ? "success" : "info"}
+          onClose={() => setToast(null)}
+        />
       )}
 
       {/* 案件（実装済み） */}
