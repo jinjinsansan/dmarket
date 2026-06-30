@@ -74,7 +74,8 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
   const catEmoji = (slug?: string | null) => (({ weather: "🌤", ent: "🎬", crypto: "₿", fx: "💱", news: "📰", keiba: "🐎", sports: "⚽" }) as Record<string, string>)[slug ?? ""] ?? "🌍";
   const toHero = (m: MarketWithOutcomes) => ({ id: m.id, question: m.question, yesPct: Math.round(yesPct(m)), flag: catEmoji(m.category?.slug) });
   // 今日のお題＝天気カテゴリを優先、無ければ締切が近い先頭
-  const heroDaily = markets.find((m) => m.category?.slug === "weather") ?? trending[0];
+  // 管理者が指定した「今日のお題（ヒーロー）」を最優先。無ければ天気→trending先頭。
+  const heroDaily = markets.find((m) => m.is_hero) ?? markets.find((m) => m.category?.slug === "weather") ?? trending[0];
 
   return (
     <div className="max-w-[1240px] mx-auto px-4 md:px-[22px] py-5 pb-20 dm-in">

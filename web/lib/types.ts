@@ -32,6 +32,7 @@ export interface Market {
   close_time: string;
   resolve_time: string;
   is_featured?: boolean;
+  is_hero?: boolean;
   created_at: string;
 }
 
