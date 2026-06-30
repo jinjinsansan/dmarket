@@ -31,6 +31,7 @@ export interface Market {
   status: MarketStatus;
   close_time: string;
   resolve_time: string;
+  is_featured?: boolean;
   created_at: string;
 }
 

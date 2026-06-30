@@ -8,7 +8,7 @@ import { formatPoints, statusLabel } from "@/lib/format";
 interface MktRow {
   id: string; question: string; category: string | null; source: string; status: string;
   b_param: number; close_time: string; resolve_time: string; outcome_count: number;
-  volume: number; holders: number; created_at: string;
+  volume: number; holders: number; is_featured: boolean; created_at: string;
 }
 const STATUSES = ["", "open", "closed", "resolved", "void", "draft"];
 const SOURCES: [string, string][] = [["", "すべての源"], ["template", "自動(天気/デイリー)"], ["admin", "手動"], ["mirror", "Poly"]];
@@ -107,6 +107,13 @@ function MarketRow({ m, open, onToggle, onChanged, notify }: {
     setBusy(false);
     notify(error ? `解決失敗: ${error.message}` : "解決しました"); onChanged();
   }
+  async function toggleFeatured() {
+    setBusy(true);
+    const { error } = await createClient().rpc("admin_set_featured", { p_market_id: m.id, p_featured: !m.is_featured });
+    setBusy(false);
+    notify(error ? `失敗: ${error.message}` : m.is_featured ? "注目を解除しました" : "注目に設定しました");
+    onChanged();
+  }
   async function act(kind: "hide" | "show" | "void") {
     if (kind === "void" && !confirm(`「${m.question}」を中止しますか？保有者には取得pt返金されます。`)) return;
     setBusy(true);
@@ -122,7 +129,10 @@ function MarketRow({ m, open, onToggle, onChanged, notify }: {
   return (
     <>
       <tr className="border-b border-border last:border-0 hover:bg-surface2 cursor-pointer" onClick={onToggle}>
-        <td className="p-3 max-w-0"><div className="truncate font-medium">{m.question}</div><div className="text-[11px] text-dim">{m.category ?? "—"}</div></td>
+        <td className="p-3 max-w-0">
+          <div className="truncate font-medium">{m.is_featured && <span className="text-[10px] font-extrabold mr-1.5 px-1 py-px rounded" style={{ background: "var(--accent2)", color: "#2A2018" }}>🔥注目</span>}{m.question}</div>
+          <div className="text-[11px] text-dim">{m.category ?? "—"}</div>
+        </td>
         <td className="p-3 text-center text-xs text-dim">{m.source}</td>
         <td className="p-3 text-center text-xs">{statusLabel(m.status)}</td>
         <td className="num p-3 text-right">{m.b_param}</td>
@@ -160,6 +170,9 @@ function MarketRow({ m, open, onToggle, onChanged, notify }: {
                 <p className="text-[11px] text-faint">最大補助金（インフレ上限）= b×ln(2)×100 ≈ <b className="num">{formatPoints(maxSubsidy(b))}</b> pt。薄商い期は b を下げると健全。</p>
               </div>
               <div className="flex flex-col gap-2 justify-end">
+                <button onClick={toggleFeatured} disabled={busy} className={`rounded-sm px-3 py-1.5 text-sm font-bold ${m.is_featured ? "bg-accent2 text-text" : "border border-border text-dim hover:text-text"}`} style={m.is_featured ? { background: "var(--accent2)", color: "#2A2018" } : undefined}>
+                  {m.is_featured ? "🔥 注目を解除" : "🔥 注目にする"}
+                </button>
                 <button onClick={() => act("hide")} disabled={busy} className="rounded-sm border border-border px-3 py-1.5 text-sm text-dim hover:text-text">非表示（下書きへ）</button>
                 <button onClick={() => act("show")} disabled={busy} className="rounded-sm border border-border px-3 py-1.5 text-sm text-dim hover:text-text">表示（公開へ）</button>
                 <button onClick={() => act("void")} disabled={busy} className="rounded-sm border border-neg/50 text-neg px-3 py-1.5 text-sm">中止（返金）</button>

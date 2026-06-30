@@ -295,6 +295,19 @@ body {
   100% { transform: translateY(108vh) rotate(720deg); opacity: 0.85; }
 }
 
+/* 注目市場カード：テーマを局所反転（白基調→ダーク / ダーク→白基調）。
+   CSS変数を上書きするだけで、カード内の var(--…) 利用箇所がすべて反転する。 */
+.card-featured {
+  --surface: #221B14; --surface2: #2C241B; --text: #F3ECE1; --dim: #B2A593; --faint: #796D5D;
+  --border: #3B2F23; --primary: #A480F2; --primary-weak: #251B3E;
+  --pos-weak: #123026; --neg-weak: #3A1D19;
+}
+html.dark .card-featured {
+  --surface: #FFFFFF; --surface2: #F4EEE3; --text: #2A2018; --dim: #8B8073; --faint: #C2B7A7;
+  --border: #EBE3D6; --primary: #7B46E3; --primary-weak: #EFE8FC;
+  --pos-weak: #E5F7EF; --neg-weak: #FCEAE6;
+}
+
 /* スケルトン（ローディングのプレースホルダ） */
 @keyframes shimmer {
   0% { background-position: -260px 0; }

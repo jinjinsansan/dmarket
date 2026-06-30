@@ -67,10 +67,13 @@ export const MarketCard = memo(function MarketCard({ market, variant = "card", s
   if (variant === "compact") {
     return (
       <div ref={cardRef} onClick={open} onMouseEnter={warm} onTouchStart={warm}
-        className="card-hover flex items-center gap-3 border border-border bg-surface rounded-[14px] px-4 py-3 cursor-pointer"
+        className={`card-hover flex items-center gap-3 border border-border bg-surface rounded-[14px] px-4 py-3 cursor-pointer ${market.is_featured ? "card-featured" : ""}`}
         style={{ boxShadow: CARD_SHADOW }}>
         <div className="flex-1 min-w-0">
-          <div className="text-[11px] font-extrabold text-primary mb-0.5">{market.category?.name ?? "市場"}</div>
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <div className="text-[11px] font-extrabold text-primary">{market.category?.name ?? "市場"}</div>
+            {market.is_featured && <FeaturedBadge />}
+          </div>
           <p className="text-sm font-bold truncate">{market.question}</p>
         </div>
         <Big />
@@ -81,11 +84,12 @@ export const MarketCard = memo(function MarketCard({ market, variant = "card", s
   // ── card（B案・サムネ無し／大きな%／全幅スパークライン） ──
   return (
     <div ref={cardRef} onClick={open} onMouseEnter={warm} onTouchStart={warm}
-      className="card-hover flex flex-col border border-border bg-surface rounded-[18px] p-4 cursor-pointer"
+      className={`card-hover flex flex-col border border-border bg-surface rounded-[18px] p-4 cursor-pointer ${market.is_featured ? "card-featured" : ""}`}
       style={{ boxShadow: CARD_SHADOW }}>
       {/* メタ：カテゴリ＋LIVE */}
       <div className="flex items-center gap-[7px] mb-2">
         <span className="text-[11px] font-extrabold text-primary">{market.category?.name ?? "市場"}</span>
+        {market.is_featured && <FeaturedBadge />}
         {isOpen && (
           <span className="inline-flex items-center gap-[3px] px-1.5 py-0.5 rounded-[5px] text-[9px] font-extrabold text-white" style={{ background: "var(--neg)" }}>
             <span className="w-1 h-1 rounded-full bg-white animate-pulse" />LIVE
@@ -136,6 +140,14 @@ export const MarketCard = memo(function MarketCard({ market, variant = "card", s
     </div>
   );
 });
+
+function FeaturedBadge() {
+  return (
+    <span className="inline-flex items-center gap-[3px] px-1.5 py-0.5 rounded-[5px] text-[9px] font-extrabold text-white shrink-0" style={{ background: "var(--accent2)", color: "#2A2018" }}>
+      🔥 注目
+    </span>
+  );
+}
 
 function Pill({ kind, label, cents, onClick }: { kind: "pos" | "neg"; label: string; cents?: string; onClick: (e: React.MouseEvent) => void }) {
   return (
