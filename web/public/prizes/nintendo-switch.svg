@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400" role="img" aria-label="Nintendo Switch">
+  <rect width="600" height="400" fill="#f7f5ff"/>
+  <g transform="translate(300 200)">
+    <!-- left joy-con -->
+    <rect x="-170" y="-95" width="70" height="190" rx="34" fill="#7b46e3"/>
+    <circle cx="-135" cy="-55" r="9" fill="#fff" opacity=".85"/>
+    <!-- right joy-con -->
+    <rect x="100" y="-95" width="70" height="190" rx="34" fill="#f4be1f"/>
+    <circle cx="148" cy="40" r="7" fill="#fff" opacity=".9"/>
+    <circle cx="128" cy="20" r="7" fill="#fff" opacity=".9"/>
+    <circle cx="148" cy="0" r="7" fill="#fff" opacity=".9"/>
+    <circle cx="168" cy="20" r="7" fill="#fff" opacity=".9"/>
+    <!-- screen -->
+    <rect x="-105" y="-95" width="210" height="190" rx="10" fill="#1b1430"/>
+    <rect x="-95" y="-85" width="190" height="170" rx="6" fill="#2a1f4d"/>
+    <text x="0" y="14" font-family="system-ui,Segoe UI,Roboto,sans-serif" font-size="46" font-weight="800" fill="#fff" text-anchor="middle" opacity=".9">G</text>
+  </g>
+  <text x="300" y="372" font-family="system-ui,Segoe UI,Roboto,sans-serif" font-size="22" font-weight="700" fill="#7b46e3" text-anchor="middle">ゲーム機</text>
+</svg>

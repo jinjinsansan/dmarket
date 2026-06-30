@@ -100,6 +100,7 @@ export default function AdminPrizesPage() {
             <label className="text-xs text-dim flex items-center gap-1">必要ゴリラコイン
               <input type="number" min={1} value={form.cost_points} onChange={(e) => setForm({ ...form, cost_points: Math.max(1, Math.floor(Number(e.target.value))) })}
                 className="num w-24 rounded-sm bg-surface2 border border-border px-2 py-1" />
+              <span className="text-faint">1コイン=1円 / 10,000以上推奨</span>
             </label>
             <label className="text-xs text-dim flex items-center gap-1">在庫
               <input type="number" min={0} value={form.stock ?? ""} placeholder="∞"
@@ -130,7 +131,7 @@ export default function AdminPrizesPage() {
             prizes.map((p) => (
               <div key={p.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
                 <span className="flex-1 min-w-0 truncate font-semibold">{p.name}</span>
-                <span className="num text-primary font-bold">{formatPoints(p.cost_points)} pt</span>
+                <span className="num text-primary font-bold">{formatPoints(p.cost_points)} コイン</span>
                 <span className="num text-dim w-16 text-right">在庫 {p.stock ?? "∞"}</span>
                 <span className={`text-xs w-14 text-center rounded-full px-2 py-0.5 ${p.is_active ? "text-pos bg-pos/10" : "text-faint bg-surface2"}`}>
                   {p.is_active ? "公開" : "非公開"}
@@ -163,7 +164,7 @@ export default function AdminPrizesPage() {
                 <div className="flex items-center gap-3 flex-wrap">
                   <span className="text-dim text-xs w-28 shrink-0">{new Date(r.created_at).toLocaleString("ja-JP", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
                   <span className="font-semibold">{r.prize_name}</span>
-                  <span className="num text-primary">{formatPoints(r.cost_points)} pt</span>
+                  <span className="num text-primary">{formatPoints(r.cost_points)} コイン</span>
                   <span className="text-dim text-xs">申込者: {r.display_name}</span>
                   <span className={`text-xs rounded-full px-2 py-0.5 ml-auto ${r.status === "shipped" ? "text-pos bg-pos/10" : r.status === "cancelled" ? "text-faint bg-surface2" : "text-primary bg-primary/10"}`}>
                     {STATUS_LABEL[r.status] ?? r.status}

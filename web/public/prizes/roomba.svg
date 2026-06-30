@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400" role="img" aria-label="ロボット掃除機">
+  <rect width="600" height="400" fill="#f4f7f5"/>
+  <g transform="translate(300 205)">
+    <!-- body -->
+    <circle cx="0" cy="0" r="135" fill="#22262b"/>
+    <circle cx="0" cy="0" r="135" fill="none" stroke="#3a3f47" stroke-width="6"/>
+    <!-- top ring -->
+    <circle cx="0" cy="0" r="96" fill="#2c3036"/>
+    <!-- center sensor -->
+    <circle cx="0" cy="0" r="42" fill="#1a1d21"/>
+    <circle cx="0" cy="0" r="20" fill="#7b46e3"/>
+    <circle cx="0" cy="-72" r="10" fill="#f4be1f"/>
+    <!-- bumper hint -->
+    <path d="M-120 30 a120 120 0 0 0 240 0" fill="none" stroke="#4a505a" stroke-width="4"/>
+  </g>
+  <text x="300" y="378" font-family="system-ui,Segoe UI,Roboto,sans-serif" font-size="22" font-weight="700" fill="#7b46e3" text-anchor="middle">ロボット掃除機</text>
+</svg>

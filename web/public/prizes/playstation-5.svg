@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400" role="img" aria-label="PlayStation 5">
+  <rect width="600" height="400" fill="#f4f6fb"/>
+  <g transform="translate(300 200)">
+    <!-- console body -->
+    <rect x="-58" y="-130" width="116" height="260" rx="14" fill="#1c2333"/>
+    <!-- white side panels -->
+    <path d="M-58 -130 q-34 0 -34 40 l0 180 q0 40 34 40 l8 0 0 -300 z" fill="#f2f4f9" stroke="#d7dce8" stroke-width="2"/>
+    <path d="M58 -130 q34 0 34 40 l0 180 q0 40 -34 40 l-8 0 0 -300 z" fill="#ffffff" stroke="#d7dce8" stroke-width="2"/>
+    <!-- center seam glow -->
+    <rect x="-4" y="-110" width="8" height="220" rx="4" fill="#7b46e3" opacity=".85"/>
+  </g>
+  <text x="300" y="372" font-family="system-ui,Segoe UI,Roboto,sans-serif" font-size="22" font-weight="700" fill="#7b46e3" text-anchor="middle">据置ゲーム機</text>
+</svg>
