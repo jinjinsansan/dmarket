@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { RideStats } from "@/components/RideStats";
 import { MyPageHero, BadgeShowcase } from "@/components/MyPageHero";
+import { RankHero, type RankLevel } from "@/components/AvatarFrame";
 import { withRef } from "@/lib/ref";
 import { lmsrPrice } from "@/lib/lmsr";
 import { formatPoints, pnlText } from "@/lib/format";
@@ -54,6 +55,7 @@ export default function MyPage() {
   const [creatorStatus, setCreatorStatus] = useState<string | null>(null);
   const [rideStat, setRideStat] = useState<{ riderCount: number; totalBonus: number } | null>(null);
   const [wins, setWins] = useState<{ id: number; amount: number; market_id: string; question: string }[]>([]);
+  const [rank, setRank] = useState<{ level: number; xp: number; floor: number; next: number } | null>(null);
 
   const name = nickname || lineName;
 
@@ -66,7 +68,7 @@ export default function MyPage() {
     setUid(user.id);
 
     const [{ data: wallet }, { data: prizeWallet }, { data: profile }, { data: priv }, { data: st },
-      { data: positions }, { data: led }, { data: prizeLed }, { data: allBadges }, { data: mine }, { data: reds }, { data: cstat }, { data: rstat }, { data: winRows }] =
+      { data: positions }, { data: led }, { data: prizeLed }, { data: allBadges }, { data: mine }, { data: reds }, { data: cstat }, { data: rstat }, { data: winRows }, { data: rankRow }] =
       await Promise.all([
         sb.from("wallets").select("balance").eq("user_id", user.id).maybeSingle(),
         sb.from("prize_wallets").select("balance").eq("user_id", user.id).maybeSingle(),
@@ -82,6 +84,7 @@ export default function MyPage() {
         sb.rpc("my_creator_status"),
         sb.rpc("my_ride_stats"),
         sb.from("pending_winnings").select("id, amount, market_id, market:markets(question)").order("created_at", { ascending: false }).limit(20),
+        sb.rpc("my_rank"),
       ]);
 
     setBalance(wallet?.balance ?? 0);
@@ -99,6 +102,8 @@ export default function MyPage() {
     setWins(((winRows as unknown as { id: number; amount: number; market_id: string; market?: { question: string } | null }[]) ?? [])
       .filter((w) => w.amount > 0)
       .map((w) => ({ id: w.id, amount: w.amount, market_id: w.market_id, question: w.market?.question ?? "市場" })));
+    if (rankRow) { const rr = rankRow as { level: number; xp: number; xp_current_floor: number; xp_for_next: number };
+      setRank({ level: rr.level, xp: rr.xp, floor: rr.xp_current_floor, next: rr.xp_for_next }); }
     const earned = new Set((mine ?? []).map((b) => b.badge_id));
     setBadges((allBadges ?? []).map((b) => ({ ...b, earned: earned.has(b.id) })));
 
@@ -329,7 +334,17 @@ export default function MyPage() {
         </button>
       </section>
 
-      {/* 称号コレクション（横スクロール） */}
+      {/* 称号ランク（Lv・XP） */}
+      {rank && (
+        <RankHero
+          level={rank.level as RankLevel}
+          xp={rank.xp - rank.floor}
+          xpForNext={Math.max(1, rank.next - rank.floor)}
+          breakdown={[{ label: "的中でXP", value: "+40" }, { label: "いいね獲得", value: "+5" }, { label: "シェア", value: "+10" }]}
+        />
+      )}
+
+      {/* 実績バッジ（横スクロール） */}
       {badges.length > 0 && <BadgeShowcase badges={badges} />}
 
       {/* 保有 */}

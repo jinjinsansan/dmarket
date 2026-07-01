@@ -2,6 +2,7 @@
 // ランキング（handoff §4）。総資産/的中率 切替、表彰台、一覧。
 import { useMemo, useState } from "react";
 import { formatPoints } from "@/lib/format";
+import { AvatarFrame, rankBadgeStyle, type RankLevel } from "./AvatarFrame";
 import type { RankRow } from "@/lib/queries";
 
 const MEDAL = ["#eab308", "#94a3b8", "#cd7f32"];
@@ -43,14 +44,7 @@ export function LeaderboardView({ rows }: { rows: RankRow[] }) {
                 className={`bg-surface rounded-[16px] p-4 text-center ${i === 0 ? "border-2" : "border border-border"}`}
                 style={{ boxShadow: "var(--shadow)", transform: i === 0 ? "translateY(-10px)" : undefined, borderColor: i === 0 ? "var(--accent2)" : undefined }}>
                 <div className="mono w-7 h-7 mx-auto rounded-full grid place-items-center text-white text-sm font-extrabold mb-2" style={{ background: MEDAL[i] }}>{i + 1}</div>
-                {r.avatar_url ? (
-                  <img src={r.avatar_url} alt={r.display_name} className="w-12 h-12 mx-auto rounded-full object-cover mb-2 border border-border" />
-                ) : (
-                  <div className="w-12 h-12 mx-auto rounded-full grid place-items-center font-black text-lg mb-2"
-                    style={{ background: i === 0 ? "var(--primary-weak)" : "var(--surface2)", color: i === 0 ? "var(--primary)" : "var(--text)" }}>
-                    {r.display_name.slice(0, 1)}
-                  </div>
-                )}
+                <div className="w-12 mx-auto mb-2"><AvatarFrame level={(r.rank_level || 1) as RankLevel} size={48} name={r.display_name} avatarUrl={r.avatar_url} /></div>
                 <div className="text-sm font-extrabold truncate">{r.display_name}</div>
                 <div className="mono text-[15px] font-extrabold text-text mt-1">{valueOf(r)}</div>
               </div>
@@ -61,12 +55,8 @@ export function LeaderboardView({ rows }: { rows: RankRow[] }) {
             {rest.map((r, i) => (
               <div key={r.user_id} className="flex items-center gap-3 px-4 py-3">
                 <span className="mono w-6 text-center text-dim">{i + 4}</span>
-                {r.avatar_url ? (
-                  <img src={r.avatar_url} alt={r.display_name} className="w-8 h-8 rounded-full object-cover" />
-                ) : (
-                  <div className="w-8 h-8 rounded-full grid place-items-center text-white text-xs font-bold" style={{ background: "var(--grad)" }}>{r.display_name.slice(0, 1)}</div>
-                )}
-                <span className="flex-1 truncate text-sm">{r.display_name}</span>
+                <AvatarFrame level={(r.rank_level || 1) as RankLevel} size={34} name={r.display_name} avatarUrl={r.avatar_url} />
+                <span className="flex-1 truncate text-sm flex items-center gap-1.5 min-w-0"><span className="truncate">{r.display_name}</span><span style={rankBadgeStyle((r.rank_level || 1) as RankLevel)}>Lv.{r.rank_level || 1}</span></span>
                 <span className="mono text-sm font-bold">{valueOf(r)}</span>
               </div>
             ))}

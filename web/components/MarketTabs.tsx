@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { lmsrCost, lmsrPrice } from "@/lib/lmsr";
 import { formatPoints, toCents } from "@/lib/format";
+import { AvatarFrame, rankBadgeStyle, type RankLevel } from "./AvatarFrame";
 import type { Outcome } from "@/lib/types";
 
 type Tab = "book" | "holders" | "activity" | "comments";
@@ -102,7 +103,7 @@ function OrderBook({ outcomes, bParam, prices }: { outcomes: Outcome[]; bParam: 
 
 // ── 保有者 ───────────────────────────────────────────────
 function Holders({ marketId, outcomes }: { marketId: string; outcomes: Outcome[] }) {
-  const [rows, setRows] = useState<{ outcome_id: string; display_name: string; avatar_url: string | null; shares: number }[]>([]);
+  const [rows, setRows] = useState<{ outcome_id: string; display_name: string; avatar_url: string | null; rank_level: number; shares: number }[]>([]);
   useEffect(() => {
     createClient().rpc("market_holders", { p_market_id: marketId }).then(({ data }) => setRows(data ?? []));
   }, [marketId]);
@@ -115,7 +116,7 @@ function Holders({ marketId, outcomes }: { marketId: string; outcomes: Outcome[]
           <div className="text-xs font-extrabold mb-2.5" style={{ color: i === 0 ? "var(--pos)" : "var(--neg)" }}>{o.label} 保有者</div>
           {byOutcome(o.id).length === 0 ? <p className="text-dim text-xs">まだいません</p> : byOutcome(o.id).map((h, j) => (
             <div key={j} className="flex items-center gap-2.5 py-1.5">
-              <Avatar name={h.display_name} url={h.avatar_url} size={28} />
+              <AvatarFrame level={(h.rank_level || 1) as RankLevel} size={30} name={h.display_name} avatarUrl={h.avatar_url} />
               <span className="flex-1 text-[13px] font-semibold truncate">{h.display_name}</span>
               <span className="mono text-[12.5px] text-dim">{formatPoints(Math.round(h.shares))}</span>
             </div>
@@ -151,7 +152,7 @@ function Activity({ marketId }: { marketId: string }) {
 }
 
 // ── コメント ─────────────────────────────────────────────
-type CRow = { id: number; parent_id: number | null; body: string; created_at: string; display_name: string; avatar_url: string | null; like_count: number; liked: boolean; holding: "YES" | "NO" | null };
+type CRow = { id: number; parent_id: number | null; body: string; created_at: string; display_name: string; avatar_url: string | null; rank_level: number; like_count: number; liked: boolean; holding: "YES" | "NO" | null };
 
 function Comments({ marketId }: { marketId: string }) {
   const [list, setList] = useState<CRow[]>([]);
@@ -196,10 +197,11 @@ function Comments({ marketId }: { marketId: string }) {
 
   const Item = ({ c, reply }: { c: CRow; reply?: boolean }) => (
     <div className={`flex gap-3 ${reply ? "mt-3 ml-9" : "py-3 border-t border-border first:border-0"}`}>
-      <Avatar name={c.display_name} url={c.avatar_url} size={reply ? 24 : 32} />
+      <AvatarFrame level={(c.rank_level || 1) as RankLevel} size={reply ? 30 : 38} name={c.display_name} avatarUrl={c.avatar_url} />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-1.5 mb-0.5 flex-wrap">
           <b className="font-bold text-[12.5px]">{c.display_name}</b>
+          <span style={rankBadgeStyle((c.rank_level || 1) as RankLevel)}>Lv.{c.rank_level || 1}</span>
           <Holding h={c.holding} />
           <span className="text-faint text-[11px]">· {timeAgo(c.created_at)}</span>
         </div>

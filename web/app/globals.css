@@ -16,6 +16,7 @@
   --primary: #7b46e3;     /* グレープ・バイオレット */
   --primary-weak: #efe8fc;
   --accent2: #f4be1f;     /* バナナ・イエロー（アクセント） */
+  --banana-weak: #fcf1cf; /* バナナの弱面（称号Lv章など） */
   --pos: #15b877;         /* YES＝グリーン */
   --pos-weak: #e5f7ef;
   --neg: #f2604c;         /* NO＝コーラルレッド */
@@ -40,6 +41,7 @@ html.dark {
   --primary: #a480f2;
   --primary-weak: #251b3e;
   --accent2: #ffd53e;
+  --banana-weak: #3a2f10;
   --pos: #2fd18c;
   --pos-weak: #123026;
   --neg: #fb7b68;
