@@ -11,10 +11,13 @@ const roboto = Roboto({ variable: "--font-roboto", subsets: ["latin"], weight: [
 const noto = Noto_Sans_JP({ variable: "--font-noto", subsets: ["latin"], weight: ["400", "500", "700"] });
 const robotoMono = Roboto_Mono({ variable: "--font-roboto-mono", subsets: ["latin"], weight: ["500", "600", "700"] });
 
+// OG/canonical の絶対URL基点。env(NEXT_PUBLIC_SITE_URL)を使いつつ、apex(g-yoso.com)は
+// www に正規化する（apex→www の308でTwitter画像取得が失敗するのを回避）。env自体は変更しない。
+const SITE_BASE = (process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "") || "https://www.g-yoso.com")
+  .replace(/:\/\/g-yoso\.com/i, "://www.g-yoso.com");
+
 export const metadata: Metadata = {
-  // OGP/Twitterカード/canonical の絶対URL基点。正規ドメイン(www)を既定に（apex→www の308を避け、
-  // クローラが画像を直接200で取得できるようにする）。env があればそれを優先。
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "") || "https://www.g-yoso.com"),
+  metadataBase: new URL(SITE_BASE),
   title: "ゴリラ予想 — 予想して、当てて、楽しむ。",
   description: "無償ポイントで楽しむ予測市場。換金不可・譲渡禁止。予想を当てて貯めたゴリラコインは景品と交換できます。",
 };
