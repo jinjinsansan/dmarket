@@ -9,7 +9,7 @@ const FIELDS: { key: string; label: string; hint: string; step?: number }[] = [
   { key: "signup_grant", label: "登録ボーナス", hint: "新規登録時に付与（インフレ源）" },
   { key: "daily_grant", label: "デイリーボーナス", hint: "1日1回付与" },
   { key: "b_default", label: "流動性 b（既定値）", hint: "管理者の市場作成フォームの初期値。小さいほど価格が動きやすく補助金が小さい" },
-  { key: "prize_win_rate", label: "的中報酬レート（ゴリラコイン/勝ち株）", hint: "予想的中時に付与するゴリラコイン = 勝ち株数 × このレート。既定1。景品コスト割れ防止のため低めから", step: 0.1 },
+  { key: "prize_win_rate", label: "的中報酬レート（ゴリラコイン/勝ち株）", hint: "付与ゴリラコイン = 勝ち株数 × このレート（現在10＝1勝ち株10コイン）。コインは景品=実費なので、景品到達性と運営コストのバランスで調整", step: 0.1 },
   { key: "share_bonus", label: "シェアボーナス（pt/日）", hint: "Xシェアで1日1回もらえる参加pt。既定20" },
   { key: "referral_referrer", label: "友達紹介：紹介した人へ（pt）", hint: "友達がコードを使うと紹介者に付与。既定200" },
   { key: "referral_referee", label: "友達紹介：使った人へ（pt）", hint: "コードを入力した本人に付与。既定100" },

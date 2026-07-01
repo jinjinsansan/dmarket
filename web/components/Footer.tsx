@@ -15,7 +15,7 @@ export function Footer() {
             無償ポイント制の予測市場。換金不可・譲渡禁止。予想を当てて貯めたゴリラコインは景品と交換できます。
           </p>
         </div>
-        <FooterCol title="プロダクト" links={[["マーケット", "/"], ["ランキング", "/leaderboard"], ["マイページ", "/mypage"]]} />
+        <FooterCol title="プロダクト" links={[["使い方", "/guide"], ["マーケット", "/"], ["ランキング", "/leaderboard"], ["マイページ", "/mypage"]]} />
         <FooterCol title="法的情報" links={[["利用規約", "/legal/terms"], ["プライバシー", "/legal/privacy"], ["特定商取引法に基づく表記", "/legal/tokushoho"], ["賭博非該当について", "/legal/no-gambling"]]} />
         <FooterCol title="アカウント" links={[["ログイン", "/"], ["管理", "/admin"]]} />
       </div>

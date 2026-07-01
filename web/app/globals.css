@@ -310,6 +310,10 @@ html.dark .card-featured {
   --pos-weak: #E5F7EF; --neg-weak: #FCEAE6;
 }
 
+/* 使い方ページのリスト整形 */
+.guide ul { list-style: disc; padding-left: 1.2rem; margin-top: .4rem; }
+.guide li { margin-top: .3rem; }
+
 /* スケルトン（ローディングのプレースホルダ） */
 @keyframes shimmer {
   0% { background-position: -260px 0; }

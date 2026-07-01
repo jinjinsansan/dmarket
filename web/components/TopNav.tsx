@@ -16,6 +16,7 @@ const NAV = [
   { href: "/leaderboard", label: "ランキング" },
   { href: "/earn", label: "貯める" },
   { href: "/prizes", label: "景品" },
+  { href: "/guide", label: "使い方" },
   { href: "/mypage", label: "マイページ" },
 ];
 // 管理は is_admin のときのみ表示（BottomNav と同方針）
