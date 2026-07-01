@@ -79,6 +79,13 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
 
   return (
     <div className="max-w-[1240px] mx-auto px-4 md:px-[22px] py-5 pb-20 dm-in">
+      {/* はじめての方への導線（モバイルでも見つかるように） */}
+      <a href="/guide" className="md:hidden flex items-center gap-2 mb-3 rounded-[12px] px-3.5 py-2.5 border text-[13px] font-bold"
+        style={{ background: "var(--primary-weak)", borderColor: "var(--primary)", color: "var(--primary)" }}>
+        <span>🦍 はじめての方へ・ゴリラ予想の遊び方</span>
+        <span className="ml-auto">→</span>
+      </a>
+
       {/* 細いカテゴリナビ（本家風） */}
       <CategoryNav categories={categories} active={activeCat} onSelect={setActiveCat} />
 

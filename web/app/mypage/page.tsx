@@ -219,7 +219,8 @@ export default function MyPage() {
         </div>
       )}
       {(msg || claimMsg) && <p className="text-sm text-primary">{msg ?? claimMsg}</p>}
-      <div className="text-right">
+      <div className="flex items-center justify-between">
+        <Link href="/guide" className="text-xs text-primary hover:underline font-semibold">🦍 使い方・遊び方ガイド →</Link>
         <a href="/api/auth/logout" className="text-xs text-dim hover:text-text underline">ログアウト</a>
       </div>
 
