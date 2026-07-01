@@ -11,6 +11,19 @@ interface UserRow {
   balance: number; trades_count: number; net_worth: number; realized_pnl: number;
   resolved_count: number; win_count: number; is_flagged: boolean; is_admin: boolean;
   created_at: string; last_activity: string | null;
+  login_count: number; last_sign_in: string | null; referral_count: number; referred_by: string | null;
+}
+
+// 直近アクティビティ or 最終ログインが5分以内ならオンライン扱い
+function activeInfo(r: UserRow): { online: boolean; label: string } {
+  const ts = [r.last_activity, r.last_sign_in].filter(Boolean).map((s) => new Date(s as string).getTime());
+  if (ts.length === 0) return { online: false, label: "—" };
+  const last = Math.max(...ts);
+  const min = Math.floor((Date.now() - last) / 60000);
+  if (min < 5) return { online: true, label: "オンライン" };
+  if (min < 60) return { online: false, label: `${min}分前` };
+  if (min < 1440) return { online: false, label: `${Math.floor(min / 60)}時間前` };
+  return { online: false, label: `${Math.floor(min / 1440)}日前` };
 }
 interface Ledger { id: number; delta: number; reason: string; balance_after: number; created_at: string; question: string | null; }
 interface Pos { question: string; label: string; shares: number; cost_basis: number; status: string; }
@@ -51,6 +64,7 @@ export default function AdminUsersPage() {
               <th className="num p-3 text-right">総資産</th>
               <th className="num p-3 text-right">実現損益</th>
               <th className="num p-3 text-right">的中</th>
+              <th className="num p-3 text-right">紹介</th>
               <th className="p-3 text-center">状態</th>
               <th className="p-3"></th>
             </tr>
@@ -61,7 +75,7 @@ export default function AdminUsersPage() {
                 onToggle={() => setOpenId(openId === r.user_id ? null : r.user_id)}
                 onChanged={load} notify={notify} />
             ))}
-            {filtered.length === 0 && <tr><td colSpan={8} className="p-6 text-center text-dim">ユーザーがいません</td></tr>}
+            {filtered.length === 0 && <tr><td colSpan={9} className="p-6 text-center text-dim">ユーザーがいません</td></tr>}
           </tbody>
         </table>
       </div>
@@ -74,19 +88,23 @@ function UserRowView({ r, open, onToggle, onChanged, notify }: {
 }) {
   const pnl = pnlText(r.realized_pnl);
   const hit = r.resolved_count > 0 ? `${Math.round((r.win_count / r.resolved_count) * 100)}%` : "—";
+  const act = activeInfo(r);
   return (
     <>
       <tr className="border-b border-border last:border-0 hover:bg-surface2 cursor-pointer" onClick={onToggle}>
         <td className="p-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full grid place-items-center text-white text-xs font-bold shrink-0" style={{ background: "var(--grad)" }}>{r.display_name.slice(0, 1)}</div>
+            <div className="relative shrink-0">
+              <div className="w-8 h-8 rounded-full grid place-items-center text-white text-xs font-bold" style={{ background: "var(--grad)" }}>{r.display_name.slice(0, 1)}</div>
+              {act.online && <span className="absolute -right-0.5 -bottom-0.5 w-2.5 h-2.5 rounded-full bg-pos border-2 border-surface" title="オンライン" />}
+            </div>
             <div className="min-w-0">
               <div className="font-semibold truncate flex items-center gap-1.5">
                 {r.display_name}
                 {r.is_admin && <span className="text-[10px] bg-primary-weak text-primary px-1.5 rounded">admin</span>}
                 {r.is_flagged && <span className="text-[10px] bg-neg-weak text-neg px-1.5 rounded">flag</span>}
               </div>
-              <div className="text-[11px] text-dim truncate">{r.email}</div>
+              <div className="text-[11px] text-dim truncate">{r.email || (r.line_user_id ? "LINE" : "—")}</div>
             </div>
           </div>
         </td>
@@ -95,10 +113,13 @@ function UserRowView({ r, open, onToggle, onChanged, notify }: {
         <td className="num p-3 text-right">{formatPoints(r.net_worth)}</td>
         <td className={`num p-3 text-right ${pnl.cls}`}>{pnl.text}</td>
         <td className="num p-3 text-right text-dim">{hit}</td>
-        <td className="p-3 text-center text-xs text-dim">{r.last_activity ? new Date(r.last_activity).toLocaleDateString("ja-JP") : "—"}</td>
+        <td className="num p-3 text-right">{r.referral_count > 0 ? <span className="text-primary font-bold">{r.referral_count}</span> : <span className="text-faint">0</span>}</td>
+        <td className="p-3 text-center text-xs">
+          <span className={act.online ? "text-pos font-bold" : "text-dim"}>{act.label}</span>
+        </td>
         <td className="p-3 text-dim text-xs">{open ? "▲" : "▼"}</td>
       </tr>
-      {open && <tr><td colSpan={8} className="p-0"><UserDetail r={r} onChanged={onChanged} notify={notify} /></td></tr>}
+      {open && <tr><td colSpan={9} className="p-0"><UserDetail r={r} onChanged={onChanged} notify={notify} /></td></tr>}
     </>
   );
 }
@@ -138,8 +159,26 @@ function UserDetail({ r, onChanged, notify }: { r: UserRow; onChanged: () => voi
     onChanged();
   }
 
+  const act = activeInfo(r);
+  const fdt = (s: string | null) => (s ? new Date(s).toLocaleString("ja-JP") : "—");
   return (
-    <div className="bg-surface2 p-4 grid gap-4 lg:grid-cols-[1fr_1fr_320px]">
+    <div className="bg-surface2 p-4 space-y-4">
+      {/* アカウント情報 */}
+      <div className="rounded-[10px] border border-border bg-surface p-3">
+        <div className="text-xs font-bold text-dim mb-2">アカウント情報</div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-2 text-xs">
+          <Info label="状態" value={act.online ? "🟢 オンライン" : act.label} />
+          <Info label="ログイン回数" value={`${formatPoints(r.login_count ?? 0)} 回`} />
+          <Info label="最終ログイン" value={fdt(r.last_sign_in)} />
+          <Info label="最終アクティビティ" value={fdt(r.last_activity)} />
+          <Info label="登録日" value={fdt(r.created_at)} />
+          <Info label="紹介した人数" value={`${r.referral_count} 人`} accent={r.referral_count > 0} />
+          <Info label="紹介元（どこから来たか）" value={r.referred_by ?? "—（直接登録）"} accent={!!r.referred_by} />
+          <Info label="メール / LINE" value={r.email || (r.line_user_id ? "LINE連携" : "—")} />
+        </div>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[1fr_1fr_320px]">
       {/* 取引/参加ポイント履歴 */}
       <div>
         <div className="text-xs font-bold text-dim mb-2">取引・参加ポイント履歴</div>
@@ -193,6 +232,16 @@ function UserDetail({ r, onChanged, notify }: { r: UserRow; onChanged: () => voi
           {r.is_flagged ? "フラグ解除（ランキング復帰）" : "フラグする（ランキング除外）"}
         </button>
       </div>
+      </div>
+    </div>
+  );
+}
+
+function Info({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div className="min-w-0">
+      <div className="text-[10.5px] text-faint">{label}</div>
+      <div className={`truncate font-semibold ${accent ? "text-primary" : "text-text"}`} title={value}>{value}</div>
     </div>
   );
 }
