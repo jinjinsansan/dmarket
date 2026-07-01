@@ -60,6 +60,8 @@ export interface LedgerRow {
   delta: number;
   reason: string;
   shares: number | null;
+  market_id?: string | null;
+  market?: { question: string } | null;
   balance_after: number;
   created_at: string;
 }

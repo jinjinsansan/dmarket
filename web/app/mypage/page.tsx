@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { RideStats } from "@/components/RideStats";
 import { MyPageHero, BadgeShowcase } from "@/components/MyPageHero";
+import { withRef } from "@/lib/ref";
 import { lmsrPrice } from "@/lib/lmsr";
 import { formatPoints, pnlText } from "@/lib/format";
 import { LEDGER_REASON_LABEL, PRIZE_REASON_LABEL } from "@/lib/constants";
@@ -72,7 +73,7 @@ export default function MyPage() {
         sb.from("profile_private").select("shipping").eq("user_id", user.id).maybeSingle(),
         sb.from("user_stats").select("net_worth, win_count, resolved_count, current_streak").eq("user_id", user.id).maybeSingle(),
         sb.from("positions").select("shares, cost_basis, outcome:outcomes(id, label, market_id)").gt("shares", 0),
-        sb.from("point_ledger").select("id, delta, reason, shares, balance_after, created_at").order("created_at", { ascending: false }).limit(50),
+        sb.from("point_ledger").select("id, delta, reason, shares, market_id, balance_after, created_at, market:markets(question)").order("created_at", { ascending: false }).limit(50),
         sb.from("prize_ledger").select("id, delta, reason, market_id, expires_at, balance_after, created_at, market:markets(question)").order("created_at", { ascending: false }).limit(50),
         sb.from("badges").select("id, name, description"),
         sb.from("user_badges").select("badge_id").eq("user_id", user.id),
@@ -89,7 +90,7 @@ export default function MyPage() {
     setAvatarUrl((profile?.avatar_url as string) ?? "");
     if (priv?.shipping) setShipping({ name: "", postal: "", addr: "", tel: "", note: "", ...(priv.shipping as ShippingInfo) });
     setStats((st as Stats) ?? { net_worth: wallet?.balance ?? 0, win_count: 0, resolved_count: 0, current_streak: 0 });
-    setLedger((led as LedgerRow[]) ?? []);
+    setLedger((led as unknown as LedgerRow[]) ?? []);
     setRedemptions((reds as Redemption[]) ?? []);
     setCreatorStatus(((cstat as { status: string }[] | null)?.[0]?.status) ?? null);
     if (rstat) setRideStat({ riderCount: Number((rstat as { rider_count?: number }).rider_count ?? 0), totalBonus: Number((rstat as { total_bonus?: number }).total_bonus ?? 0) });
@@ -156,6 +157,12 @@ export default function MyPage() {
     } else {
       setPromoMsg({ ok: false, text: PROMO_ERR[data?.reason as string] ?? "受け取れませんでした。" });
     }
+  }
+
+  function shareWin(marketId: string, pt: number, question?: string) {
+    const url = withRef(`${window.location.origin}/win/${marketId}/${pt}`);
+    const text = `🎉 的中！${question ? `「${question}」で ` : ""}+${pt}pt もらいました！\nゴリラ予想で予想中🦍`;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, "_blank", "noopener,noreferrer");
   }
 
   async function claim() {
@@ -392,10 +399,16 @@ export default function MyPage() {
         <div className="border border-border bg-surface rounded-[var(--radius)] divide-y divide-border" style={{ boxShadow: "var(--shadow)" }}>
           {ledger.map((l) => (
             <div key={l.id} className="flex items-center gap-3 p-3 text-sm">
-              <span className="mono text-dim text-xs w-32">{new Date(l.created_at).toLocaleString("ja-JP")}</span>
-              <span className="flex-1">{LEDGER_REASON_LABEL[l.reason] ?? l.reason}</span>
-              <span className={`mono ${l.delta >= 0 ? "text-pos" : "text-neg"}`}>{l.delta >= 0 ? "+" : ""}{formatPoints(l.delta)}</span>
-              <span className="mono text-xs text-dim w-20 text-right">{formatPoints(l.balance_after)}</span>
+              <span className="mono text-dim text-xs w-32 shrink-0">{new Date(l.created_at).toLocaleString("ja-JP")}</span>
+              <span className="flex-1 min-w-0 truncate">{LEDGER_REASON_LABEL[l.reason] ?? l.reason}</span>
+              {l.reason === "redeem" && l.market_id && l.delta > 0 && (
+                <button onClick={() => shareWin(l.market_id!, l.delta, l.market?.question)}
+                  className="btn-press inline-flex items-center gap-1 text-[11px] font-bold text-white px-2.5 py-1 rounded-full shrink-0" style={{ background: "linear-gradient(135deg,#2FD18C,#0E8E58)" }}>
+                  🎉 シェア
+                </button>
+              )}
+              <span className={`mono shrink-0 ${l.delta >= 0 ? "text-pos" : "text-neg"}`}>{l.delta >= 0 ? "+" : ""}{formatPoints(l.delta)}</span>
+              <span className="mono text-xs text-dim w-20 text-right shrink-0">{formatPoints(l.balance_after)}</span>
             </div>
           ))}
           {ledger.length === 0 && <p className="p-4 text-dim text-sm text-center">履歴がありません</p>}

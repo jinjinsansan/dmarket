@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { lmsrPrices } from "@/lib/lmsr";
-import { setRefCode } from "@/lib/ref";
+import { setRefCode, withRef } from "@/lib/ref";
 import { toCents, timeRemaining, statusLabel } from "@/lib/format";
 import type { MarketWithOutcomes, PricePoint, Resolution } from "@/lib/types";
 import { ProbabilityChart } from "./ProbabilityChart";
@@ -27,6 +27,12 @@ export function MarketDetailClient({
   const [myCode, setMyCode] = useState<string | null>(null);
   const [ride, setRide] = useState<{ active: boolean; referrerName: string | null } | null>(null);
   const [rideCount, setRideCount] = useState(0);
+  const [myWin, setMyWin] = useState(0);   // この市場での自分の的中受取pt（解決済み）
+  const shareWin = () => {
+    const url = withRef(`${window.location.origin}/win/${market.id}/${myWin}`);
+    const text = `🎉 的中！「${market.question}」で +${myWin}pt もらいました！\nゴリラ予想で予想中🦍`;
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, "_blank", "noopener,noreferrer");
+  };
   const applyTraded = (id: string, q: number) => setOutcomes((prev) => prev.map((o) => (o.id === id ? { ...o, q } : o)));
   const shareMarket = () => {
     const ref = myCode ? `?ref=${myCode}` : "";
@@ -50,6 +56,10 @@ export function MarketDetailClient({
       if (!session?.user) return;
       const { data: rc } = await sb.rpc("my_referral_code");
       if (rc?.code) { setMyCode(rc.code as string); setRefCode(rc.code as string); }
+      if (market.status === "resolved") {
+        const { data: pw } = await sb.from("pending_winnings").select("amount").eq("market_id", market.id).maybeSingle();
+        if (pw?.amount && pw.amount > 0) setMyWin(pw.amount as number);
+      }
       const ref = new URLSearchParams(window.location.search).get("ref");
       if (ref) {
         const { data: rr } = await sb.rpc("record_ride", { p_market_id: market.id, p_sharer_code: ref });
@@ -133,6 +143,16 @@ export function MarketDetailClient({
           </div>
 
           {ride?.active && <RideBanner marketId={market.id} referrerName={ride.referrerName} />}
+
+          {myWin > 0 && (
+            <div className="flex items-center gap-3 rounded-[14px] px-4 py-3 text-white" style={{ background: "linear-gradient(135deg,#2FD18C,#0E8E58)" }}>
+              <span className="text-[15px] font-extrabold">🎉 的中！受取 +{myWin.toLocaleString()} pt</span>
+              <button onClick={shareWin} className="btn-press ml-auto inline-flex items-center gap-1.5 text-[12.5px] font-extrabold text-[#0E8E58] bg-white px-3.5 py-1.5 rounded-full shrink-0">
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M18.9 1.6h3.7l-8.1 9.2L24 22.4h-7.4l-5.8-7.6-6.7 7.6H.5l8.6-9.9L0 1.6h7.6l5.2 6.9 6.1-6.9Zm-1.3 18.6h2L6.5 3.7H4.3l13.3 16.5Z" /></svg>
+                的中をシェア
+              </button>
+            </div>
+          )}
 
           {/* 確率＋チャート */}
           <div className="border border-border bg-surface rounded-[var(--radius)] p-5" style={{ boxShadow: "var(--shadow)" }}>
