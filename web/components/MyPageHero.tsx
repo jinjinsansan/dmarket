@@ -3,10 +3,11 @@
 // 既存 /mypage の冒頭（プロフィールカード＋ステータスgrid）を本コンポーネントに置き換える。
 // 色・トークンは現状のまま。構成と重み付けだけの変更。
 import { GorillaFace } from "./GorillaFace";
+import { AvatarFrame, type RankLevel } from "./AvatarFrame";
 
 type Props = {
   name: string;
-  title: string;            // 例「予言者 / Oracle」
+  title: string;            // 称号ランク名（例「Lv.5 精鋭」）
   streak: number;
   hitRate: number | null;
   avatarUrl?: string | null;
@@ -14,11 +15,16 @@ type Props = {
   prizeBalance: number;     // ゴリラコイン
   positionsValue: number;   // 評価額
   pnl: number;              // 合計損益
+  rankLevel?: RankLevel;    // 称号ランク（枠アバター用）
+  xp?: number;              // 現Lv床からの相対XP
+  xpForNext?: number;       // 次Lvまでの必要XP
   onClaim?: () => void;
   onEdit?: () => void;
 };
 
 export function MyPageHero(p: Props) {
+  const showXp = p.rankLevel !== undefined && p.rankLevel < 8 && (p.xpForNext ?? 0) > 0;
+  const pct = showXp ? Math.min(100, Math.round(((p.xp ?? 0) / (p.xpForNext as number)) * 100)) : 0;
   return (
     <div className="space-y-3">
       {/* 1) プロフィールヒーロー */}
@@ -38,16 +44,16 @@ export function MyPageHero(p: Props) {
           style={{ position: "absolute", right: -40, top: -40, opacity: 0.08 }}
         />
         <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 14 }}>
-          <div style={{ width: 64, height: 64, borderRadius: 999, background: "#fff", display: "grid", placeItems: "center", flexShrink: 0, overflow: "hidden", boxShadow: "0 6px 18px -6px rgba(0,0,0,.4)" }}>
-            {p.avatarUrl ? (
-              <img src={p.avatarUrl} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            ) : (
-              <GorillaFace size={44} color="var(--primary)" />
-            )}
-          </div>
+          {p.rankLevel !== undefined ? (
+            <AvatarFrame level={p.rankLevel} size={66} name={p.name} avatarUrl={p.avatarUrl} />
+          ) : (
+            <div style={{ width: 64, height: 64, borderRadius: 999, background: "#fff", display: "grid", placeItems: "center", flexShrink: 0, overflow: "hidden", boxShadow: "0 6px 18px -6px rgba(0,0,0,.4)" }}>
+              {p.avatarUrl ? <img src={p.avatarUrl} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <GorillaFace size={44} color="var(--primary)" />}
+            </div>
+          )}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 21, fontWeight: 900, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</div>
-            <span style={{ display: "inline-block", marginTop: 5, fontSize: 11, fontWeight: 800, color: "#3a2566", background: "var(--accent2)", padding: "3px 11px", borderRadius: 999, whiteSpace: "nowrap" }}>★ {p.title}</span>
+            <span style={{ display: "inline-block", marginTop: 5, fontSize: 11.5, fontWeight: 800, color: "#3a2566", background: "var(--accent2)", padding: "3px 11px", borderRadius: 999, whiteSpace: "nowrap" }}>★ {p.title}</span>
             <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 8, flexWrap: "wrap" }}>
               <span style={{ fontSize: 12, color: "rgba(255,255,255,.85)" }}>🔥 連勝 {p.streak}</span>
               {p.hitRate !== null && (
@@ -60,10 +66,26 @@ export function MyPageHero(p: Props) {
             </div>
           </div>
         </div>
+
+        {/* 称号ランクのXP進捗（統合） */}
+        {showXp ? (
+          <div style={{ position: "relative", marginTop: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10.5, color: "rgba(255,255,255,.75)", marginBottom: 5 }}>
+              <span>次のランクまで</span>
+              <span className="mono" style={{ fontWeight: 800, color: "var(--accent2)" }}>{(p.xp ?? 0).toLocaleString()} / {(p.xpForNext ?? 0).toLocaleString()} XP</span>
+            </div>
+            <div style={{ height: 9, borderRadius: 999, background: "rgba(255,255,255,.16)", overflow: "hidden" }}>
+              <div style={{ width: `${pct}%`, height: "100%", background: "var(--accent2)" }} />
+            </div>
+          </div>
+        ) : p.rankLevel === 8 ? (
+          <div style={{ position: "relative", marginTop: 14, fontSize: 12, fontWeight: 800, color: "var(--accent2)" }}>👑 最高ランク到達</div>
+        ) : null}
+
         <button
           onClick={p.onClaim}
           className="btn-press w-full sm:w-auto"
-          style={{ position: "relative", marginTop: 14, background: "var(--accent2)", color: "#3a2566", fontSize: 13.5, fontWeight: 800, padding: "12px 20px", borderRadius: 13, border: "none", cursor: "pointer" }}
+          style={{ position: "relative", marginTop: 16, background: "var(--accent2)", color: "#3a2566", fontSize: 13.5, fontWeight: 800, padding: "12px 20px", borderRadius: 13, border: "none", cursor: "pointer" }}
         >
           デイリー受取
         </button>

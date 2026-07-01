@@ -5,8 +5,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { RideStats } from "@/components/RideStats";
-import { MyPageHero, BadgeShowcase } from "@/components/MyPageHero";
-import { RankHero, RankGuide, RANK_META, type RankLevel } from "@/components/AvatarFrame";
+import { MyPageHero } from "@/components/MyPageHero";
+import { RankGuide, RANK_META, type RankLevel } from "@/components/AvatarFrame";
 import { withRef } from "@/lib/ref";
 import { lmsrPrice } from "@/lib/lmsr";
 import { formatPoints, pnlText } from "@/lib/format";
@@ -14,7 +14,6 @@ import { LEDGER_REASON_LABEL, PRIZE_REASON_LABEL } from "@/lib/constants";
 import type { LedgerRow, PrizeLedgerRow, ShippingInfo } from "@/lib/types";
 
 interface Holding { marketId: string; question: string; label: string; shares: number; costBasis: number; value: number; }
-interface Badge { id: string; name: string; description: string | null; earned: boolean; }
 interface Stats { net_worth: number; win_count: number; resolved_count: number; current_streak: number; }
 interface Redemption {
   id: string; prize_name: string; image_url: string | null; cost_points: number; status: string;
@@ -41,7 +40,6 @@ export default function MyPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [ledger, setLedger] = useState<LedgerRow[]>([]);
-  const [badges, setBadges] = useState<Badge[]>([]);
   const [redemptions, setRedemptions] = useState<Redemption[]>([]);
   const [shipping, setShipping] = useState<ShippingInfo>({ name: "", postal: "", addr: "", tel: "", note: "" });
   const [editProfile, setEditProfile] = useState(false);
@@ -68,7 +66,7 @@ export default function MyPage() {
     setUid(user.id);
 
     const [{ data: wallet }, { data: prizeWallet }, { data: profile }, { data: priv }, { data: st },
-      { data: positions }, { data: led }, { data: prizeLed }, { data: allBadges }, { data: mine }, { data: reds }, { data: cstat }, { data: rstat }, { data: winRows }, { data: rankRow }] =
+      { data: positions }, { data: led }, { data: prizeLed }, { data: reds }, { data: cstat }, { data: rstat }, { data: winRows }, { data: rankRow }] =
       await Promise.all([
         sb.from("wallets").select("balance").eq("user_id", user.id).maybeSingle(),
         sb.from("prize_wallets").select("balance").eq("user_id", user.id).maybeSingle(),
@@ -78,8 +76,6 @@ export default function MyPage() {
         sb.from("positions").select("shares, cost_basis, outcome:outcomes(id, label, market_id)").gt("shares", 0),
         sb.from("point_ledger").select("id, delta, reason, shares, balance_after, created_at").order("created_at", { ascending: false }).limit(50),
         sb.from("prize_ledger").select("id, delta, reason, market_id, expires_at, balance_after, created_at, market:markets(question)").order("created_at", { ascending: false }).limit(50),
-        sb.from("badges").select("id, name, description"),
-        sb.from("user_badges").select("badge_id").eq("user_id", user.id),
         sb.rpc("my_redemptions"),
         sb.rpc("my_creator_status"),
         sb.rpc("my_ride_stats"),
@@ -104,8 +100,6 @@ export default function MyPage() {
       .map((w) => ({ id: w.id, amount: w.amount, market_id: w.market_id, question: w.market?.question ?? "市場" })));
     if (rankRow) { const rr = rankRow as { level: number; xp: number; xp_current_floor: number; xp_for_next: number };
       setRank({ level: rr.level, xp: rr.xp, floor: rr.xp_current_floor, next: rr.xp_for_next }); }
-    const earned = new Set((mine ?? []).map((b) => b.badge_id));
-    setBadges((allBadges ?? []).map((b) => ({ ...b, earned: earned.has(b.id) })));
 
     const posList = (positions ?? []) as unknown as { shares: number; cost_basis: number; outcome: { id: string; label: string; market_id: string } }[];
     const marketIds = [...new Set(posList.map((p) => p.outcome.market_id))];
@@ -210,6 +204,9 @@ export default function MyPage() {
         name={name} title={title} streak={stats?.current_streak ?? 0} hitRate={hitRate}
         avatarUrl={avatarUrl} balance={balance} prizeBalance={prizeBalance}
         positionsValue={holdValue} pnl={unrealized}
+        rankLevel={rank ? (rank.level as RankLevel) : undefined}
+        xp={rank ? rank.xp - rank.floor : undefined}
+        xpForNext={rank ? Math.max(1, rank.next - rank.floor) : undefined}
         onClaim={claim} onEdit={() => { setEditProfile((v) => !v); setMsg(null); }}
       />
 
@@ -335,24 +332,13 @@ export default function MyPage() {
         </button>
       </section>
 
-      {/* 称号ランク（Lv・XP） */}
+      {/* 称号ランクの上げ方・一覧（ヒーローに統合済み。詳細は折りたたみ） */}
       {rank && (
-        <>
-          <RankHero
-            level={rank.level as RankLevel}
-            xp={rank.xp - rank.floor}
-            xpForNext={Math.max(1, rank.next - rank.floor)}
-            breakdown={[{ label: "的中でXP", value: "+40" }, { label: "いいね獲得", value: "+5" }, { label: "シェア", value: "+10" }]}
-          />
-          <details className="border border-border bg-surface rounded-[var(--radius)] p-4" style={{ boxShadow: "var(--shadow)" }}>
-            <summary className="text-[14px] font-bold cursor-pointer select-none">🦍 ランクの上げ方・称号一覧を見る</summary>
-            <div className="mt-4"><RankGuide level={rank.level as RankLevel} /></div>
-          </details>
-        </>
+        <details className="border border-border bg-surface rounded-[var(--radius)] p-4" style={{ boxShadow: "var(--shadow)" }}>
+          <summary className="text-[14px] font-bold cursor-pointer select-none">🦍 ランクの上げ方・称号一覧を見る</summary>
+          <div className="mt-4"><RankGuide level={rank.level as RankLevel} /></div>
+        </details>
       )}
-
-      {/* 実績バッジ（横スクロール） */}
-      {badges.length > 0 && <BadgeShowcase badges={badges} />}
 
       {/* 保有 */}
       <section>
