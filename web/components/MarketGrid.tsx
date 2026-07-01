@@ -9,8 +9,11 @@ import { TrendingTopics } from "./TrendingTopics";
 import { EmptyState } from "./States";
 import type { Category, MarketWithOutcomes } from "@/lib/types";
 
+const GUIDE_MAX_VISITS = 3; // この回数までは「はじめての方へ」バナーを表示
+
 export function MarketGrid({ initialMarkets, categories }: { initialMarkets: MarketWithOutcomes[]; categories: Category[] }) {
   const [markets, setMarkets] = useState(initialMarkets);
+  const [showGuideBanner, setShowGuideBanner] = useState(false);
   const [activeCat, setActiveCat] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [layout, setLayout] = useState<"cards" | "compact">("cards");
@@ -77,14 +80,34 @@ export function MarketGrid({ initialMarkets, categories }: { initialMarkets: Mar
   // 管理者が指定した「今日のお題（ヒーロー）」を最優先。無ければ天気→trending先頭。
   const heroDaily = markets.find((m) => m.is_hero) ?? markets.find((m) => m.category?.slug === "weather") ?? trending[0];
 
+  // 訪問回数をカウントし、GUIDE_MAX_VISITS 回まで「はじめての方へ」バナーを表示（×で即非表示）
+  useEffect(() => {
+    try {
+      if (localStorage.getItem("gp-guide-dismissed")) return;
+      if (!sessionStorage.getItem("gp-visit-counted")) {
+        const v = (parseInt(localStorage.getItem("gp-visits") || "0", 10) || 0) + 1;
+        localStorage.setItem("gp-visits", String(v));
+        sessionStorage.setItem("gp-visit-counted", "1");
+      }
+      const visits = parseInt(localStorage.getItem("gp-visits") || "0", 10) || 0;
+      if (visits <= GUIDE_MAX_VISITS) setShowGuideBanner(true);
+    } catch { setShowGuideBanner(true); }
+  }, []);
+  const dismissGuide = () => { try { localStorage.setItem("gp-guide-dismissed", "1"); } catch { /* noop */ } setShowGuideBanner(false); };
+
   return (
     <div className="max-w-[1240px] mx-auto px-4 md:px-[22px] py-5 pb-20 dm-in">
-      {/* はじめての方への導線（モバイルでも見つかるように） */}
-      <a href="/guide" className="md:hidden flex items-center gap-2 mb-3 rounded-[12px] px-3.5 py-2.5 border text-[13px] font-bold"
-        style={{ background: "var(--primary-weak)", borderColor: "var(--primary)", color: "var(--primary)" }}>
-        <span>🦍 はじめての方へ・ゴリラ予想の遊び方</span>
-        <span className="ml-auto">→</span>
-      </a>
+      {/* はじめての方への導線（モバイル・訪問GUIDE_MAX_VISITS回まで表示／×で非表示） */}
+      {showGuideBanner && (
+        <div className="md:hidden flex items-center gap-2 mb-3 rounded-[12px] px-3.5 py-2.5 border text-[13px] font-bold"
+          style={{ background: "var(--primary-weak)", borderColor: "var(--primary)", color: "var(--primary)" }}>
+          <a href="/guide" className="flex items-center gap-2 flex-1 min-w-0">
+            <span className="truncate">🦍 はじめての方へ・ゴリラ予想の遊び方</span>
+            <span className="ml-auto shrink-0">→</span>
+          </a>
+          <button onClick={dismissGuide} aria-label="閉じる" className="shrink-0 text-primary/60 hover:text-primary text-base leading-none pl-1">×</button>
+        </div>
+      )}
 
       {/* 細いカテゴリナビ（本家風） */}
       <CategoryNav categories={categories} active={activeCat} onSelect={setActiveCat} />
