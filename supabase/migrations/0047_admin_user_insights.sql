@@ -29,7 +29,9 @@ $$;
 grant execute on function complete_line_signup(text, text, text) to authenticated;
 
 -- 管理ユーザー一覧（0046版＋紹介人数/紹介元/ログイン回数/最終ログイン）
-create or replace function admin_list_users()
+-- 戻り値の列が増えるため、既存関数を drop してから再作成する。
+drop function if exists admin_list_users();
+create function admin_list_users()
 returns table(
   user_id uuid, display_name text, email text, line_user_id text,
   balance bigint, trades_count int, net_worth bigint, realized_pnl bigint,
