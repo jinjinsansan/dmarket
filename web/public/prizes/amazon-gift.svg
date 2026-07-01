@@ -1,17 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400" role="img" aria-label="ギフトカード 10000円分">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" width="600" height="400" role="img" aria-label="電子ギフト券">
   <rect width="600" height="400" fill="#fff8e8"/>
   <g transform="translate(300 195)">
     <!-- card -->
-    <rect x="-180" y="-105" width="360" height="210" rx="18" fill="#1b1430"/>
-    <rect x="-180" y="-105" width="360" height="210" rx="18" fill="none" stroke="#f4be1f" stroke-width="3"/>
+    <rect x="-180" y="-108" width="360" height="216" rx="18" fill="#1b1430"/>
+    <rect x="-180" y="-108" width="360" height="216" rx="18" fill="none" stroke="#f4be1f" stroke-width="3"/>
     <!-- ribbon vertical -->
-    <rect x="-18" y="-105" width="36" height="210" fill="#f4be1f" opacity=".9"/>
+    <rect x="-18" y="-108" width="36" height="216" fill="#f4be1f" opacity=".9"/>
     <!-- ribbon horizontal -->
     <rect x="-180" y="-18" width="360" height="36" fill="#f4be1f" opacity=".9"/>
     <!-- bow -->
-    <circle cx="0" cy="0" r="16" fill="#7b46e3"/>
-    <text x="0" y="-44" font-family="system-ui,Segoe UI,Roboto,sans-serif" font-size="26" font-weight="800" fill="#fff" text-anchor="middle">GIFT</text>
-    <text x="0" y="78" font-family="system-ui,Segoe UI,Roboto,sans-serif" font-size="40" font-weight="900" fill="#f4be1f" text-anchor="middle">¥10,000</text>
+    <circle cx="0" cy="0" r="17" fill="#7b46e3"/>
+    <circle cx="0" cy="0" r="6" fill="#fff"/>
+    <!-- text -->
+    <text x="0" y="-52" font-family="system-ui,Segoe UI,Roboto,sans-serif" font-size="30" font-weight="900" fill="#fff" text-anchor="middle" letter-spacing="2">GIFT</text>
+    <text x="0" y="82" font-family="system-ui,Segoe UI,Roboto,sans-serif" font-size="20" font-weight="800" fill="#f4be1f" text-anchor="middle" letter-spacing="3">GIFT CARD</text>
   </g>
   <text x="300" y="378" font-family="system-ui,Segoe UI,Roboto,sans-serif" font-size="22" font-weight="700" fill="#b8860b" text-anchor="middle">電子ギフト券</text>
 </svg>
