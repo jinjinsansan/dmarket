@@ -9,6 +9,7 @@ import { Logo, Wordmark } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
 import { Confetti } from "./Confetti";
 import { Toast, type ToastKind } from "./Toast";
+import { RANK_META, type RankLevel } from "./AvatarFrame";
 import { getRefCode, setRefCode } from "@/lib/ref";
 
 const NAV = [
@@ -52,6 +53,18 @@ export function TopNav() {
     if (!getRefCode()) {
       sb.rpc("my_referral_code").then(({ data }) => { if (data?.code) setRefCode(data.code as string); });
     }
+    // 称号ランクの昇格を検知（前回Lvより上がっていたら昇格トースト＋紙吹雪）
+    sb.rpc("my_rank").then(({ data }) => {
+      const lv = Number((data as { level?: number } | null)?.level ?? 1);
+      try {
+        const prev = parseInt(localStorage.getItem("gp-rank-level") || "", 10);
+        if (!Number.isNaN(prev) && lv > prev) {
+          setFire((f) => f + 1);
+          showToast(`Lv.${lv} ${RANK_META[lv as RankLevel]?.name ?? ""} に昇格！`, "🎉 ランクアップ", "success");
+        }
+        localStorage.setItem("gp-rank-level", String(lv));
+      } catch { /* noop */ }
+    });
     // 保留中の友達紹介コードを適用（共有リンク経由・一度きり）
     let pendRef: string | null = null;
     try { pendRef = localStorage.getItem("gp-pending-ref"); } catch { /* noop */ }
