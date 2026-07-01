@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { RideStats } from "@/components/RideStats";
 import { MyPageHero, BadgeShowcase } from "@/components/MyPageHero";
-import { RankHero, type RankLevel } from "@/components/AvatarFrame";
+import { RankHero, RankGuide, type RankLevel } from "@/components/AvatarFrame";
 import { withRef } from "@/lib/ref";
 import { lmsrPrice } from "@/lib/lmsr";
 import { formatPoints, pnlText } from "@/lib/format";
@@ -336,12 +336,18 @@ export default function MyPage() {
 
       {/* 称号ランク（Lv・XP） */}
       {rank && (
-        <RankHero
-          level={rank.level as RankLevel}
-          xp={rank.xp - rank.floor}
-          xpForNext={Math.max(1, rank.next - rank.floor)}
-          breakdown={[{ label: "的中でXP", value: "+40" }, { label: "いいね獲得", value: "+5" }, { label: "シェア", value: "+10" }]}
-        />
+        <>
+          <RankHero
+            level={rank.level as RankLevel}
+            xp={rank.xp - rank.floor}
+            xpForNext={Math.max(1, rank.next - rank.floor)}
+            breakdown={[{ label: "的中でXP", value: "+40" }, { label: "いいね獲得", value: "+5" }, { label: "シェア", value: "+10" }]}
+          />
+          <details className="border border-border bg-surface rounded-[var(--radius)] p-4" style={{ boxShadow: "var(--shadow)" }}>
+            <summary className="text-[14px] font-bold cursor-pointer select-none">🦍 ランクの上げ方・称号一覧を見る</summary>
+            <div className="mt-4"><RankGuide level={rank.level as RankLevel} /></div>
+          </details>
+        </>
       )}
 
       {/* 実績バッジ（横スクロール） */}

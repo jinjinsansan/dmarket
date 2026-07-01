@@ -93,6 +93,52 @@ function ringStyle(level: RankLevel, size: number) {
   }
 }
 
+// 称号ランクの説明（XPの貯め方＋Lv一覧）。マイページで折りたたみ表示。
+const XP_THRESHOLDS: Record<RankLevel, number> = { 1: 0, 2: 100, 3: 300, 4: 700, 5: 1500, 6: 3000, 7: 6000, 8: 12000 };
+const XP_RULES: { label: string; value: string }[] = [
+  { label: "予想が的中", value: "+40" },
+  { label: "連続ログイン（毎日）", value: "+10" },
+  { label: "コメントにいいね獲得", value: "+5" },
+  { label: "Xでシェア（1日1回）", value: "+10" },
+  { label: "作った市場が承認", value: "+30" },
+  { label: "乗っかりボーナス発生", value: "+15" },
+];
+
+export function RankGuide({ level }: { level?: RankLevel }) {
+  return (
+    <div className="space-y-4">
+      <div>
+        <div className="text-[13px] font-bold mb-2">XPの貯め方（外してもXPは減りません）</div>
+        <div className="grid grid-cols-2 gap-2">
+          {XP_RULES.map((r) => (
+            <div key={r.label} className="flex items-center justify-between rounded-[10px] border border-border bg-surface2 px-3 py-2">
+              <span className="text-[12px] text-dim">{r.label}</span>
+              <span className="mono text-[13px] font-extrabold" style={{ color: "var(--primary)" }}>{r.value} XP</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div>
+        <div className="text-[13px] font-bold mb-2">称号ランク（Lv.1〜8・下がりません）</div>
+        <div className="space-y-1.5">
+          {(Object.keys(RANK_META).map(Number) as RankLevel[]).map((lv) => (
+            <div key={lv} className={`flex items-center gap-3 rounded-[12px] px-3 py-2 ${level === lv ? "border" : ""}`}
+              style={level === lv ? { background: "var(--primary-weak)", borderColor: "var(--primary)" } : undefined}>
+              <AvatarFrame level={lv} size={36} />
+              <div className="flex-1 min-w-0">
+                <div className="text-[13px] font-bold">Lv.{lv} {RANK_META[lv].name}{level === lv ? "（現在）" : ""}</div>
+                <div className="text-[11px] text-dim">{RANK_META[lv].unlock}</div>
+              </div>
+              <div className="mono text-[12px] text-dim shrink-0">{XP_THRESHOLDS[lv].toLocaleString()} XP</div>
+            </div>
+          ))}
+        </div>
+        <p className="text-[11px] text-faint mt-2">※ Lvは累計XPで決まり、一度上がると下がりません。週次ランキングのティアとは別です。</p>
+      </div>
+    </div>
+  );
+}
+
 // マイページのランクヒーロー（大きな枠＋XP進捗）
 export function RankHero({
   level, xp, xpForNext, breakdown,
