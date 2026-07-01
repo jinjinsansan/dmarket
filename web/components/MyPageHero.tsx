@@ -128,7 +128,7 @@ export function BadgeShowcase({ badges }: { badges: { id: string; name: string; 
     <section>
       <div style={{ display: "flex", alignItems: "center", gap: 9, margin: "2px 2px 12px" }}>
         <span style={{ width: 4, height: 18, borderRadius: 3, background: "var(--accent2)" }} />
-        <span style={{ fontSize: 15, fontWeight: 800, color: "var(--text)" }}>称号コレクション</span>
+        <span style={{ fontSize: 15, fontWeight: 800, color: "var(--text)" }}>実績バッジ</span>
         <span style={{ fontSize: 11, color: "var(--dim)", marginLeft: "auto" }}>{earned} / {badges.length}</span>
       </div>
       <div className="hide-scrollbar" style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 2 }}>

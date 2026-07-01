@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { RideStats } from "@/components/RideStats";
 import { MyPageHero, BadgeShowcase } from "@/components/MyPageHero";
-import { RankHero, RankGuide, type RankLevel } from "@/components/AvatarFrame";
+import { RankHero, RankGuide, RANK_META, type RankLevel } from "@/components/AvatarFrame";
 import { withRef } from "@/lib/ref";
 import { lmsrPrice } from "@/lib/lmsr";
 import { formatPoints, pnlText } from "@/lib/format";
@@ -195,7 +195,8 @@ export default function MyPage() {
   const holdCost = holdings.reduce((s, h) => s + h.costBasis, 0);
   const unrealized = holdValue - holdCost;
   const hitRate = stats && stats.resolved_count > 0 ? Math.round((stats.win_count / stats.resolved_count) * 100) : null;
-  const title = stats && stats.current_streak >= 5 ? "予言者 / Oracle" : "トレーダー / Trader";
+  // ヒーローのバッジは新しい称号ランク（Lv.N 名称）に統一（旧・連勝ベースの肩書は廃止）
+  const title = rank ? `Lv.${rank.level} ${RANK_META[rank.level as RankLevel]?.name ?? ""}` : "—";
   const now = Date.now();
   const nextExpiry = prizeLedger
     .filter((l) => l.delta > 0 && l.expires_at && new Date(l.expires_at).getTime() > now)
