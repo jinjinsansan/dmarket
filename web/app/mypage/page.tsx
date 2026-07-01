@@ -53,6 +53,7 @@ export default function MyPage() {
   const [promoMsg, setPromoMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [creatorStatus, setCreatorStatus] = useState<string | null>(null);
   const [rideStat, setRideStat] = useState<{ riderCount: number; totalBonus: number } | null>(null);
+  const [wins, setWins] = useState<{ id: number; amount: number; market_id: string; question: string }[]>([]);
 
   const name = nickname || lineName;
 
@@ -65,7 +66,7 @@ export default function MyPage() {
     setUid(user.id);
 
     const [{ data: wallet }, { data: prizeWallet }, { data: profile }, { data: priv }, { data: st },
-      { data: positions }, { data: led }, { data: prizeLed }, { data: allBadges }, { data: mine }, { data: reds }, { data: cstat }, { data: rstat }] =
+      { data: positions }, { data: led }, { data: prizeLed }, { data: allBadges }, { data: mine }, { data: reds }, { data: cstat }, { data: rstat }, { data: winRows }] =
       await Promise.all([
         sb.from("wallets").select("balance").eq("user_id", user.id).maybeSingle(),
         sb.from("prize_wallets").select("balance").eq("user_id", user.id).maybeSingle(),
@@ -73,13 +74,14 @@ export default function MyPage() {
         sb.from("profile_private").select("shipping").eq("user_id", user.id).maybeSingle(),
         sb.from("user_stats").select("net_worth, win_count, resolved_count, current_streak").eq("user_id", user.id).maybeSingle(),
         sb.from("positions").select("shares, cost_basis, outcome:outcomes(id, label, market_id)").gt("shares", 0),
-        sb.from("point_ledger").select("id, delta, reason, shares, market_id, balance_after, created_at, market:markets(question)").order("created_at", { ascending: false }).limit(50),
+        sb.from("point_ledger").select("id, delta, reason, shares, balance_after, created_at").order("created_at", { ascending: false }).limit(50),
         sb.from("prize_ledger").select("id, delta, reason, market_id, expires_at, balance_after, created_at, market:markets(question)").order("created_at", { ascending: false }).limit(50),
         sb.from("badges").select("id, name, description"),
         sb.from("user_badges").select("badge_id").eq("user_id", user.id),
         sb.rpc("my_redemptions"),
         sb.rpc("my_creator_status"),
         sb.rpc("my_ride_stats"),
+        sb.from("pending_winnings").select("id, amount, market_id, market:markets(question)").order("created_at", { ascending: false }).limit(20),
       ]);
 
     setBalance(wallet?.balance ?? 0);
@@ -90,10 +92,13 @@ export default function MyPage() {
     setAvatarUrl((profile?.avatar_url as string) ?? "");
     if (priv?.shipping) setShipping({ name: "", postal: "", addr: "", tel: "", note: "", ...(priv.shipping as ShippingInfo) });
     setStats((st as Stats) ?? { net_worth: wallet?.balance ?? 0, win_count: 0, resolved_count: 0, current_streak: 0 });
-    setLedger((led as unknown as LedgerRow[]) ?? []);
+    setLedger((led as LedgerRow[]) ?? []);
     setRedemptions((reds as Redemption[]) ?? []);
     setCreatorStatus(((cstat as { status: string }[] | null)?.[0]?.status) ?? null);
     if (rstat) setRideStat({ riderCount: Number((rstat as { rider_count?: number }).rider_count ?? 0), totalBonus: Number((rstat as { total_bonus?: number }).total_bonus ?? 0) });
+    setWins(((winRows as unknown as { id: number; amount: number; market_id: string; market?: { question: string } | null }[]) ?? [])
+      .filter((w) => w.amount > 0)
+      .map((w) => ({ id: w.id, amount: w.amount, market_id: w.market_id, question: w.market?.question ?? "市場" })));
     const earned = new Set((mine ?? []).map((b) => b.badge_id));
     setBadges((allBadges ?? []).map((b) => ({ ...b, earned: earned.has(b.id) })));
 
@@ -393,6 +398,28 @@ export default function MyPage() {
         </div>
       </section>
 
+      {/* 的中をシェア */}
+      {wins.length > 0 && (
+        <section>
+          <h2 className="text-[15px] font-bold mb-2">🎉 あなたの的中（シェアできます）</h2>
+          <div className="border border-border bg-surface rounded-[var(--radius)] divide-y divide-border" style={{ boxShadow: "var(--shadow)" }}>
+            {wins.map((w) => (
+              <div key={w.id} className="flex items-center gap-3 p-3 text-sm">
+                <div className="flex-1 min-w-0">
+                  <div className="truncate font-semibold">{w.question}</div>
+                  <div className="mono text-[12px] text-pos font-bold">受取 +{formatPoints(w.amount)} pt</div>
+                </div>
+                <button onClick={() => shareWin(w.market_id, w.amount, w.question)}
+                  className="btn-press inline-flex items-center gap-1.5 text-[12px] font-extrabold text-white px-3.5 py-2 rounded-full shrink-0" style={{ background: "linear-gradient(135deg,#2FD18C,#0E8E58)" }}>
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M18.9 1.6h3.7l-8.1 9.2L24 22.4h-7.4l-5.8-7.6-6.7 7.6H.5l8.6-9.9L0 1.6h7.6l5.2 6.9 6.1-6.9Zm-1.3 18.6h2L6.5 3.7H4.3l13.3 16.5Z" /></svg>
+                  的中をシェア
+                </button>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* 履歴 */}
       <section>
         <h2 className="text-[15px] font-bold mb-2">取引履歴 / Activity</h2>
@@ -401,12 +428,6 @@ export default function MyPage() {
             <div key={l.id} className="flex items-center gap-3 p-3 text-sm">
               <span className="mono text-dim text-xs w-32 shrink-0">{new Date(l.created_at).toLocaleString("ja-JP")}</span>
               <span className="flex-1 min-w-0 truncate">{LEDGER_REASON_LABEL[l.reason] ?? l.reason}</span>
-              {l.reason === "redeem" && l.market_id && l.delta > 0 && (
-                <button onClick={() => shareWin(l.market_id!, l.delta, l.market?.question)}
-                  className="btn-press inline-flex items-center gap-1 text-[11px] font-bold text-white px-2.5 py-1 rounded-full shrink-0" style={{ background: "linear-gradient(135deg,#2FD18C,#0E8E58)" }}>
-                  🎉 シェア
-                </button>
-              )}
               <span className={`mono shrink-0 ${l.delta >= 0 ? "text-pos" : "text-neg"}`}>{l.delta >= 0 ? "+" : ""}{formatPoints(l.delta)}</span>
               <span className="mono text-xs text-dim w-20 text-right shrink-0">{formatPoints(l.balance_after)}</span>
             </div>
