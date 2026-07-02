@@ -14,6 +14,7 @@ const GROUPS: { title: string; items: Item[] }[] = [
     { href: "/admin/create", title: "市場作成", desc: "二択市場を手動で作成（初期YES確率でシード）", icon: "＋" },
     { href: "/admin/templates", title: "テンプレート", desc: "天気・デイリーなどの自動生成テンプレ", icon: "▥" },
     { href: "/admin/markets", title: "市場マネージャ", desc: "全市場一覧・b調整・締切編集・非表示/中止", icon: "▦" },
+    { href: "/admin/pickup", title: "ピックアップ枠", desc: "トップに出す“今の1本”を毎時スロットに割当（1本集中）", icon: "★" },
   ] },
   { title: "解決・モデレーション", items: [
     { href: "/admin/queue", title: "解決キュー", desc: "締切後の手動市場を確定／中止", icon: "✓" },
